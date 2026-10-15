@@ -505,15 +505,17 @@ private fun DashboardContent(
                             )
                         }
 
-                        // Year Selector Pills
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            listOf("2026", "2025", "2024").forEach { year ->
-                                val isSelected = year == selectedYear
-                                FilterChip(
-                                    selected = isSelected,
+                        // Year Selector Segmented Buttons
+                        val years = listOf("2026", "2025", "2024")
+                        SingleChoiceSegmentedButtonRow {
+                            years.forEachIndexed { index, year ->
+                                SegmentedButton(
+                                    selected = year == selectedYear,
                                     onClick = { selectedYear = year },
-                                    label = { Text(year, style = MaterialTheme.typography.labelSmall) }
-                                )
+                                    shape = SegmentedButtonDefaults.itemShape(index = index, count = years.size)
+                                ) {
+                                    Text(year, style = MaterialTheme.typography.labelSmall)
+                                }
                             }
                         }
                     }

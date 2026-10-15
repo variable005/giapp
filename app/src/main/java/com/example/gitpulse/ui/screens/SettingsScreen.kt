@@ -276,28 +276,15 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        AppThemeMode.entries.forEach { mode ->
-                            val isSelected = themeMode == mode
-                            FilterChip(
-                                selected = isSelected,
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                        AppThemeMode.entries.forEachIndexed { index, mode ->
+                            SegmentedButton(
+                                selected = themeMode == mode,
                                 onClick = { viewModel.setThemeMode(mode) },
-                                label = { Text(mode.title) },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = when (mode) {
-                                            AppThemeMode.SYSTEM -> Icons.Default.BrightnessAuto
-                                            AppThemeMode.DARK -> Icons.Default.DarkMode
-                                            AppThemeMode.LIGHT -> Icons.Default.LightMode
-                                        },
-                                        contentDescription = null,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                }
-                            )
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = AppThemeMode.entries.size)
+                            ) {
+                                Text(mode.title, style = MaterialTheme.typography.labelSmall)
+                            }
                         }
                     }
 
@@ -420,13 +407,16 @@ fun SettingsScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            listOf(5, 6, 7).forEach { days ->
-                                FilterChip(
+                        val dayOptions = listOf(5, 6, 7)
+                        SingleChoiceSegmentedButtonRow {
+                            dayOptions.forEachIndexed { index, days ->
+                                SegmentedButton(
                                     selected = targetDays == days,
                                     onClick = { viewModel.setTargetDaysPerWeek(days) },
-                                    label = { Text("${days}d") }
-                                )
+                                    shape = SegmentedButtonDefaults.itemShape(index = index, count = dayOptions.size)
+                                ) {
+                                    Text("${days}d", style = MaterialTheme.typography.labelSmall)
+                                }
                             }
                         }
                     }
@@ -577,13 +567,15 @@ fun SettingsScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            cacheOptions.forEach { hrs ->
-                                FilterChip(
+                        SingleChoiceSegmentedButtonRow {
+                            cacheOptions.forEachIndexed { index, hrs ->
+                                SegmentedButton(
                                     selected = cacheRetention == hrs,
                                     onClick = { viewModel.setCacheRetentionHours(hrs) },
-                                    label = { Text("${hrs}h") }
-                                )
+                                    shape = SegmentedButtonDefaults.itemShape(index = index, count = cacheOptions.size)
+                                ) {
+                                    Text("${hrs}h", style = MaterialTheme.typography.labelSmall)
+                                }
                             }
                         }
                     }
