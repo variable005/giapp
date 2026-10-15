@@ -1,7 +1,7 @@
 package com.example.gitpulse.ui
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.SnackbarHost
@@ -83,28 +83,15 @@ fun MainAppScreen(
                     )
                 } else {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        // Main Content Area with M3 Expressive Shared Axis Spring Transitions
+                        // Main Content Area with Butter-Smooth M3 Fade-Through Transitions
                         AnimatedContent(
                             targetState = currentTab,
                             transitionSpec = {
-                                val direction = targetState.ordinal > initialState.ordinal
-                                if (direction) {
-                                    (slideInHorizontally(
-                                        animationSpec = MotionTokens.springBouncy()
-                                    ) { it / 3 } + fadeIn(MotionTokens.springGentle())) togetherWith
-                                    (slideOutHorizontally(
-                                        animationSpec = MotionTokens.springBouncy()
-                                    ) { -it / 3 } + fadeOut(MotionTokens.springGentle()))
-                                } else {
-                                    (slideInHorizontally(
-                                        animationSpec = MotionTokens.springBouncy()
-                                    ) { -it / 3 } + fadeIn(MotionTokens.springGentle())) togetherWith
-                                    (slideOutHorizontally(
-                                        animationSpec = MotionTokens.springBouncy()
-                                    ) { it / 3 } + fadeOut(MotionTokens.springGentle()))
-                                }
+                                (fadeIn(animationSpec = tween(180, easing = LinearOutSlowInEasing)) +
+                                 scaleIn(initialScale = 0.96f, animationSpec = tween(180, easing = LinearOutSlowInEasing))) togetherWith
+                                (fadeOut(animationSpec = tween(100, easing = FastOutLinearInEasing)))
                             },
-                            label = "tab_transition",
+                            label = "tab_fade_through",
                             modifier = Modifier.fillMaxSize()
                         ) { targetTab ->
                             when (targetTab) {

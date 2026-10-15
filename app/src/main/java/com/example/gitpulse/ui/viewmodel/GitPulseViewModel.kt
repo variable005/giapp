@@ -17,9 +17,9 @@ sealed interface GitPulseUiState {
 }
 
 enum class AppThemeMode(val title: String) {
-    SYSTEM("Follow System"),
-    DARK("Dark Obsidian"),
-    LIGHT("Light Clean")
+    SYSTEM("System"),
+    DARK("Dark"),
+    LIGHT("Light")
 }
 
 data class SavedAccount(

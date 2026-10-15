@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.gitpulse.data.GitActivityItem
 import com.example.gitpulse.data.remote.GitPulseAggregateData
@@ -96,23 +97,23 @@ private fun DashboardContent(
         item {
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(28.dp),
+                shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
                 elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Box {
@@ -122,14 +123,14 @@ private fun DashboardContent(
                                         contentDescription = profile.name,
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier
-                                            .size(60.dp)
-                                            .clip(RoundedCornerShape(18.dp))
-                                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(18.dp))
+                                            .size(52.dp)
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
                                     )
                                 } else {
                                     Surface(
-                                        modifier = Modifier.size(60.dp),
-                                        shape = RoundedCornerShape(18.dp),
+                                        modifier = Modifier.size(52.dp),
+                                        shape = RoundedCornerShape(16.dp),
                                         color = MaterialTheme.colorScheme.surfaceContainerHigh
                                     ) {
                                         Box(contentAlignment = Alignment.Center) {
@@ -146,7 +147,7 @@ private fun DashboardContent(
                                     modifier = Modifier
                                         .align(Alignment.BottomEnd)
                                         .offset(x = 2.dp, y = 2.dp)
-                                        .size(14.dp)
+                                        .size(12.dp)
                                         .background(MaterialTheme.colorScheme.primary, CircleShape)
                                         .border(2.dp, MaterialTheme.colorScheme.surfaceContainer, CircleShape)
                                 )
@@ -181,8 +182,8 @@ private fun DashboardContent(
                         FilledTonalButton(
                             onClick = onSearchClick,
                             shape = CircleShape,
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                            modifier = Modifier.height(40.dp),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                            modifier = Modifier.height(36.dp),
                             colors = ButtonDefaults.filledTonalButtonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                                 contentColor = MaterialTheme.colorScheme.onSurface
@@ -192,9 +193,9 @@ private fun DashboardContent(
                                 imageVector = Icons.Default.SwapHoriz,
                                 contentDescription = "Switch User",
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(15.dp)
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "Switch",
                                 style = MaterialTheme.typography.labelMedium,
@@ -230,15 +231,15 @@ private fun DashboardContent(
         item {
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(28.dp),
+                shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
                 elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -250,9 +251,9 @@ private fun DashboardContent(
                             color = MaterialTheme.colorScheme.primaryContainer
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 PulsingStatusDot(color = MaterialTheme.colorScheme.onPrimaryContainer)
                                 Text(
@@ -264,21 +265,27 @@ private fun DashboardContent(
                             }
                         }
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Schedule,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Text(
-                                text = "Live GitHub Sync",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Schedule,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Text(
+                                    text = "Live Sync",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
 
@@ -301,21 +308,21 @@ private fun DashboardContent(
                             ) {
                                 AnimatedNumberCounter(
                                     count = profile.activeStreakDays,
-                                    style = MaterialTheme.typography.displayLarge,
+                                    style = MaterialTheme.typography.displayMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     text = "Days Streak",
-                                    style = MaterialTheme.typography.headlineSmall,
+                                    style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(bottom = 6.dp)
+                                    modifier = Modifier.padding(bottom = 4.dp)
                                 )
                             }
                         }
 
                         Surface(
-                            modifier = Modifier.size(56.dp),
-                            shape = RoundedCornerShape(18.dp),
+                            modifier = Modifier.size(48.dp),
+                            shape = RoundedCornerShape(16.dp),
                             color = MaterialTheme.colorScheme.tertiaryContainer,
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f))
                         ) {
@@ -324,7 +331,7 @@ private fun DashboardContent(
                                     imageVector = Icons.Default.Whatshot,
                                     contentDescription = "Streak Flame",
                                     tint = MaterialTheme.colorScheme.onTertiaryContainer,
-                                    modifier = Modifier.size(28.dp)
+                                    modifier = Modifier.size(24.dp)
                                 )
                             }
                         }
@@ -358,7 +365,7 @@ private fun DashboardContent(
                             progress = { progressAnimation },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(10.dp)
+                                .height(8.dp)
                                 .clip(CircleShape),
                             color = MaterialTheme.colorScheme.primary,
                             trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -782,7 +789,12 @@ fun RowScope.MetricTile(value: String, label: String, hasStar: Boolean = false) 
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 10.sp,
+                    letterSpacing = 0.sp
+                ),
+                maxLines = 1,
+                softWrap = false,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
