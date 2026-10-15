@@ -2,6 +2,7 @@ package com.example.gitpulse.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -21,10 +22,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.example.gitpulse.theme.*
+import com.example.gitpulse.ui.animation.MotionTokens
 
 enum class NavigationTab(val label: String, val icon: ImageVector) {
     HOME("Home", Icons.Default.Home),
@@ -56,8 +58,8 @@ fun FloatingBottomNav(
                 .fillMaxWidth()
                 .height(64.dp),
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            border = BorderStroke(1.dp, OutlineHigh),
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
             tonalElevation = 6.dp
         ) {
             Row(
@@ -71,14 +73,20 @@ fun FloatingBottomNav(
                     val isSelected = tab == currentTab
 
                     val animatedBgColor by animateColorAsState(
-                        targetValue = if (isSelected) PrimaryDeepContainer else Color.Transparent,
+                        targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
                         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
                         label = "tab_bg"
                     )
 
                     val animatedContentColor by animateColorAsState(
-                        targetValue = if (isSelected) PrimaryLightAccent else MaterialTheme.colorScheme.onSurfaceVariant,
+                        targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                         label = "tab_content_color"
+                    )
+
+                    val animatedScale by animateFloatAsState(
+                        targetValue = if (isSelected) 1.12f else 1.0f,
+                        animationSpec = MotionTokens.SpringBouncy,
+                        label = "tab_scale"
                     )
 
                     val interactionSource = remember { MutableInteractionSource() }
@@ -103,7 +111,9 @@ fun FloatingBottomNav(
                                 imageVector = tab.icon,
                                 contentDescription = tab.label,
                                 tint = animatedContentColor,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .scale(animatedScale)
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(

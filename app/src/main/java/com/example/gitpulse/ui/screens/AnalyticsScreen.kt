@@ -1,8 +1,9 @@
 package com.example.gitpulse.ui.screens
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,13 +19,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.gitpulse.data.LanguageStat
 import com.example.gitpulse.data.ShowcaseRepo
 import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.theme.*
+import com.example.gitpulse.ui.animation.AnimatedNumberCounter
+import com.example.gitpulse.ui.animation.MotionTokens
+import com.example.gitpulse.ui.animation.PulsingStatusDot
 import com.example.gitpulse.ui.viewmodel.GitPulseUiState
 
 @Composable
@@ -35,9 +39,7 @@ fun AnalyticsScreen(
 ) {
     when (uiState) {
         is GitPulseUiState.Loading -> {
-            Box(modifier = modifier.fillMaxSize().padding(top = 80.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = PrimaryEmerald)
-            }
+            LoadingAnalyticsSkeleton(modifier)
         }
         is GitPulseUiState.Error -> {
             Box(modifier = modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
@@ -61,7 +63,6 @@ private fun AnalyticsContent(
     modifier: Modifier = Modifier
 ) {
     val profile = data.profile
-    var selectedTimeframe by remember { mutableStateOf("All Time") }
 
     LazyColumn(
         modifier = modifier
@@ -97,18 +98,14 @@ private fun AnalyticsContent(
 
                 Surface(
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceVariant
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .background(PrimaryEmerald, CircleShape)
-                        )
+                        PulsingStatusDot(color = MaterialTheme.colorScheme.primary)
                         Text(
                             text = "Live Sync",
                             style = MaterialTheme.typography.labelSmall,
@@ -126,25 +123,23 @@ private fun AnalyticsContent(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Total Stars
                     TelemetryCard(
                         modifier = Modifier.weight(1f),
                         title = "Stars Received",
                         value = "${data.totalStars}",
                         badgeText = "Total repository stars",
-                        badgeColor = PrimaryEmerald,
+                        badgeColor = MaterialTheme.colorScheme.primary,
                         icon = Icons.Default.Star,
-                        iconTint = TertiaryAmber
+                        iconTint = MaterialTheme.colorScheme.tertiary
                     )
-                    // Repositories
                     TelemetryCard(
                         modifier = Modifier.weight(1f),
                         title = "Repositories",
                         value = "${profile.reposCount}",
                         badgeText = "Public repositories",
-                        badgeColor = PrimaryEmerald,
+                        badgeColor = MaterialTheme.colorScheme.primary,
                         icon = Icons.Default.Folder,
-                        iconTint = SecondaryEmerald
+                        iconTint = MaterialTheme.colorScheme.secondary
                     )
                 }
 
@@ -152,25 +147,23 @@ private fun AnalyticsContent(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Forks & Clones
                     TelemetryCard(
                         modifier = Modifier.weight(1f),
                         title = "Forks",
                         value = "${data.totalForks}",
                         badgeText = "Across all repos",
-                        badgeColor = SecondaryEmerald,
+                        badgeColor = MaterialTheme.colorScheme.secondary,
                         icon = Icons.AutoMirrored.Filled.CallSplit,
-                        iconTint = SecondaryEmerald
+                        iconTint = MaterialTheme.colorScheme.secondary
                     )
-                    // Followers
                     TelemetryCard(
                         modifier = Modifier.weight(1f),
                         title = "Followers",
                         value = profile.followersCount,
                         badgeText = "Active network",
-                        badgeColor = TertiaryAmber,
+                        badgeColor = MaterialTheme.colorScheme.tertiary,
                         icon = Icons.Default.People,
-                        iconTint = TertiaryAmber
+                        iconTint = MaterialTheme.colorScheme.tertiary
                     )
                 }
             }
@@ -178,11 +171,13 @@ private fun AnalyticsContent(
 
         // 3. Language Breakdown Section
         item {
-            Surface(
+            ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, OutlineBorder)
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
@@ -205,14 +200,13 @@ private fun AnalyticsContent(
                         )
                     }
 
-                    // Multi-Segment Solid Flat Progress Bar
                     if (data.languageStats.isNotEmpty()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(12.dp)
                                 .clip(CircleShape)
-                                .background(SurfaceContainerLowest),
+                                .background(MaterialTheme.colorScheme.surfaceContainerLowest),
                             horizontalArrangement = Arrangement.spacedBy(2.dp)
                         ) {
                             data.languageStats.forEach { lang ->
@@ -225,7 +219,6 @@ private fun AnalyticsContent(
                             }
                         }
 
-                        // Detailed Language Rows
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             data.languageStats.forEach { lang ->
                                 Row(
@@ -249,7 +242,7 @@ private fun AnalyticsContent(
                                         )
                                         Surface(
                                             shape = CircleShape,
-                                            color = MaterialTheme.colorScheme.surfaceVariant
+                                            color = MaterialTheme.colorScheme.surfaceContainerHigh
                                         ) {
                                             Text(
                                                 text = "${lang.reposCount} repos",
@@ -316,11 +309,13 @@ private fun AnalyticsContent(
 
         // 5. Telemetry Share Card
         item {
-            Surface(
+            ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, OutlineBorder)
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
@@ -339,16 +334,18 @@ private fun AnalyticsContent(
                         Text(
                             text = "Export Ready",
                             style = MaterialTheme.typography.labelSmall,
-                            color = PrimaryEmerald
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
 
-                    // Card Canvas
-                    Surface(
+                    // Inner Preview Canvas
+                    OutlinedCard(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(20.dp),
-                        color = SurfaceContainerLowest,
-                        border = BorderStroke(1.dp, OutlineBorder)
+                        colors = CardDefaults.outlinedCardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                     ) {
                         Column(
                             modifier = Modifier.padding(18.dp),
@@ -373,10 +370,10 @@ private fun AnalyticsContent(
                                         Surface(
                                             modifier = Modifier.size(36.dp),
                                             shape = CircleShape,
-                                            color = MaterialTheme.colorScheme.surfaceVariant
+                                            color = MaterialTheme.colorScheme.surfaceContainerHigh
                                         ) {
                                             Box(contentAlignment = Alignment.Center) {
-                                                Text(text = profile.name.take(2).uppercase(), color = PrimaryEmerald)
+                                                Text(text = profile.name.take(2).uppercase(), color = MaterialTheme.colorScheme.primary)
                                             }
                                         }
                                     }
@@ -397,7 +394,7 @@ private fun AnalyticsContent(
 
                                 Surface(
                                     shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.surfaceVariant
+                                    color = MaterialTheme.colorScheme.surfaceContainerHigh
                                 ) {
                                     Row(
                                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
@@ -407,7 +404,7 @@ private fun AnalyticsContent(
                                         Icon(
                                             imageVector = Icons.Default.Whatshot,
                                             contentDescription = null,
-                                            tint = TertiaryAmber,
+                                            tint = MaterialTheme.colorScheme.tertiary,
                                             modifier = Modifier.size(14.dp)
                                         )
                                         Text(
@@ -419,7 +416,6 @@ private fun AnalyticsContent(
                                 }
                             }
 
-                            // 3 Metric Blocks
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
@@ -451,25 +447,29 @@ private fun AnalyticsContent(
                                 Text(
                                     text = "Verified Auth",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = PrimaryEmerald
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
                         }
                     }
 
-                    // Share Button
                     Button(
                         onClick = onShareCard,
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryEmerald),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
                         shape = CircleShape
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Icon(imageVector = Icons.Default.Share, contentDescription = null, tint = OnPrimaryEmerald, modifier = Modifier.size(16.dp))
-                            Text(text = "Share Telemetry Card", color = OnPrimaryEmerald)
+                            Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Text(text = "Share Telemetry Card")
                         }
                     }
                 }
@@ -485,14 +485,16 @@ fun TelemetryCard(
     value: String,
     badgeText: String,
     badgeColor: Color,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     iconTint: Color
 ) {
-    Surface(
+    OutlinedCard(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, OutlineBorder)
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -511,7 +513,7 @@ fun TelemetryCard(
                 Box(
                     modifier = Modifier
                         .size(30.dp)
-                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -541,11 +543,13 @@ fun TelemetryCard(
 
 @Composable
 fun ShowcaseRepoCard(repo: ShowcaseRepo) {
-    Surface(
+    OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, OutlineBorder)
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(
             modifier = Modifier.padding(18.dp),
@@ -571,7 +575,7 @@ fun ShowcaseRepoCard(repo: ShowcaseRepo) {
                 Surface(
                     modifier = Modifier.size(32.dp),
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceVariant
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
@@ -618,7 +622,7 @@ fun ShowcaseRepoCard(repo: ShowcaseRepo) {
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
-                        tint = TertiaryAmber,
+                        tint = MaterialTheme.colorScheme.tertiary,
                         modifier = Modifier.size(14.dp)
                     )
                     Text(
@@ -647,7 +651,7 @@ fun ShowcaseRepoCard(repo: ShowcaseRepo) {
 
                 Surface(
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceVariant
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh
                 ) {
                     Text(
                         text = repo.license,
@@ -658,5 +662,39 @@ fun ShowcaseRepoCard(repo: ShowcaseRepo) {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun LoadingAnalyticsSkeleton(modifier: Modifier = Modifier) {
+    val shimmer = MotionTokens.rememberShimmerBrush()
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(top = 100.dp, start = 16.dp, end = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(40.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(shimmer)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(modifier = Modifier.weight(1f).height(110.dp).clip(RoundedCornerShape(20.dp)).background(shimmer))
+            Box(modifier = Modifier.weight(1f).height(110.dp).clip(RoundedCornerShape(20.dp)).background(shimmer))
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(shimmer)
+        )
     }
 }

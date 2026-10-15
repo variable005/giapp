@@ -13,8 +13,8 @@ import androidx.compose.ui.platform.LocalContext
 private val GitPulseDarkColorScheme = darkColorScheme(
     primary = PrimaryEmerald,
     onPrimary = OnPrimaryEmerald,
-    primaryContainer = PrimaryContainerEmerald,
-    onPrimaryContainer = OnPrimaryContainerEmerald,
+    primaryContainer = PrimaryDeepContainer,
+    onPrimaryContainer = PrimaryLightAccent,
     secondary = SecondaryEmerald,
     onSecondary = OnSecondaryEmerald,
     secondaryContainer = SecondaryContainerEmerald,
@@ -33,9 +33,24 @@ private val GitPulseDarkColorScheme = darkColorScheme(
     onSurface = OnSurface,
     surfaceVariant = SurfaceContainerHigh,
     onSurfaceVariant = OnSurfaceVariant,
+    surfaceContainerLowest = SurfaceContainerLowest,
+    surfaceContainerLow = SurfaceContainerLow,
+    surfaceContainer = SurfaceContainer,
+    surfaceContainerHigh = SurfaceContainerHigh,
+    surfaceContainerHighest = SurfaceContainerHighest,
     outline = OutlineBorder,
     outlineVariant = OutlineVariant,
     surfaceTint = PrimaryEmerald
+)
+
+private val GitPulseAmoledColorScheme = GitPulseDarkColorScheme.copy(
+    background = androidx.compose.ui.graphics.Color(0xFF000000),
+    surfaceContainerLowest = androidx.compose.ui.graphics.Color(0xFF000000),
+    surfaceContainerLow = androidx.compose.ui.graphics.Color(0xFF090D14),
+    surface = androidx.compose.ui.graphics.Color(0xFF10141D),
+    surfaceContainer = androidx.compose.ui.graphics.Color(0xFF10141D),
+    surfaceContainerHigh = androidx.compose.ui.graphics.Color(0xFF181E29),
+    surfaceContainerHighest = androidx.compose.ui.graphics.Color(0xFF222936)
 )
 
 private val GitPulseLightColorScheme = lightColorScheme(
@@ -61,6 +76,11 @@ private val GitPulseLightColorScheme = lightColorScheme(
     onSurface = LightOnSurface,
     surfaceVariant = LightSurfaceContainerLow,
     onSurfaceVariant = LightOnSurfaceVariant,
+    surfaceContainerLowest = LightSurfaceContainerLowest,
+    surfaceContainerLow = LightSurfaceContainerLow,
+    surfaceContainer = LightSurfaceContainer,
+    surfaceContainerHigh = LightSurfaceContainerHigh,
+    surfaceContainerHighest = LightSurfaceContainerHighest,
     outline = LightOutlineBorder,
     outlineVariant = LightOutlineBorder,
     surfaceTint = LightPrimary
@@ -69,7 +89,8 @@ private val GitPulseLightColorScheme = lightColorScheme(
 @Composable
 fun GitPulseTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Default to GitPulse custom emerald palette for branded feel
+    dynamicColor: Boolean = false,
+    amoled: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -77,6 +98,7 @@ fun GitPulseTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
+        darkTheme && amoled -> GitPulseAmoledColorScheme
         darkTheme -> GitPulseDarkColorScheme
         else -> GitPulseLightColorScheme
     }

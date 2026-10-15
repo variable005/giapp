@@ -1,5 +1,7 @@
 package com.example.gitpulse.ui.screens
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,7 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.gitpulse.data.MockData
 import com.example.gitpulse.theme.*
-import com.example.gitpulse.ui.viewmodel.GitPulseUiState
+import com.example.gitpulse.ui.animation.MotionTokens
+import com.example.gitpulse.ui.animation.PulsingStatusDot
 
 @Composable
 fun WatchlistCompareScreen(
@@ -56,11 +59,13 @@ fun WatchlistCompareScreen(
     ) {
         // 1. Profile Comparison Section
         item {
-            Surface(
+            ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, OutlineBorder)
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
@@ -73,13 +78,9 @@ fun WatchlistCompareScreen(
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .background(PrimaryEmerald, CircleShape)
-                            )
+                            PulsingStatusDot(color = MaterialTheme.colorScheme.primary)
                             Text(
                                 text = "Profile Comparison",
                                 style = MaterialTheme.typography.titleMedium,
@@ -88,7 +89,7 @@ fun WatchlistCompareScreen(
                         }
                         Surface(
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surfaceVariant
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh
                         ) {
                             Text(
                                 text = "Head-to-Head",
@@ -110,13 +111,13 @@ fun WatchlistCompareScreen(
                             Surface(
                                 modifier = Modifier.size(44.dp),
                                 shape = RoundedCornerShape(12.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(
                                         text = currentUsername.take(2).uppercase(),
                                         style = MaterialTheme.typography.labelMedium,
-                                        color = PrimaryEmerald
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
@@ -136,7 +137,7 @@ fun WatchlistCompareScreen(
                         // VS Indicator
                         Surface(
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surfaceVariant
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh
                         ) {
                             Text(
                                 text = "VS",
@@ -151,13 +152,13 @@ fun WatchlistCompareScreen(
                             Surface(
                                 modifier = Modifier.size(44.dp),
                                 shape = RoundedCornerShape(12.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(
                                         text = profileB.initials,
                                         style = MaterialTheme.typography.labelMedium,
-                                        color = TertiaryAmber
+                                        color = MaterialTheme.colorScheme.tertiary
                                     )
                                 }
                             }
@@ -184,7 +185,7 @@ fun WatchlistCompareScreen(
                             Text(
                                 text = "54% Velocity",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = PrimaryEmerald
+                                color = MaterialTheme.colorScheme.primary
                             )
                             Text(
                                 text = "Pace Momentum",
@@ -194,7 +195,7 @@ fun WatchlistCompareScreen(
                             Text(
                                 text = "46% Velocity",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = TertiaryAmber
+                                color = MaterialTheme.colorScheme.tertiary
                             )
                         }
 
@@ -203,11 +204,11 @@ fun WatchlistCompareScreen(
                                 .fillMaxWidth()
                                 .height(8.dp)
                                 .clip(CircleShape)
-                                .background(SurfaceContainerLowest),
+                                .background(MaterialTheme.colorScheme.surfaceContainerLowest),
                             horizontalArrangement = Arrangement.spacedBy(2.dp)
                         ) {
-                            Box(modifier = Modifier.weight(0.54f).fillMaxHeight().background(PrimaryEmerald))
-                            Box(modifier = Modifier.weight(0.46f).fillMaxHeight().background(TertiaryAmber))
+                            Box(modifier = Modifier.weight(0.54f).fillMaxHeight().background(MaterialTheme.colorScheme.primary))
+                            Box(modifier = Modifier.weight(0.46f).fillMaxHeight().background(MaterialTheme.colorScheme.tertiary))
                         }
                     }
 
@@ -218,21 +219,21 @@ fun WatchlistCompareScreen(
                             label = "Active Streak",
                             valB = profileB.activeStreak,
                             iconA = Icons.Default.Commit,
-                            tintA = PrimaryEmerald
+                            tintA = MaterialTheme.colorScheme.primary
                         )
                         ComparisonRow(
                             valA = profileA.annualCommits,
                             label = "2026 Commits",
                             valB = profileB.annualCommits,
                             iconA = Icons.Default.CalendarToday,
-                            tintA = PrimaryEmerald
+                            tintA = MaterialTheme.colorScheme.primary
                         )
                         ComparisonRow(
                             valA = profileA.longestStreak,
                             label = "Longest Streak",
                             valB = profileB.longestStreak,
                             hasTrophyB = true,
-                            tintB = TertiaryAmber
+                            tintB = MaterialTheme.colorScheme.tertiary
                         )
                     }
                 }
@@ -247,21 +248,11 @@ fun WatchlistCompareScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .background(SecondaryEmerald, CircleShape)
-                        )
-                        Text(
-                            text = "Accounts & Watchlist",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                    Text(
+                        text = "Accounts & Watchlist",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                     Text(
                         text = "${accountsList.size} Connected",
                         style = MaterialTheme.typography.labelSmall,
@@ -271,11 +262,16 @@ fun WatchlistCompareScreen(
 
                 accountsList.forEach { (usr, desc) ->
                     val isCurrent = usr.equals(currentUsername, ignoreCase = true)
-                    Surface(
+                    OutlinedCard(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(20.dp),
-                        color = MaterialTheme.colorScheme.surface,
-                        border = BorderStroke(1.dp, OutlineBorder)
+                        colors = CardDefaults.outlinedCardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            if (isCurrent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+                        )
                     ) {
                         Row(
                             modifier = Modifier.padding(16.dp),
@@ -289,13 +285,13 @@ fun WatchlistCompareScreen(
                                 Surface(
                                     modifier = Modifier.size(40.dp),
                                     shape = RoundedCornerShape(12.dp),
-                                    color = MaterialTheme.colorScheme.surfaceVariant
+                                    color = MaterialTheme.colorScheme.surfaceContainerHigh
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
                                         Text(
                                             text = usr.take(2).uppercase(),
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = if (isCurrent) PrimaryEmerald else MaterialTheme.colorScheme.onSurface
+                                            color = if (isCurrent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                                         )
                                     }
                                 }
@@ -313,12 +309,12 @@ fun WatchlistCompareScreen(
                                         if (isCurrent) {
                                             Surface(
                                                 shape = CircleShape,
-                                                color = PrimaryDeepContainer
+                                                color = MaterialTheme.colorScheme.primaryContainer
                                             ) {
                                                 Text(
                                                     text = "Active",
                                                     style = MaterialTheme.typography.labelSmall,
-                                                    color = PrimaryLightAccent,
+                                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                                 )
                                             }
@@ -332,117 +328,81 @@ fun WatchlistCompareScreen(
                                 }
                             }
 
-                            Surface(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .clickable { if (!isCurrent) onSwitchUser(usr) },
+                            FilledTonalButton(
+                                onClick = { if (!isCurrent) onSwitchUser(usr) },
                                 shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surfaceVariant
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                                colors = ButtonDefaults.filledTonalButtonColors(
+                                    containerColor = if (isCurrent) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = if (isCurrent) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             ) {
                                 Text(
                                     text = if (isCurrent) "Current" else "Switch",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = if (isCurrent) MaterialTheme.colorScheme.onSurface else PrimaryEmerald,
-                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                                    style = MaterialTheme.typography.labelSmall
                                 )
                             }
                         }
                     }
                 }
 
-                // Add Account Button
-                Surface(
+                FilledTonalButton(
+                    onClick = onAddAccountClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable { onAddAccountClick() },
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    border = BorderStroke(1.dp, OutlineBorder)
+                        .height(50.dp),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = null,
-                                tint = PrimaryEmerald,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Text(
-                                text = "Connect GitHub Account",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Connect Another GitHub Account")
                 }
             }
         }
 
-        // 3. Streak Safeguards Section
+        // 3. Streak Safeguards Card
         item {
-            Surface(
+            ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, OutlineBorder)
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .background(TertiaryAmber, CircleShape)
-                        )
-                        Text(
-                            text = "Streak Safeguards",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                    Text(
+                        text = "Streak Safeguards",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "Daily Push Warning",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
+                    ListItem(
+                        headlineContent = { Text("Daily Push Warning") },
+                        supportingContent = { Text("Alert if no contributions detected by cutoff") },
+                        trailingContent = {
+                            Switch(
+                                checked = dailyWarningEnabled,
+                                onCheckedChange = { dailyWarningEnabled = it }
                             )
-                            Text(
-                                text = "Alert if no contributions detected by cutoff",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Switch(
-                            checked = dailyWarningEnabled,
-                            onCheckedChange = { dailyWarningEnabled = it },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = OnPrimaryEmerald,
-                                checkedTrackColor = PrimaryEmerald
-                            )
-                        )
-                    }
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                    )
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
 
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(SurfaceContainerLowest)
+                            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
                             .padding(horizontal = 14.dp, vertical = 10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -466,138 +426,12 @@ fun WatchlistCompareScreen(
                         Text(
                             text = selectedCutoffTime,
                             style = MaterialTheme.typography.labelMedium,
-                            color = PrimaryEmerald
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
             }
         }
-
-        // 4. Privacy & Diagnostics
-        item {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, OutlineBorder)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    Text(
-                        text = "Diagnostics & Security",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        color = SurfaceContainerLowest
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(14.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Lock,
-                                    contentDescription = null,
-                                    tint = PrimaryEmerald,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Column {
-                                    Text(
-                                        text = "Hardware Encryption",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        text = "Keystore StrongBox",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                            Surface(shape = CircleShape, color = PrimaryDeepContainer) {
-                                Text(
-                                    text = "ACTIVE",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = PrimaryLightAccent,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    // Purge Cache Button
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                            .clip(CircleShape)
-                            .clickable { showPurgeDialog = true },
-                        shape = CircleShape,
-                        color = DangerRed
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.DeleteForever,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Text(
-                                    text = "Purge Cache & Reload",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = Color.White
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    if (showPurgeDialog) {
-        AlertDialog(
-            onDismissRequest = { showPurgeDialog = false },
-            title = {
-                Text(text = "Purge Local Cache?", style = MaterialTheme.typography.titleLarge)
-            },
-            text = {
-                Text(
-                    text = "This will clear local cache and re-query GitHub API from scratch.",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showPurgeDialog = false
-                        onPurgeCache()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = DangerRed)
-                ) {
-                    Text("Purge & Reload", color = Color.White)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showPurgeDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
     }
 }
 
@@ -610,14 +444,12 @@ fun ComparisonRow(
     tintA: Color = Color.Unspecified,
     iconB: androidx.compose.ui.graphics.vector.ImageVector? = null,
     tintB: Color = Color.Unspecified,
-    hasTrophyB: Boolean = false,
-    dotColorA: Color? = null,
-    dotColorB: Color? = null
+    hasTrophyB: Boolean = false
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        color = SurfaceContainerLowest
+        color = MaterialTheme.colorScheme.surfaceContainerLowest
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
@@ -628,9 +460,6 @@ fun ComparisonRow(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                if (dotColorA != null) {
-                    Box(modifier = Modifier.size(8.dp).background(dotColorA, CircleShape))
-                }
                 if (iconA != null) {
                     Icon(imageVector = iconA, contentDescription = null, tint = tintA, modifier = Modifier.size(14.dp))
                 }
@@ -657,10 +486,7 @@ fun ComparisonRow(
                     color = if (tintB != Color.Unspecified) tintB else MaterialTheme.colorScheme.onSurface
                 )
                 if (hasTrophyB) {
-                    Icon(imageVector = Icons.Default.EmojiEvents, contentDescription = null, tint = TertiaryAmber, modifier = Modifier.size(14.dp))
-                }
-                if (dotColorB != null) {
-                    Box(modifier = Modifier.size(8.dp).background(dotColorB, CircleShape))
+                    Icon(imageVector = Icons.Default.EmojiEvents, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp))
                 }
                 if (iconB != null) {
                     Icon(imageVector = iconB, contentDescription = null, tint = tintB, modifier = Modifier.size(14.dp))
@@ -669,4 +495,3 @@ fun ComparisonRow(
         }
     }
 }
-

@@ -1,5 +1,7 @@
 package com.example.gitpulse.ui.screens
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,11 +18,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.gitpulse.data.GitActivityItem
 import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.theme.*
+import com.example.gitpulse.ui.animation.AnimatedNumberCounter
+import com.example.gitpulse.ui.animation.MotionTokens
+import com.example.gitpulse.ui.animation.PulsingStatusDot
 import com.example.gitpulse.ui.viewmodel.GitPulseUiState
 
 @Composable
@@ -30,9 +36,7 @@ fun DayInspectorScreen(
 ) {
     when (uiState) {
         is GitPulseUiState.Loading -> {
-            Box(modifier = modifier.fillMaxSize().padding(top = 80.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = PrimaryEmerald)
-            }
+            LoadingDayInspectorSkeleton(modifier)
         }
         is GitPulseUiState.Error -> {
             Box(modifier = modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
@@ -50,14 +54,11 @@ private fun DayInspectorContent(
     data: GitPulseAggregateData,
     modifier: Modifier = Modifier
 ) {
-    var selectedTab by remember { mutableStateOf("Month Grid") }
     var selectedDay by remember { mutableIntStateOf(15) }
-    var selectedFilter by remember { mutableStateOf("All") }
     var includePrivate by remember { mutableStateOf(true) }
     var maskSensitive by remember { mutableStateOf(false) }
 
     val recentDays = data.contributions.takeLast(28)
-    val totalRecentActions = recentDays.sumOf { it.count }
 
     LazyColumn(
         modifier = modifier
@@ -73,11 +74,13 @@ private fun DayInspectorContent(
     ) {
         // 1. Month Calendar Header Card
         item {
-            Surface(
+            ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, OutlineBorder)
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
@@ -103,7 +106,7 @@ private fun DayInspectorContent(
 
                         Surface(
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surfaceVariant
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh
                         ) {
                             Text(
                                 text = "Active Sprint",
@@ -128,7 +131,7 @@ private fun DayInspectorContent(
                         }
                     }
 
-                    // 4 Weeks x 7 Days Grid
+                    // 4 Weeks x 7 Days Grid with Animated Spring Selection
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         for (w in 0..3) {
                             Row(
@@ -144,17 +147,24 @@ private fun DayInspectorContent(
                                     val dotColor = when {
                                         count == 0 -> Color.Transparent
                                         count < 3 -> SecondaryContainerEmerald
-                                        else -> PrimaryEmerald
+                                        else -> MaterialTheme.colorScheme.primary
                                     }
+
+                                    val scaleAnim by animateFloatAsState(
+                                        targetValue = if (isHighlighted) 1.08f else 1.0f,
+                                        animationSpec = MotionTokens.SpringBouncy,
+                                        label = "cell_scale"
+                                    )
 
                                     Surface(
                                         modifier = Modifier
                                             .size(40.dp)
+                                            .scale(scaleAnim)
                                             .clip(RoundedCornerShape(10.dp))
                                             .clickable { selectedDay = dayNum },
                                         shape = RoundedCornerShape(10.dp),
-                                        color = if (isHighlighted) SurfaceContainerHighest else SurfaceContainerLow,
-                                        border = if (isHighlighted) BorderStroke(1.5.dp, PrimaryEmerald) else null
+                                        color = if (isHighlighted) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surfaceContainerLow,
+                                        border = if (isHighlighted) BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary) else null
                                     ) {
                                         Column(
                                             modifier = Modifier.fillMaxSize(),
@@ -164,7 +174,7 @@ private fun DayInspectorContent(
                                             Text(
                                                 text = "$dayNum",
                                                 style = MaterialTheme.typography.labelMedium,
-                                                color = if (isHighlighted) PrimaryEmerald else MaterialTheme.colorScheme.onSurface
+                                                color = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                                             )
                                             Spacer(modifier = Modifier.height(2.dp))
                                             Box(
@@ -195,7 +205,7 @@ private fun DayInspectorContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(text = "Less", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Box(modifier = Modifier.size(10.dp).background(SurfaceContainerHighest, RoundedCornerShape(2.dp)))
+                            Box(modifier = Modifier.size(10.dp).background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(2.dp)))
                             Box(modifier = Modifier.size(10.dp).background(SecondaryContainerEmerald, RoundedCornerShape(2.dp)))
                             Box(modifier = Modifier.size(10.dp).background(PrimaryContainerEmerald, RoundedCornerShape(2.dp)))
                             Box(modifier = Modifier.size(10.dp).background(PrimaryEmerald, RoundedCornerShape(2.dp)))
@@ -208,11 +218,13 @@ private fun DayInspectorContent(
 
         // 2. Selected Day Hero Banner
         item {
-            Surface(
+            ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, OutlineBorder)
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
             ) {
                 Row(
                     modifier = Modifier.padding(20.dp),
@@ -226,13 +238,13 @@ private fun DayInspectorContent(
                         Surface(
                             modifier = Modifier.size(48.dp),
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surfaceVariant
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.FlashOn,
                                     contentDescription = null,
-                                    tint = PrimaryEmerald,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
@@ -253,10 +265,10 @@ private fun DayInspectorContent(
                     }
 
                     Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = "${(selectedDay * 3) % 8 + 1}",
+                        AnimatedNumberCounter(
+                            count = (selectedDay * 3) % 8 + 1,
                             style = MaterialTheme.typography.headlineLarge,
-                            color = PrimaryEmerald
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = "Actions Logged",
@@ -268,7 +280,7 @@ private fun DayInspectorContent(
             }
         }
 
-        // 3. Activity Stream Section
+        // 3. Activity Stream Section Header
         item {
             Text(
                 text = "Live Activity Stream",
@@ -283,11 +295,13 @@ private fun DayInspectorContent(
 
         // 4. Data Visibility & Privacy Settings Card
         item {
-            Surface(
+            OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, OutlineBorder)
+                colors = CardDefaults.outlinedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
@@ -310,63 +324,31 @@ private fun DayInspectorContent(
                         )
                     }
 
-                    // Switch 1: Include Private Contributions
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "Include Private Contributions",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
+                    ListItem(
+                        headlineContent = { Text("Include Private Contributions") },
+                        supportingContent = { Text("Render activity from private repositories") },
+                        trailingContent = {
+                            Switch(
+                                checked = includePrivate,
+                                onCheckedChange = { includePrivate = it }
                             )
-                            Text(
-                                text = "Render activity from private repositories",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Switch(
-                            checked = includePrivate,
-                            onCheckedChange = { includePrivate = it },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = OnPrimaryEmerald,
-                                checkedTrackColor = PrimaryEmerald
-                            )
-                        )
-                    }
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                    )
 
-                    HorizontalDivider(color = OutlineBorder, thickness = 1.dp)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
 
-                    // Switch 2: Mask Sensitive Repositories
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "Mask Sensitive Repositories",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
+                    ListItem(
+                        headlineContent = { Text("Mask Sensitive Repositories") },
+                        supportingContent = { Text("Obfuscate client project names in screenshots") },
+                        trailingContent = {
+                            Switch(
+                                checked = maskSensitive,
+                                onCheckedChange = { maskSensitive = it }
                             )
-                            Text(
-                                text = "Obfuscate client project names in screenshots",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Switch(
-                            checked = maskSensitive,
-                            onCheckedChange = { maskSensitive = it },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = OnPrimaryEmerald,
-                                checkedTrackColor = PrimaryEmerald
-                            )
-                        )
-                    }
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                    )
                 }
             }
         }
@@ -377,11 +359,13 @@ private fun DayInspectorContent(
 fun InspectorActivityItemCard(item: GitActivityItem, maskSensitive: Boolean) {
     val displayRepoName = if (maskSensitive) "confidential / masked-repo" else item.repoName
 
-    Surface(
+    OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, OutlineBorder)
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -399,7 +383,7 @@ fun InspectorActivityItemCard(item: GitActivityItem, maskSensitive: Boolean) {
                     Box(
                         modifier = Modifier
                             .size(24.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -412,7 +396,7 @@ fun InspectorActivityItemCard(item: GitActivityItem, maskSensitive: Boolean) {
                             tint = when (item.type) {
                                 com.example.gitpulse.data.ActivityType.PULL_REQUEST -> SecondaryEmerald
                                 com.example.gitpulse.data.ActivityType.REVIEW -> TertiaryAmber
-                                else -> PrimaryEmerald
+                                else -> MaterialTheme.colorScheme.primary
                             },
                             modifier = Modifier.size(14.dp)
                         )
@@ -444,7 +428,7 @@ fun InspectorActivityItemCard(item: GitActivityItem, maskSensitive: Boolean) {
                 if (item.commitHash != null) {
                     Surface(
                         shape = RoundedCornerShape(6.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh
                     ) {
                         Text(
                             text = item.commitHash,
@@ -458,10 +442,37 @@ fun InspectorActivityItemCard(item: GitActivityItem, maskSensitive: Boolean) {
                     Text(
                         text = item.statusText,
                         style = MaterialTheme.typography.labelSmall,
-                        color = PrimaryEmerald
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun LoadingDayInspectorSkeleton(modifier: Modifier = Modifier) {
+    val shimmer = MotionTokens.rememberShimmerBrush()
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(top = 100.dp, start = 16.dp, end = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(260.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(shimmer)
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(90.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(shimmer)
+        )
     }
 }

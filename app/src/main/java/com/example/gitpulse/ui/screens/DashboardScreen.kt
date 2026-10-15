@@ -1,5 +1,6 @@
 package com.example.gitpulse.ui.screens
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -25,6 +26,9 @@ import coil.compose.AsyncImage
 import com.example.gitpulse.data.GitActivityItem
 import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.theme.*
+import com.example.gitpulse.ui.animation.AnimatedNumberCounter
+import com.example.gitpulse.ui.animation.MotionTokens
+import com.example.gitpulse.ui.animation.PulsingStatusDot
 import com.example.gitpulse.ui.viewmodel.GitPulseUiState
 
 @Composable
@@ -82,11 +86,13 @@ private fun DashboardContent(
     ) {
         // 1. M3 Expressive Profile Hero Card
         item {
-            Surface(
+            ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(28.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, OutlineBorder)
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
@@ -110,13 +116,13 @@ private fun DashboardContent(
                                         modifier = Modifier
                                             .size(60.dp)
                                             .clip(RoundedCornerShape(18.dp))
-                                            .border(1.dp, OutlineBorder, RoundedCornerShape(18.dp))
+                                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(18.dp))
                                     )
                                 } else {
                                     Surface(
                                         modifier = Modifier.size(60.dp),
                                         shape = RoundedCornerShape(18.dp),
-                                        color = MaterialTheme.colorScheme.surfaceVariant
+                                        color = MaterialTheme.colorScheme.surfaceContainerHigh
                                     ) {
                                         Box(contentAlignment = Alignment.Center) {
                                             Text(
@@ -133,8 +139,8 @@ private fun DashboardContent(
                                         .align(Alignment.BottomEnd)
                                         .offset(x = 2.dp, y = 2.dp)
                                         .size(14.dp)
-                                        .background(PrimaryEmerald, CircleShape)
-                                        .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                        .border(2.dp, MaterialTheme.colorScheme.surfaceContainer, CircleShape)
                                 )
                             }
 
@@ -164,32 +170,27 @@ private fun DashboardContent(
                         }
 
                         // Switch Profile Button
-                        Surface(
-                            modifier = Modifier
-                                .height(36.dp)
-                                .clip(CircleShape)
-                                .clickable { onSearchClick() },
+                        FilledTonalButton(
+                            onClick = onSearchClick,
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = BorderStroke(1.dp, OutlineBorder)
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.height(36.dp),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            )
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.SwapHoriz,
-                                    contentDescription = "Switch User",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Text(
-                                    text = "Switch",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Default.SwapHoriz,
+                                contentDescription = "Switch User",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Switch",
+                                style = MaterialTheme.typography.labelSmall
+                            )
                         }
                     }
 
@@ -200,7 +201,7 @@ private fun DashboardContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    HorizontalDivider(color = OutlineBorder, thickness = 1.dp)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
 
                     // 4-Column Live Metric Counters
                     Row(
@@ -218,11 +219,13 @@ private fun DashboardContent(
 
         // 2. Live Flow Hero Streak Card
         item {
-            Surface(
+            ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(28.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, OutlineBorder)
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
@@ -235,18 +238,14 @@ private fun DashboardContent(
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surfaceVariant
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .background(PrimaryEmerald, CircleShape)
-                                )
+                                PulsingStatusDot(color = MaterialTheme.colorScheme.primary)
                                 Text(
                                     text = "ACTIVE • ${profile.commitsToday} COMMITS TODAY",
                                     style = MaterialTheme.typography.labelSmall,
@@ -273,7 +272,7 @@ private fun DashboardContent(
                         }
                     }
 
-                    // Main Streak Count + Flame
+                    // Main Streak Count with Animated Number Counter
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -290,8 +289,8 @@ private fun DashboardContent(
                                 verticalAlignment = Alignment.Bottom,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text(
-                                    text = "${profile.activeStreakDays}",
+                                AnimatedNumberCounter(
+                                    count = profile.activeStreakDays,
                                     style = MaterialTheme.typography.displayLarge,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -307,21 +306,21 @@ private fun DashboardContent(
                         Surface(
                             modifier = Modifier.size(54.dp),
                             shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = BorderStroke(1.dp, OutlineBorder)
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.Whatshot,
                                     contentDescription = "Streak Flame",
-                                    tint = PrimaryEmerald,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(28.dp)
                                 )
                             }
                         }
                     }
 
-                    // Milestone Progress Bar
+                    // Milestone Progress Bar with Spring Physics
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -340,7 +339,8 @@ private fun DashboardContent(
                         }
 
                         val progressAnimation by animateFloatAsState(
-                            targetValue = profile.goalPercentage / 100f,
+                            targetValue = (profile.goalPercentage / 100f).coerceIn(0f, 1f),
+                            animationSpec = MotionTokens.SpringBouncy,
                             label = "milestone_anim"
                         )
                         LinearProgressIndicator(
@@ -349,26 +349,28 @@ private fun DashboardContent(
                                 .fillMaxWidth()
                                 .height(8.dp)
                                 .clip(CircleShape),
-                            color = PrimaryEmerald,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.surfaceContainerHigh
                         )
                     }
                 }
             }
         }
 
-        // 3. Dual Active vs Peak Run Cards
+        // 3. Dual Active vs Peak Run Outlined Cards
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Active Run Card
-                Surface(
+                OutlinedCard(
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(24.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    border = BorderStroke(1.dp, OutlineBorder)
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.outlinedCardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    ),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
                     Column(
                         modifier = Modifier.padding(18.dp),
@@ -387,36 +389,39 @@ private fun DashboardContent(
                             Box(
                                 modifier = Modifier
                                     .size(30.dp)
-                                    .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                                    .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                                     contentDescription = null,
-                                    tint = PrimaryEmerald,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
                         }
-                        Text(
-                            text = "${profile.activeStreakDays} Days",
+                        AnimatedNumberCounter(
+                            count = profile.activeStreakDays,
                             style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurface,
+                            suffix = " Days"
                         )
                         Text(
                             text = "Live Active Status",
                             style = MaterialTheme.typography.labelSmall,
-                            color = PrimaryEmerald
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
 
                 // Peak Run Card
-                Surface(
+                OutlinedCard(
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(24.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    border = BorderStroke(1.dp, OutlineBorder)
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.outlinedCardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    ),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
                     Column(
                         modifier = Modifier.padding(18.dp),
@@ -435,21 +440,22 @@ private fun DashboardContent(
                             Box(
                                 modifier = Modifier
                                     .size(30.dp)
-                                    .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                                    .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.EmojiEvents,
                                     contentDescription = null,
-                                    tint = TertiaryAmber,
+                                    tint = MaterialTheme.colorScheme.tertiary,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
                         }
-                        Text(
-                            text = "${profile.longestStreakDays} Days",
+                        AnimatedNumberCounter(
+                            count = profile.longestStreakDays,
                             style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurface,
+                            suffix = " Days"
                         )
                         Text(
                             text = "Record Streak",
@@ -463,13 +469,15 @@ private fun DashboardContent(
 
         // 4. Annual Contributions Section
         item {
-            Surface(
+            ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onNavigateToInspector() },
-                shape = RoundedCornerShape(28.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, OutlineBorder)
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
@@ -497,20 +505,11 @@ private fun DashboardContent(
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             listOf("2026", "2025", "2024").forEach { year ->
                                 val isSelected = year == selectedYear
-                                Surface(
-                                    modifier = Modifier
-                                        .clip(CircleShape)
-                                        .clickable { selectedYear = year },
-                                    shape = CircleShape,
-                                    color = if (isSelected) PrimaryEmerald else MaterialTheme.colorScheme.surfaceVariant
-                                ) {
-                                    Text(
-                                        text = year,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = if (isSelected) OnPrimaryEmerald else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                                    )
-                                }
+                                FilterChip(
+                                    selected = isSelected,
+                                    onClick = { selectedYear = year },
+                                    label = { Text(year, style = MaterialTheme.typography.labelSmall) }
+                                )
                             }
                         }
                     }
@@ -586,7 +585,7 @@ private fun DashboardContent(
             }
         }
 
-        // 5. Recent Git Activity Stream
+        // 5. Recent Git Activity Stream Header
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -598,12 +597,9 @@ private fun DashboardContent(
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
-                    text = "View All",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { onNavigateToInspector() }
-                )
+                TextButton(onClick = onNavigateToInspector) {
+                    Text("View All", color = MaterialTheme.colorScheme.primary)
+                }
             }
         }
 
@@ -615,6 +611,8 @@ private fun DashboardContent(
 
 @Composable
 private fun LoadingDashboardSkeleton(modifier: Modifier = Modifier) {
+    val shimmerBrush = MotionTokens.rememberShimmerBrush()
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -622,30 +620,38 @@ private fun LoadingDashboardSkeleton(modifier: Modifier = Modifier) {
             .padding(top = 100.dp, start = 16.dp, end = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Surface(
-            modifier = Modifier.fillMaxWidth().height(180.dp),
-            shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant
-        ) {}
-        Surface(
-            modifier = Modifier.fillMaxWidth().height(160.dp),
-            shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant
-        ) {}
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(shimmerBrush)
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(160.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(shimmerBrush)
+        )
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Surface(
-                modifier = Modifier.weight(1f).height(110.dp),
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {}
-            Surface(
-                modifier = Modifier.weight(1f).height(110.dp),
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {}
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(110.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(shimmerBrush)
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(110.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(shimmerBrush)
+            )
         }
     }
 }
@@ -664,11 +670,12 @@ private fun ErrorDashboardState(
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
-        Surface(
+        ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surface,
-            border = BorderStroke(1.dp, OutlineBorder)
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
+            )
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
@@ -716,9 +723,9 @@ private fun ErrorDashboardState(
                         onClick = onRetry,
                         modifier = Modifier.weight(1f),
                         shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryEmerald)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Text("Retry", color = OnPrimaryEmerald)
+                        Text("Retry", color = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             }
@@ -742,7 +749,7 @@ fun MetricColumn(value: String, label: String, hasStar: Boolean = false) {
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = null,
-                    tint = TertiaryAmber,
+                    tint = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(14.dp)
                 )
             }
@@ -757,11 +764,13 @@ fun MetricColumn(value: String, label: String, hasStar: Boolean = false) {
 
 @Composable
 fun RecentActivityCard(item: GitActivityItem) {
-    Surface(
+    OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, OutlineBorder)
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -779,7 +788,7 @@ fun RecentActivityCard(item: GitActivityItem) {
                     Box(
                         modifier = Modifier
                             .size(26.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -792,7 +801,7 @@ fun RecentActivityCard(item: GitActivityItem) {
                             tint = when (item.type) {
                                 com.example.gitpulse.data.ActivityType.PULL_REQUEST -> SecondaryEmerald
                                 com.example.gitpulse.data.ActivityType.REVIEW -> TertiaryAmber
-                                else -> PrimaryEmerald
+                                else -> MaterialTheme.colorScheme.primary
                             },
                             modifier = Modifier.size(14.dp)
                         )
@@ -828,7 +837,7 @@ fun RecentActivityCard(item: GitActivityItem) {
                     if (item.commitHash != null) {
                         Surface(
                             shape = RoundedCornerShape(6.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh
                         ) {
                             Text(
                                 text = item.commitHash,
@@ -841,7 +850,7 @@ fun RecentActivityCard(item: GitActivityItem) {
                     if (item.prNumber != null) {
                         Surface(
                             shape = RoundedCornerShape(6.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh
                         ) {
                             Text(
                                 text = item.prNumber,
@@ -868,13 +877,13 @@ fun RecentActivityCard(item: GitActivityItem) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
-                            tint = PrimaryEmerald,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
                             text = item.statusText,
                             style = MaterialTheme.typography.labelSmall,
-                            color = PrimaryEmerald
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
