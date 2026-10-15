@@ -41,6 +41,8 @@ fun AnalyticsScreen(
     uiState: GitPulseUiState,
     onRetry: () -> Unit = {},
     onShareCard: () -> Unit = {},
+    onSelectRepo: (ShowcaseRepo) -> Unit = {},
+    onViewAllProjects: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
@@ -66,7 +68,9 @@ fun AnalyticsScreen(
             is GitPulseUiState.Success -> {
                 AnalyticsContent(
                     data = uiState.data,
-                    onShareCard = onShareCard
+                    onShareCard = onShareCard,
+                    onSelectRepo = onSelectRepo,
+                    onViewAllProjects = onViewAllProjects
                 )
             }
         }
@@ -77,8 +81,11 @@ fun AnalyticsScreen(
 private fun AnalyticsContent(
     data: GitPulseAggregateData,
     onShareCard: () -> Unit,
+    onSelectRepo: (ShowcaseRepo) -> Unit,
+    onViewAllProjects: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val haptic = LocalHapticFeedback.current
     val profile = data.profile
 
     LazyColumn(
@@ -337,16 +344,19 @@ private fun AnalyticsContent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
-                Text(
-                    text = "${data.showcaseRepos.size} shown",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                TextButton(
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onViewAllProjects()
+                    }
+                ) {
+                    Text("View All (${data.showcaseRepos.size})", color = MaterialTheme.colorScheme.primary)
+                }
             }
         }
 
         items(data.showcaseRepos) { repo ->
-            ShowcaseRepoCard(repo)
+            ShowcaseRepoCard(repo = repo, onClick = { onSelectRepo(repo) })
         }
 
         // 5. Telemetry Share Card
@@ -593,9 +603,18 @@ fun TelemetryCard(
 }
 
 @Composable
-fun ShowcaseRepoCard(repo: ShowcaseRepo) {
+fun ShowcaseRepoCard(
+    repo: ShowcaseRepo,
+    onClick: () -> Unit = {}
+) {
+    val haptic = LocalHapticFeedback.current
     OutlinedCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onClick()
+            },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer

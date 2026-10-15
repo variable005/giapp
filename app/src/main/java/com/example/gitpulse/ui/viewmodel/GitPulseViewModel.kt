@@ -232,4 +232,32 @@ class GitPulseViewModel(
         _cacheRetentionHours.value = 6
         loadUserData("variable005", null, currentYear)
     }
+
+    private val _readmeCache = mutableMapOf<String, String>()
+
+    suspend fun getRepoReadme(owner: String, repo: String): String {
+        val key = "$owner/$repo"
+        _readmeCache[key]?.let { return it }
+        val content = apiService.fetchRepoReadme(owner, repo, _personalToken.value)
+        _readmeCache[key] = content
+        return content
+    }
+
+    fun getProductReadme(context: android.content.Context): String {
+        return try {
+            context.assets.open("README.md").bufferedReader().use { it.readText() }
+        } catch (_: Exception) {
+            """
+# GitPulse
+
+GitPulse is a native Android application built with Jetpack Compose and Material Design 3 for tracking GitHub streaks, developer velocity, repository portfolios, and annual contribution heatmaps.
+
+> WARNING: ACTIVE DEVELOPMENT
+> This repository is currently under heavy active development. Architectural patterns, screen layouts, and API integrations are subject to rapid change without backward compatibility guarantees.
+
+## Overview
+GitPulse provides an expressive, fluid dashboard for software developers who want deep visibility into their open-source cadence and commit velocity.
+""".trimIndent()
+        }
+    }
 }
