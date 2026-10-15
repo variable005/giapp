@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-primary-fixed-variant": "#005236", "on-secondary-fixed": "#002114", "primary": "#4edea3", "on-secondary-container": "#00311f", "on-background": "#dce2f7", "on-tertiary-fixed": "#2a1700", "surface-variant": "#2e3545", "secondary-container": "#25a475", "background": "#0c1322", "surface-container-lowest": "#070e1d", "on-secondary": "#003825", "tertiary-fixed": "#ffddb8", "surface": "#0c1322", "surface-dim": "#0c1322", "inverse-surface": "#dce2f7", "surface-container": "#191f2f", "on-tertiary-container": "#523200", "primary-container": "#10b981", "surface-bright": "#323949", "outline": "#86948a", "tertiary": "#ffb95f", "surface-tint": "#4edea3", "tertiary-fixed-dim": "#ffb95f", "primary-fixed": "#6ffbbe", "inverse-primary": "#006c49", "on-primary-fixed": "#002113", "inverse-on-surface": "#293040", "surface-container-highest": "#2e3545", "on-surface": "#dce2f7", "error": "#ffb4ab", "secondary": "#68dba9", "secondary-fixed-dim": "#68dba9", "surface-container-high": "#232a3a", "on-error": "#690005", "on-tertiary": "#472a00", "error-container": "#93000a", "on-tertiary-fixed-variant": "#653e00", "secondary-fixed": "#85f8c4", "tertiary-container": "#e29100", "on-error-container": "#ffdad6", "primary-fixed-dim": "#4edea3", "on-secondary-fixed-variant": "#005137", "on-surface-variant": "#bbcabf", "on-primary-container": "#00422b", "outline-variant": "#3c4a42", "surface-container-low": "#141b2b", "on-primary": "#003824" }, "borderRadius": { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, "spacing": { "gutter": "1.25rem", "space-md": "1rem", "space-sm": "0.625rem", "margin": "1.5rem", "margin-mobile": "1.25rem", "gutter-mobile": "1rem", "space-lg": "1.5rem", "space-xs": "0.375rem", "space-xl": "2.25rem" }, "fontFamily": { "headline-md": ["Geist"], "body-md": ["Geist"], "body-lg": ["Geist"], "body-sm": ["Geist"], "headline-sm": ["Geist"], "label-md": ["JetBrains Mono"], "label-sm": ["JetBrains Mono"], "label-lg": ["JetBrains Mono"], "display-lg-mobile": ["Geist"], "headline-lg": ["Geist"], "display-lg": ["Geist"] }, "fontSize": { "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "22px", "letterSpacing": "0.01em", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "18px", "letterSpacing": "0.015em", "fontWeight": "400" }], "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "500" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "600" }], "label-lg": ["13px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "500" }], "display-lg-mobile": ["34px", { "lineHeight": "40px", "letterSpacing": "-0.025em", "fontWeight": "700" }], "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "display-lg": ["44px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "700" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#0c1322;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}body{min-height:max(884px,100dvh);}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-background font-body-md text-body-md text-on-surface antialiased min-h-screen flex flex-col selection:bg-primary selection:text-on-primary"><header class="fixed top-0 inset-x-0 z-50 bg-[#0c1322]/95 backdrop-blur-md pt-safe border-b border-[#232a3a]"><div class="flex items-center justify-between px-5 h-6 text-on-surface-variant font-label-sm text-label-sm"><span class="font-medium tracking-tight text-on-surface">09:41</span><div class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-on-surface-variant" fill="currentColor" viewbox="0 0 24 24"><path d="M2 22h20V2z"></path></svg><svg class="w-3.5 h-3.5 text-on-surface-variant" fill="currentColor" viewbox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0 0 12 4z"></path></svg><svg class="w-3.5 h-3.5 text-on-surface-variant" fill="currentColor" viewbox="0 0 24 24"><path d="M17 4h-3V2h-4v2H7v18h10V4z"></path></svg></div></div><div class="h-16 px-5 flex items-center justify-between gap-3"><div class="flex items-center gap-2.5"><div class="w-9 h-9 rounded-xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center"><svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><path d="M6 3v12"></path><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path></svg></div><div class="flex flex-col"><div class="flex items-center gap-2"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface font-semibold">GitPulse</span><span class="w-2 h-2 rounded-full bg-primary ring-2 ring-primary/20"></span></div><span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Dashboard &amp; Live Streak</span></div></div><div class="flex items-center gap-2.5"><button aria-label="Notifications" class="w-11 h-11 flex items-center justify-center rounded-full bg-surface-container border border-outline-variant/30 text-on-surface-variant active:bg-surface-container-high active:text-on-surface transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></button><div class="relative flex items-center justify-center"><div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/50 flex items-center justify-center font-label-md text-label-md text-primary font-semibold">GP</div><span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-primary border-2 border-background"></span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-28 bg-background"><div class="flex flex-col w-full px-5 pb-28 gap-6">
+<!-- Profile Card -->
+<section class="w-full bg-surface-container rounded-3xl p-6 flex flex-col gap-5">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img class="w-16 h-16 rounded-2xl object-cover" data-alt="Modern studio headshot portrait of software engineer Alex Chen wearing dark tech minimalist clothes, soft studio key lighting, clean navy backdrop, professional developer profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWiqkbSL2Fg5oaI1XvozpRrY6-4m6e3RH_v7ng9wFfsLcjWRx0USqwYCciWweNEPre6TY2NMqxow48WQoPsTRpQWuYCm_Soml6xvl_BRIvzMBmzLJ3spzDZRubqw9SlGq2aQeCRpaeSbWQUs5mkykhlUJL3bkvFZ-YDAXHEiXf5rI5MRD3hhEKvGq2dreGWtXxIBdNd1_5BlP_f1XyfQ5gYm8DH73yPYL9r35OWjGo-sy-YB5GwQ"/>
+<span class="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full border-2 border-surface-container"></span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<h1 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight truncate">Alex Chen</h1>
+<svg class="w-4 h-4 text-primary shrink-0" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
+</svg>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">@alexchen.dev</span>
+</div>
+</div>
+<button class="h-10 px-4 rounded-full bg-surface-container-high text-on-surface font-label-md text-label-md active:bg-surface-bright transition-colors flex items-center gap-2">
+<svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Edit</span>
+</button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+      Staff Systems Architect. Specializing in high-throughput distributed state machines, async Rust runtimes, and local-first databases.
+    </p>
+<!-- Metrics Bar -->
+<div class="grid grid-cols-4 gap-2 pt-2 border-t border-outline-variant/30">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">42</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Repos</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">1.8k</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Followers</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">384</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Following</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">3.4k</span>
+<svg class="w-3.5 h-3.5 text-tertiary" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path>
+</svg>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Stars</span>
+</div>
+</div>
+</section>
+<!-- Live Streak Hero Card -->
+<section class="w-full bg-surface-container rounded-3xl p-6 flex flex-col gap-6 relative">
+<div class="flex items-center justify-between">
+<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-high">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-label-sm text-label-sm text-primary font-medium tracking-wide uppercase">Active • 4 Commits Today</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="10"></circle>
+<polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+<span>Synced 6m ago</span>
+</div>
+</div>
+<div class="flex items-end justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest font-semibold">Current Flow</span>
+<div class="flex items-baseline gap-3 mt-1">
+<span class="font-display-lg-mobile text-display-lg-mobile text-on-surface font-bold">48</span>
+<span class="font-headline-sm text-headline-sm text-on-surface-variant font-medium">Days Streak</span>
+</div>
+</div>
+<div class="w-14 h-14 rounded-2xl bg-surface-container-high flex items-center justify-center shrink-0">
+<svg class="w-7 h-7 text-primary" fill="currentColor" viewbox="0 0 24 24">
+<path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.61 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"></path>
+</svg>
+</div>
+</div>
+<!-- Milestone Progress -->
+<div class="flex flex-col gap-2 pt-2">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface-variant">Milestone Progress</span>
+<span class="text-primary font-semibold">Next goal: 50 Days (96%)</span>
+</div>
+<div class="w-full h-2.5 rounded-full bg-surface-container-high overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 96%"></div>
+</div>
+</div>
+</section>
+<!-- Side-by-side Run Statistics -->
+<section class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container rounded-3xl p-5 flex flex-col justify-between h-36">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Active Run</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center">
+<svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+<polyline points="17 6 23 6 23 12"></polyline>
+</svg>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-on-surface font-bold">48 Days</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Nov 23 – Present</span>
+</div>
+</div>
+<div class="bg-surface-container rounded-3xl p-5 flex flex-col justify-between h-36">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">All-Time Peak</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center">
+<svg class="w-4 h-4 text-tertiary" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="8" r="7"></circle>
+<polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+</svg>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-on-surface font-bold">114 Days</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">May – Aug 2024</span>
+</div>
+</div>
+</section>
+<!-- Annual Contribution Heatmap -->
+<section class="w-full bg-surface-container rounded-3xl p-6 flex flex-col gap-5">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Contributions</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">1,482 commits in the last year</span>
+</div>
+<!-- Year Selector Chips -->
+<div class="inline-flex p-1 rounded-full bg-surface-container-high gap-1" id="yearSelector">
+<button class="px-3 py-1 rounded-full font-label-sm text-label-sm bg-primary text-on-primary font-semibold transition-all">2025</button>
+<button class="px-3 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-all">2024</button>
+<button class="px-3 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-all">2023</button>
+</div>
+</div>
+<!-- Scalable Heatmap Canvas Mockup (52 columns / 7 rows) -->
+<div class="w-full overflow-x-auto pb-2 scrollbar-none">
+<div class="min-w-[540px] flex flex-col gap-1.5">
+<div class="flex justify-between text-on-surface-variant font-label-sm text-label-sm px-1 mb-1">
+<span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Nov</span><span>Dec</span>
+</div>
+<div class="grid grid-flow-col grid-rows-7 gap-1">
+<!-- Sampled 52-week micro blocks generated via clean CSS tokens -->
+<!-- Col 1 to 4: Slate base -->
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20"></span>
+</div>
+</div>
+</div>
+<!-- Heatmap Meta & Legend -->
+<div class="flex items-center justify-between pt-2 border-t border-outline-variant/30 text-on-surface-variant font-label-sm text-label-sm">
+<div class="flex items-center gap-2">
+<span>Daily Avg:</span>
+<span class="text-on-surface font-semibold">4.8 commits/day</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span>Less</span>
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-variant inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/20 inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/40 inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary/70 inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-sm bg-primary inline-block"></span>
+<span>More</span>
+</div>
+</div>
+</section>
+<!-- Recent Git Activity -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between px-1">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Recent Git Activity</h2>
+<a class="font-label-md text-label-md text-primary font-medium hover:underline" href="#">View All</a>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Activity Item 1 -->
+<div class="bg-surface-container rounded-3xl p-5 flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 min-w-0">
+<div class="w-7 h-7 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0">
+<svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="4"></circle>
+<line x1="1.05" x2="7" y1="12" y2="12"></line>
+<line x1="17.01" x2="22.96" y1="12" y2="12"></line>
+</svg>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">alexchen/distributed-kv</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant shrink-0">18m ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface font-normal">
+          raft: optimize election timeout backoff curve for high-latency clusters
+        </p>
+<div class="flex items-center justify-between pt-1">
+<div class="inline-flex items-center gap-2">
+<span class="font-label-sm text-label-sm px-2.5 py-1 rounded-md bg-surface-container-high text-primary font-mono">b78f4e2</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">main</span>
+</div>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<polyline points="20 6 9 17 4 12"></polyline>
+</svg>
+            Passed
+          </span>
+</div>
+</div>
+<!-- Activity Item 2 -->
+<div class="bg-surface-container rounded-3xl p-5 flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 min-w-0">
+<div class="w-7 h-7 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0">
+<svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="18" cy="18" r="3"></circle>
+<circle cx="6" cy="6" r="3"></circle>
+<path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
+<line x1="6" x2="6" y1="9" y2="21"></line>
+</svg>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">rust-lang/cargo</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant shrink-0">2h ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface font-normal">
+          feat: implement speculative dependency resolution caching in resolver v3
+        </p>
+<div class="flex items-center justify-between pt-1">
+<div class="inline-flex items-center gap-2">
+<span class="font-label-sm text-label-sm px-2.5 py-1 rounded-md bg-surface-container-high text-secondary font-mono">#14289</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">PR Opened</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+            3 reviewers assigned
+          </span>
+</div>
+</div>
+<!-- Activity Item 3 -->
+<div class="bg-surface-container rounded-3xl p-5 flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 min-w-0">
+<div class="w-7 h-7 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0">
+<svg class="w-4 h-4 text-tertiary" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="4"></circle>
+<line x1="1.05" x2="7" y1="12" y2="12"></line>
+<line x1="17.01" x2="22.96" y1="12" y2="12"></line>
+</svg>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">supabase/realtime</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant shrink-0">5h ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface font-normal">
+          fix: reconnect backpressure on WebSocket drop during node migration
+        </p>
+<div class="flex items-center justify-between pt-1">
+<div class="inline-flex items-center gap-2">
+<span class="font-label-sm text-label-sm px-2.5 py-1 rounded-md bg-surface-container-high text-primary font-mono">92c1a8e</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">staging</span>
+</div>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<polyline points="20 6 9 17 4 12"></polyline>
+</svg>
+            Merged
+          </span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<script>
+  // Simple interactive year selector for heatmap view
+  const yearContainer = document.getElementById('yearSelector');
+  if (yearContainer) {
+    const buttons = yearContainer.querySelectorAll('button');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => {
+          b.className = 'px-3 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-all';
+        });
+        btn.className = 'px-3 py-1 rounded-full font-label-sm text-label-sm bg-primary text-on-primary font-semibold transition-all';
+      });
+    });
+  }
+</script></main><div class="fixed bottom-0 inset-x-0 z-50 pointer-events-none pb-safe flex flex-col items-center"><nav class="pointer-events-auto mb-3 mx-5 w-[calc(100%-2.5rem)] max-w-md h-16 rounded-full bg-[#131b2b] border border-outline-variant/40 px-2 flex items-center justify-around" data-active-classes="bg-primary/20 text-primary font-semibold"><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-3 rounded-full text-on-surface-variant transition-colors duration-150 active:scale-95" data-path="dashboard" href="#"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg><span class="font-label-sm text-label-sm mt-0.5">Home</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-3 rounded-full text-on-surface-variant transition-colors duration-150 active:scale-95" data-path="day-inspector" href="#"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="18" rx="2" ry="2" width="18" x="3" y="4"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg><span class="font-label-sm text-label-sm mt-0.5">Inspector</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-3 rounded-full text-on-surface-variant transition-colors duration-150 active:scale-95" data-path="analytics" href="#"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg><span class="font-label-sm text-label-sm mt-0.5">Analytics</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-3 rounded-full text-on-surface-variant transition-colors duration-150 active:scale-95" data-path="compare" href="#"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span class="font-label-sm text-label-sm mt-0.5">Compare</span></a></nav><div class="h-3 flex items-center justify-center w-full"><span class="w-28 h-1 bg-surface-bright rounded-full opacity-50"></span></div></div></body></html>

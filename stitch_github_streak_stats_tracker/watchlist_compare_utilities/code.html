@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-primary-fixed-variant": "#005236", "on-secondary-fixed": "#002114", "primary": "#4edea3", "on-secondary-container": "#00311f", "on-background": "#dce2f7", "on-tertiary-fixed": "#2a1700", "surface-variant": "#2e3545", "secondary-container": "#25a475", "background": "#0c1322", "surface-container-lowest": "#070e1d", "on-secondary": "#003825", "tertiary-fixed": "#ffddb8", "surface": "#0c1322", "surface-dim": "#0c1322", "inverse-surface": "#dce2f7", "surface-container": "#191f2f", "on-tertiary-container": "#523200", "primary-container": "#10b981", "surface-bright": "#323949", "outline": "#86948a", "tertiary": "#ffb95f", "surface-tint": "#4edea3", "tertiary-fixed-dim": "#ffb95f", "primary-fixed": "#6ffbbe", "inverse-primary": "#006c49", "on-primary-fixed": "#002113", "inverse-on-surface": "#293040", "surface-container-highest": "#2e3545", "on-surface": "#dce2f7", "error": "#ffb4ab", "secondary": "#68dba9", "secondary-fixed-dim": "#68dba9", "surface-container-high": "#232a3a", "on-error": "#690005", "on-tertiary": "#472a00", "error-container": "#93000a", "on-tertiary-fixed-variant": "#653e00", "secondary-fixed": "#85f8c4", "tertiary-container": "#e29100", "on-error-container": "#ffdad6", "primary-fixed-dim": "#4edea3", "on-secondary-fixed-variant": "#005137", "on-surface-variant": "#bbcabf", "on-primary-container": "#00422b", "outline-variant": "#3c4a42", "surface-container-low": "#141b2b", "on-primary": "#003824" }, "borderRadius": { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, "spacing": { "gutter": "1.25rem", "space-md": "1rem", "space-sm": "0.625rem", "margin": "1.5rem", "margin-mobile": "1.25rem", "gutter-mobile": "1rem", "space-lg": "1.5rem", "space-xs": "0.375rem", "space-xl": "2.25rem" }, "fontFamily": { "headline-md": ["Geist"], "body-md": ["Geist"], "body-lg": ["Geist"], "body-sm": ["Geist"], "headline-sm": ["Geist"], "label-md": ["JetBrains Mono"], "label-sm": ["JetBrains Mono"], "label-lg": ["JetBrains Mono"], "display-lg-mobile": ["Geist"], "headline-lg": ["Geist"], "display-lg": ["Geist"] }, "fontSize": { "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "22px", "letterSpacing": "0.01em", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "18px", "letterSpacing": "0.015em", "fontWeight": "400" }], "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "500" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "600" }], "label-lg": ["13px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "500" }], "display-lg-mobile": ["34px", { "lineHeight": "40px", "letterSpacing": "-0.025em", "fontWeight": "700" }], "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "display-lg": ["44px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "700" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#0c1322;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}body{min-height:max(884px,100dvh);}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-background font-body-md text-body-md text-on-surface antialiased min-h-screen flex flex-col selection:bg-primary selection:text-on-primary"><header class="fixed top-0 inset-x-0 z-50 bg-[#0c1322]/95 backdrop-blur-md pt-safe border-b border-[#232a3a]"><div class="flex items-center justify-between px-5 h-6 text-on-surface-variant font-label-sm text-label-sm"><span class="font-medium tracking-tight text-on-surface">09:41</span><div class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-on-surface-variant" fill="currentColor" viewbox="0 0 24 24"><path d="M2 22h20V2z"></path></svg><svg class="w-3.5 h-3.5 text-on-surface-variant" fill="currentColor" viewbox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0 0 12 4z"></path></svg><svg class="w-3.5 h-3.5 text-on-surface-variant" fill="currentColor" viewbox="0 0 24 24"><path d="M17 4h-3V2h-4v2H7v18h10V4z"></path></svg></div></div><div class="h-16 px-5 flex items-center justify-between gap-3"><div class="flex items-center gap-2.5"><div class="w-9 h-9 rounded-xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center"><svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><path d="M6 3v12"></path><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path></svg></div><div class="flex flex-col"><div class="flex items-center gap-2"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface font-semibold">GitPulse</span><span class="w-2 h-2 rounded-full bg-primary ring-2 ring-primary/20"></span></div><span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Watchlist, Compare &amp; Utilities</span></div></div><div class="flex items-center gap-2.5"><button aria-label="Notifications" class="w-11 h-11 flex items-center justify-center rounded-full bg-surface-container border border-outline-variant/30 text-on-surface-variant active:bg-surface-container-high active:text-on-surface transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></button><div class="relative flex items-center justify-center"><div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/50 flex items-center justify-center font-label-md text-label-md text-primary font-semibold">GP</div><span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-primary border-2 border-background"></span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-28 bg-background"><div class="flex flex-col w-full px-5 py-4 space-y-6">
+<!-- Section 1: Side-by-Side Comparison -->
+<section class="flex flex-col space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Profile Comparison</h2>
+</div>
+<span class="font-label-sm text-label-sm px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-medium">Head-to-Head</span>
+</div>
+<!-- Dual Profile Comparison Card -->
+<div class="w-full bg-surface-container rounded-3xl p-5 flex flex-col space-y-5">
+<!-- Avatars & Handles Header -->
+<div class="grid grid-cols-2 gap-4 items-center">
+<!-- Alex Chen -->
+<div class="flex flex-col items-center text-center space-y-2">
+<div class="relative">
+<div class="w-14 h-14 rounded-2xl bg-surface-container-highest flex items-center justify-center font-headline-sm text-headline-sm text-primary font-bold overflow-hidden">
+<span class="font-label-lg text-label-lg text-primary">AC</span>
+</div>
+<span class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-primary rounded-full"></span>
+</div>
+<div class="min-w-0 w-full">
+<p class="font-body-md text-body-md font-semibold text-on-surface truncate">Alex Chen</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant font-mono truncate">@alexchen</p>
+</div>
+</div>
+<!-- Sarah Lin -->
+<div class="flex flex-col items-center text-center space-y-2">
+<div class="relative">
+<div class="w-14 h-14 rounded-2xl bg-surface-container-highest flex items-center justify-center font-headline-sm text-headline-sm text-tertiary font-bold overflow-hidden">
+<span class="font-label-lg text-label-lg text-tertiary">SL</span>
+</div>
+<span class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-tertiary rounded-full"></span>
+</div>
+<div class="min-w-0 w-full">
+<p class="font-body-md text-body-md font-semibold text-on-surface truncate">Sarah Lin</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant font-mono truncate">@sarah-codes</p>
+</div>
+</div>
+</div>
+<!-- Pace Momentum Solid Bar -->
+<div class="flex flex-col space-y-1.5 pt-1">
+<div class="flex justify-between items-center font-label-sm text-label-sm">
+<span class="text-primary font-medium">54% Velocity</span>
+<span class="text-on-surface-variant font-medium tracking-tight">Pace Momentum</span>
+<span class="text-tertiary font-medium">46% Velocity</span>
+</div>
+<div class="h-2 w-full bg-surface-container-lowest rounded-full flex overflow-hidden">
+<div class="h-full bg-primary" style="width: 54%;"></div>
+<div class="h-full bg-tertiary" style="width: 46%;"></div>
+</div>
+</div>
+<!-- Metric Comparison Rows -->
+<div class="flex flex-col space-y-2 pt-2">
+<!-- Active Streak Row -->
+<div class="flex items-center justify-between p-3 rounded-2xl bg-surface-container-low">
+<div class="flex items-center space-x-1.5">
+<svg class="w-4 h-4 text-primary shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 2v20m10-10H2" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-label-md text-label-md font-bold text-primary">48d</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Active Streak</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">32d</span>
+</div>
+<!-- 2024 Contributions -->
+<div class="flex items-center justify-between p-3 rounded-2xl bg-surface-container-low">
+<div class="flex items-center space-x-1.5">
+<svg class="w-4 h-4 text-primary shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<rect height="18" rx="2" width="18" x="3" y="3"></rect>
+<path d="M3 9h18M9 21V9"></path>
+</svg>
+<span class="font-label-md text-label-md font-bold text-primary">1,429</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">2024 Commits</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">1,288</span>
+</div>
+<!-- Longest Streak -->
+<div class="flex items-center justify-between p-3 rounded-2xl bg-surface-container-low">
+<span class="font-label-md text-label-md font-semibold text-on-surface">114d</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Longest Streak</span>
+<div class="flex items-center space-x-1.5">
+<span class="font-label-md text-label-md font-bold text-tertiary">142d</span>
+<!-- Trophy SVG Mark for Leader -->
+<svg class="w-4 h-4 text-tertiary shrink-0" fill="currentColor" viewbox="0 0 24 24">
+<path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H8v2h8v-2h-3v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"></path>
+</svg>
+</div>
+</div>
+<!-- Top Language -->
+<div class="flex items-center justify-between p-3 rounded-2xl bg-surface-container-low">
+<div class="flex items-center space-x-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary-container"></span>
+<span class="font-label-sm text-label-sm font-medium text-on-surface">TypeScript</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Primary Stack</span>
+<div class="flex items-center space-x-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary-container"></span>
+<span class="font-label-sm text-label-sm font-medium text-on-surface">Rust</span>
+</div>
+</div>
+<!-- Stargazers -->
+<div class="flex items-center justify-between p-3 rounded-2xl bg-surface-container-low">
+<div class="flex items-center space-x-1.5">
+<svg class="w-4 h-4 text-primary shrink-0" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path>
+</svg>
+<span class="font-label-md text-label-md font-bold text-primary">842</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Public Stars</span>
+<div class="flex items-center space-x-1.5">
+<span class="font-label-md text-label-md font-semibold text-on-surface">619</span>
+<svg class="w-4 h-4 text-on-surface-variant shrink-0" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Multi-Account & Watchlist -->
+<section class="flex flex-col space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Accounts &amp; Watchlist</h2>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">4 Connected</span>
+</div>
+<!-- Account List -->
+<div class="flex flex-col space-y-2.5">
+<!-- Item 1: Active Primary Account -->
+<div class="w-full bg-surface-container p-4 rounded-3xl flex items-center justify-between">
+<div class="flex items-center space-x-3 min-w-0">
+<div class="w-10 h-10 rounded-2xl bg-surface-container-highest flex items-center justify-center text-primary font-bold shrink-0">
+<span class="font-label-sm text-label-sm">AC</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center space-x-1.5">
+<p class="font-body-md text-body-md font-semibold text-on-surface truncate">Alex Chen</p>
+<span class="px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm">Active</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant truncate">alex-personal • 48d streak</p>
+</div>
+</div>
+<button class="px-3.5 py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold active:bg-surface-bright transition-colors" type="button">
+          Current
+        </button>
+</div>
+<!-- Item 2: SSO Enterprise Account -->
+<div class="w-full bg-surface-container p-4 rounded-3xl flex items-center justify-between">
+<div class="flex items-center space-x-3 min-w-0">
+<div class="w-10 h-10 rounded-2xl bg-surface-container-highest flex items-center justify-center text-on-surface font-bold shrink-0">
+<svg class="w-5 h-5 text-on-surface-variant" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<rect height="14" rx="2" width="20" x="2" y="7"></rect>
+<path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+</svg>
+</div>
+<div class="min-w-0">
+<div class="flex items-center space-x-1.5">
+<p class="font-body-md text-body-md font-semibold text-on-surface truncate">alex-work-corp</p>
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">SSO</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant truncate">SAML 2.0 • Synced 12m ago</p>
+</div>
+</div>
+<button class="px-3.5 py-1.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold active:bg-surface-bright transition-colors" type="button">
+          Switch
+        </button>
+</div>
+<!-- Item 3: Sarah Lin (Watchlist) -->
+<div class="w-full bg-surface-container p-4 rounded-3xl flex items-center justify-between">
+<div class="flex items-center space-x-3 min-w-0">
+<div class="w-10 h-10 rounded-2xl bg-surface-container-highest flex items-center justify-center text-tertiary font-bold shrink-0">
+<span class="font-label-sm text-label-sm">SL</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center space-x-1.5">
+<p class="font-body-md text-body-md font-semibold text-on-surface truncate">sarah-codes</p>
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">Peer</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant truncate">32d streak • 1.2k commits</p>
+</div>
+</div>
+<button class="px-3.5 py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold active:bg-surface-bright transition-colors" type="button">
+          Inspect
+        </button>
+</div>
+<!-- Item 4: Linus Torvalds (Watchlist) -->
+<div class="w-full bg-surface-container p-4 rounded-3xl flex items-center justify-between">
+<div class="flex items-center space-x-3 min-w-0">
+<div class="w-10 h-10 rounded-2xl bg-surface-container-highest flex items-center justify-center text-on-surface font-bold shrink-0">
+<span class="font-label-sm text-label-sm">LT</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center space-x-1.5">
+<p class="font-body-md text-body-md font-semibold text-on-surface truncate">torvalds</p>
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">Public</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant truncate">Kernel maintainer • Linux</p>
+</div>
+</div>
+<button class="px-3.5 py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold active:bg-surface-bright transition-colors" type="button">
+          View
+        </button>
+</div>
+</div>
+<!-- Spacious Add Account Button -->
+<button class="w-full py-4 px-5 rounded-2xl bg-surface-container-high hover:bg-surface-bright active:scale-[0.99] text-on-surface font-body-md text-body-md font-semibold flex items-center justify-center space-x-2 transition-all" type="button">
+<svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" stroke-width="2.2" viewbox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Add GitHub Account or Watchlist User</span>
+</button>
+</section>
+<!-- Section 3: Android Launcher Widgets (Android 14/15) -->
+<section class="flex flex-col space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Launcher Widgets</h2>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-mono font-medium">Material You</span>
+</div>
+<!-- Preview Container -->
+<div class="w-full bg-surface-container rounded-3xl p-5 flex flex-col space-y-4">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Native home screen widgets for rapid telemetry and commit velocity tracking.</p>
+<!-- 2x1 Glanceable Streak Tile -->
+<div class="flex flex-col space-y-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold tracking-wide uppercase">2x1 Glanceable Streak</span>
+<div class="w-full bg-surface-container-lowest p-4 rounded-2xl flex items-center justify-between">
+<div class="flex items-center space-x-3.5">
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center">
+<!-- Flame mark SVG -->
+<svg class="w-6 h-6 text-on-primary-container" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2c-.1 0-.3.1-.4.2C8.8 5.6 6 9.4 6 13.5 6 17.1 8.7 20 12 20s6-2.9 6-6.5c0-4.1-2.8-7.9-5.6-11.3-.1-.1-.3-.2-.4-.2zm0 4.1c1.8 2.5 4 5.3 4 7.4 0 2.2-1.8 4-4 4s-4-1.8-4-4c0-2.1 2.2-4.9 4-7.4z"></path>
+</svg>
+</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">48 Days</span>
+<span class="font-label-sm text-label-sm text-primary font-mono">Streak Safeguarded</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">Today: +6</span>
+</div>
+</div>
+</div>
+<!-- 4x2 Interactive Heatmap Widget -->
+<div class="flex flex-col space-y-2 pt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold tracking-wide uppercase">4x2 Interactive Heatmap</span>
+<div class="w-full bg-surface-container-lowest p-4 rounded-2xl flex flex-col space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3 12h18M3 6h18M3 18h18" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-label-sm text-label-sm font-semibold text-on-surface">Telemetry Grid</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">L30D Activity</span>
+</div>
+<!-- Heatmap Mini Grid (5 cols x 4 rows) -->
+<div class="grid grid-cols-7 gap-1.5 py-1">
+<div class="h-3.5 rounded-sm bg-primary-container"></div>
+<div class="h-3.5 rounded-sm bg-secondary-container"></div>
+<div class="h-3.5 rounded-sm bg-primary"></div>
+<div class="h-3.5 rounded-sm bg-surface-container-high"></div>
+<div class="h-3.5 rounded-sm bg-primary-container"></div>
+<div class="h-3.5 rounded-sm bg-secondary-container"></div>
+<div class="h-3.5 rounded-sm bg-primary"></div>
+<div class="h-3.5 rounded-sm bg-surface-container-high"></div>
+<div class="h-3.5 rounded-sm bg-primary"></div>
+<div class="h-3.5 rounded-sm bg-primary"></div>
+<div class="h-3.5 rounded-sm bg-secondary-container"></div>
+<div class="h-3.5 rounded-sm bg-primary-container"></div>
+<div class="h-3.5 rounded-sm bg-surface-container-high"></div>
+<div class="h-3.5 rounded-sm bg-primary"></div>
+<div class="h-3.5 rounded-sm bg-primary-container"></div>
+<div class="h-3.5 rounded-sm bg-secondary-container"></div>
+<div class="h-3.5 rounded-sm bg-primary"></div>
+<div class="h-3.5 rounded-sm bg-primary"></div>
+<div class="h-3.5 rounded-sm bg-surface-container-high"></div>
+<div class="h-3.5 rounded-sm bg-secondary-container"></div>
+<div class="h-3.5 rounded-sm bg-primary-container"></div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Last synced 4m ago</span>
+<span class="font-label-sm text-label-sm text-primary font-mono">18 Commits Today</span>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full py-3 px-4 rounded-2xl bg-surface-container-high text-on-surface font-body-sm text-body-sm font-semibold active:bg-surface-bright transition-colors flex items-center justify-center space-x-2" type="button">
+<svg class="w-4 h-4 text-on-surface-variant" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="3"></circle>
+<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+</svg>
+<span>Configure Launcher Widgets</span>
+</button>
+</div>
+</section>
+<!-- Section 4: Streak Safeguards & Settings -->
+<section class="flex flex-col space-y-3">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Streak Safeguards</h2>
+</div>
+<div class="w-full bg-surface-container rounded-3xl p-5 flex flex-col space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex flex-col space-y-1">
+<span class="font-body-md text-body-md font-semibold text-on-surface">Daily Push Warning</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Alert if no contributions detected by cutoff</span>
+</div>
+<!-- Flat Active Toggle -->
+<button class="w-12 h-7 bg-primary rounded-full p-1 transition-colors relative flex items-center justify-end" type="button">
+<span class="w-5 h-5 bg-on-primary rounded-full"></span>
+</button>
+</div>
+<!-- Time Selector Pill -->
+<div class="flex items-center justify-between p-3.5 bg-surface-container-low rounded-2xl">
+<div class="flex items-center space-x-2.5">
+<svg class="w-4 h-4 text-on-surface-variant" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="10"></circle>
+<polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+<span class="font-body-sm text-body-sm text-on-surface">Alert Cutoff Time</span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="font-label-md text-label-md font-mono text-primary font-semibold px-2.5 py-1 bg-surface-container-high rounded-lg">08:30 PM</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 5: Privacy, Security & Local Data Purge -->
+<section class="flex flex-col space-y-3 pb-8">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Privacy &amp; Diagnostics</h2>
+</div>
+<div class="w-full bg-surface-container rounded-3xl p-5 flex flex-col space-y-4">
+<!-- Hardware Keystore Status Badge -->
+<div class="flex items-center justify-between p-3.5 rounded-2xl bg-surface-container-low">
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 rounded-xl bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+<!-- Solid Lock SVG -->
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"></path>
+</svg>
+</div>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Hardware Encryption</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">Keystore StrongBox</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm font-semibold px-2 py-1 bg-primary-container text-on-primary-container rounded-full">ACTIVE</span>
+</div>
+<!-- Offline Cache Info -->
+<div class="flex items-center justify-between p-3.5 rounded-2xl bg-surface-container-low">
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 rounded-xl bg-surface-container-high flex items-center justify-center text-on-surface-variant shrink-0">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+<path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+<path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+</svg>
+</div>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Local SQLite DB</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">14.8 MB • 4,210 commits</span>
+</div>
+</div>
+<button aria-label="Sync Database" class="p-2 rounded-xl bg-surface-container-high text-on-surface hover:text-primary active:scale-95 transition-all" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M21 2v6h-6m-9 14v-6h6M3 12a9 9 0 0 1 15-6.7L21 8M3 16l3 2.7A9 9 0 0 0 21 12" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+<!-- Destructive Action Button -->
+<button class="w-full py-3.5 px-4 rounded-2xl bg-error-container text-on-error-container font-body-md text-body-md font-semibold active:opacity-90 transition-opacity flex items-center justify-center space-x-2" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<polyline points="3 6 5 6 21 6"></polyline>
+<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+</svg>
+<span>Purge Local Cache &amp; Data</span>
+</button>
+</div>
+</section>
+</div></main><div class="fixed bottom-0 inset-x-0 z-50 pointer-events-none pb-safe flex flex-col items-center"><nav class="pointer-events-auto mb-3 mx-5 w-[calc(100%-2.5rem)] max-w-md h-16 rounded-full bg-[#131b2b] border border-outline-variant/40 px-2 flex items-center justify-around" data-active-classes="bg-primary/20 text-primary font-semibold"><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-3 rounded-full text-on-surface-variant transition-colors duration-150 active:scale-95" data-path="dashboard" href="#"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg><span class="font-label-sm text-label-sm mt-0.5">Home</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-3 rounded-full text-on-surface-variant transition-colors duration-150 active:scale-95" data-path="day-inspector" href="#"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="18" rx="2" ry="2" width="18" x="3" y="4"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg><span class="font-label-sm text-label-sm mt-0.5">Inspector</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-3 rounded-full text-on-surface-variant transition-colors duration-150 active:scale-95" data-path="analytics" href="#"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg><span class="font-label-sm text-label-sm mt-0.5">Analytics</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 px-3 rounded-full text-on-surface-variant transition-colors duration-150 active:scale-95" data-path="compare" href="#"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span class="font-label-sm text-label-sm mt-0.5">Compare</span></a></nav><div class="h-3 flex items-center justify-center w-full"><span class="w-28 h-1 bg-surface-bright rounded-full opacity-50"></span></div></div></body></html>
