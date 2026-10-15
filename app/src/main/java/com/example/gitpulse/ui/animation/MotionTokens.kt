@@ -41,6 +41,16 @@ object MotionTokens {
         stiffness = 380f
     )
 
+    fun <T> springBouncy(): SpringSpec<T> = spring(
+        dampingRatio = 0.8f,
+        stiffness = 380f
+    )
+
+    fun <T> springFast(): SpringSpec<T> = spring(
+        dampingRatio = 0.6f,
+        stiffness = 800f
+    )
+
     val SpringFastSpatial = spring<Float>(
         dampingRatio = 0.6f,
         stiffness = 800f

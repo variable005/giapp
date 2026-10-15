@@ -50,8 +50,8 @@ fun WatchlistCompareScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(
-            top = 100.dp,
-            bottom = 128.dp,
+            top = 76.dp,
+            bottom = 156.dp,
             start = 16.dp,
             end = 16.dp
         ),

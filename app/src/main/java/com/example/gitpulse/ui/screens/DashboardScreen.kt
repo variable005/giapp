@@ -77,8 +77,8 @@ private fun DashboardContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(
-            top = 100.dp,
-            bottom = 128.dp,
+            top = 76.dp,
+            bottom = 156.dp,
             start = 16.dp,
             end = 16.dp
         ),
@@ -203,15 +203,15 @@ private fun DashboardContent(
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
 
-                    // 4-Column Live Metric Counters
+                    // 4-Column Live Metric Tonal Tiles
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        MetricColumn(value = "${profile.reposCount}", label = "REPOS")
-                        MetricColumn(value = profile.followersCount, label = "FOLLOWERS")
-                        MetricColumn(value = "${profile.followingCount}", label = "FOLLOWING")
-                        MetricColumn(value = profile.starsCount, label = "STARS", hasStar = true)
+                        MetricTile(value = "${profile.reposCount}", label = "REPOS")
+                        MetricTile(value = profile.followersCount, label = "FOLLOWERS")
+                        MetricTile(value = "${profile.followingCount}", label = "FOLLOWING")
+                        MetricTile(value = profile.starsCount, label = "STARS", hasStar = true)
                     }
                 }
             }
@@ -238,18 +238,19 @@ private fun DashboardContent(
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh
+                            color = MaterialTheme.colorScheme.primaryContainer
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                PulsingStatusDot(color = MaterialTheme.colorScheme.primary)
+                                PulsingStatusDot(color = MaterialTheme.colorScheme.onPrimaryContainer)
                                 Text(
                                     text = "ACTIVE • ${profile.commitsToday} COMMITS TODAY",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             }
                         }
@@ -304,16 +305,16 @@ private fun DashboardContent(
                         }
 
                         Surface(
-                            modifier = Modifier.size(54.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                            modifier = Modifier.size(56.dp),
+                            shape = RoundedCornerShape(18.dp),
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f))
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.Whatshot,
                                     contentDescription = "Streak Flame",
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
                                     modifier = Modifier.size(28.dp)
                                 )
                             }
@@ -334,6 +335,7 @@ private fun DashboardContent(
                             Text(
                                 text = "Next goal: ${profile.currentGoalDays} Days (${profile.goalPercentage}%)",
                                 style = MaterialTheme.typography.labelSmall,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }
@@ -343,17 +345,14 @@ private fun DashboardContent(
                             animationSpec = MotionTokens.SpringBouncy,
                             label = "milestone_anim"
                         )
-                        // Expressive milestone track: thicker (12dp), fully rounded,
-                        // high-contrast track. (LinearWavyProgressIndicator needs
-                        // material3 1.5.x + compileSdk 37, so styled linear on 1.4.0.)
                         LinearProgressIndicator(
                             progress = { progressAnimation },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(12.dp)
+                                .height(10.dp)
                                 .clip(CircleShape),
                             color = MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                             strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
                         )
                     }
@@ -392,14 +391,14 @@ private fun DashboardContent(
                             )
                             Box(
                                 modifier = Modifier
-                                    .size(30.dp)
-                                    .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape),
+                                    .size(32.dp)
+                                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -443,14 +442,14 @@ private fun DashboardContent(
                             )
                             Box(
                                 modifier = Modifier
-                                    .size(30.dp)
-                                    .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape),
+                                    .size(32.dp)
+                                    .background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.EmojiEvents,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.tertiary,
+                                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -464,7 +463,7 @@ private fun DashboardContent(
                         Text(
                             text = "Record Streak",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.tertiary
                         )
                     }
                 }
@@ -735,6 +734,48 @@ private fun ErrorDashboardState(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun RowScope.MetricTile(value: String, label: String, hasStar: Boolean = false) {
+    Surface(
+        modifier = Modifier.weight(1f),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    ) {
+        Column(
+            modifier = Modifier.padding(vertical = 12.dp, horizontal = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if (hasStar) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
