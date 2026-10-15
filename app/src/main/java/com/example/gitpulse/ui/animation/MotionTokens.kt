@@ -127,18 +127,18 @@ fun AnimatedNumberCounter(
         transitionSpec = {
             if (targetState > initialState) {
                 (slideInVertically(
-                    animationSpec = MotionTokens.springBouncy()
-                ) { it / 2 } + fadeIn(MotionTokens.springGentle())) togetherWith
+                    animationSpec = tween(220, easing = FastOutSlowInEasing)
+                ) { it / 2 } + fadeIn(animationSpec = tween(180, easing = LinearOutSlowInEasing))) togetherWith
                 (slideOutVertically(
-                    animationSpec = MotionTokens.springBouncy()
-                ) { -it / 2 } + fadeOut(MotionTokens.springGentle()))
+                    animationSpec = tween(220, easing = FastOutSlowInEasing)
+                ) { -it / 2 } + fadeOut(animationSpec = tween(150, easing = FastOutLinearInEasing)))
             } else {
                 (slideInVertically(
-                    animationSpec = MotionTokens.springBouncy()
-                ) { -it / 2 } + fadeIn(MotionTokens.springGentle())) togetherWith
+                    animationSpec = tween(220, easing = FastOutSlowInEasing)
+                ) { -it / 2 } + fadeIn(animationSpec = tween(180, easing = LinearOutSlowInEasing))) togetherWith
                 (slideOutVertically(
-                    animationSpec = MotionTokens.springBouncy()
-                ) { it / 2 } + fadeOut(MotionTokens.springGentle()))
+                    animationSpec = tween(220, easing = FastOutSlowInEasing)
+                ) { it / 2 } + fadeOut(animationSpec = tween(150, easing = FastOutLinearInEasing)))
             }
         },
         label = "animated_counter",
@@ -153,51 +153,17 @@ fun AnimatedNumberCounter(
 }
 
 /**
- * Pulsing status dot indicating active live synchronization with infinite breathing ring.
+ * Static clean status indicator dot. Pulsating animation removed as requested.
  */
 @Composable
 fun PulsingStatusDot(
     color: Color,
     modifier: Modifier = Modifier
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse_halo")
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 1.0f,
-        targetValue = 1.7f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "halo_scale"
-    )
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.6f,
-        targetValue = 0.0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "halo_alpha"
-    )
-
     Box(
-        modifier = modifier.size(16.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        // Outer pulsing wave
-        Box(
-            modifier = Modifier
-                .size(10.dp)
-                .scale(pulseScale)
-                .alpha(pulseAlpha)
-                .background(color, CircleShape)
-        )
-        // Solid center dot
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .background(color, CircleShape)
-        )
-    }
+        modifier = modifier
+            .size(7.dp)
+            .background(color, CircleShape)
+    )
 }
 

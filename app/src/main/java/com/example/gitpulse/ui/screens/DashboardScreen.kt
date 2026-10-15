@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -30,7 +32,6 @@ import com.example.gitpulse.theme.*
 import com.example.gitpulse.ui.animation.AnimatedNumberCounter
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import com.example.gitpulse.ui.animation.MotionTokens
-import com.example.gitpulse.ui.animation.PulsingStatusDot
 import com.example.gitpulse.ui.viewmodel.GitPulseUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,11 +43,15 @@ fun DashboardScreen(
     onNavigateToInspector: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val haptic = LocalHapticFeedback.current
     val isRefreshing = uiState is GitPulseUiState.Loading
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
-        onRefresh = onRetry,
+        onRefresh = {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            onRetry()
+        },
         modifier = modifier.fillMaxSize()
     ) {
         when (uiState) {
@@ -78,6 +83,7 @@ private fun DashboardContent(
     onNavigateToInspector: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val haptic = LocalHapticFeedback.current
     val profile = data.profile
     var selectedYear by remember { mutableStateOf("2026") }
 
@@ -180,7 +186,10 @@ private fun DashboardContent(
 
                         // Switch Profile Button (Symmetrical M3 Tonal Button)
                         FilledTonalButton(
-                            onClick = onSearchClick,
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onSearchClick()
+                            },
                             shape = CircleShape,
                             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                             modifier = Modifier.height(36.dp),
@@ -255,7 +264,11 @@ private fun DashboardContent(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                PulsingStatusDot(color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .background(MaterialTheme.colorScheme.onPrimaryContainer, CircleShape)
+                                )
                                 Text(
                                     text = "ACTIVE • ${profile.commitsToday} COMMITS TODAY",
                                     style = MaterialTheme.typography.labelSmall,

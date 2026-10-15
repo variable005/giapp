@@ -22,13 +22,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import com.example.gitpulse.data.LanguageStat
 import com.example.gitpulse.data.ShowcaseRepo
 import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.theme.*
 import com.example.gitpulse.ui.animation.AnimatedNumberCounter
 import com.example.gitpulse.ui.animation.MotionTokens
-import com.example.gitpulse.ui.animation.PulsingStatusDot
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import com.example.gitpulse.ui.viewmodel.GitPulseUiState
@@ -41,11 +42,15 @@ fun AnalyticsScreen(
     onShareCard: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val haptic = LocalHapticFeedback.current
     val isRefreshing = uiState is GitPulseUiState.Loading
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
-        onRefresh = onRetry,
+        onRefresh = {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            onRetry()
+        },
         modifier = modifier.fillMaxSize()
     ) {
         when (uiState) {
@@ -116,7 +121,11 @@ private fun AnalyticsContent(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        PulsingStatusDot(color = MaterialTheme.colorScheme.primary)
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .background(MaterialTheme.colorScheme.primary, CircleShape)
+                        )
                         Text(
                             text = "Live Sync",
                             style = MaterialTheme.typography.labelSmall,

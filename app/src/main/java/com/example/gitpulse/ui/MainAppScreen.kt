@@ -53,24 +53,24 @@ fun MainAppScreen(
         amoled = amoledMode
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Main Container with Animated Settings Transition (M3 Expressive Springs)
+            // Main Container with Animated Settings Transition (Material 3 Emphasized Motion)
             AnimatedContent(
                 targetState = showSettingsScreen,
                 transitionSpec = {
                     if (targetState) {
                         (slideInVertically(
-                            animationSpec = MotionTokens.springBouncy()
-                        ) { it / 4 } + fadeIn(MotionTokens.springGentle())) togetherWith
+                            animationSpec = tween(320, easing = MotionTokens.EmphasizedDecelerateEasing)
+                        ) { it / 6 } + fadeIn(animationSpec = tween(240, easing = LinearOutSlowInEasing))) togetherWith
                         (slideOutVertically(
-                            animationSpec = MotionTokens.springBouncy()
-                        ) { -it / 8 } + fadeOut(MotionTokens.springGentle()))
+                            animationSpec = tween(250, easing = MotionTokens.EmphasizedAccelerateEasing)
+                        ) { -it / 10 } + fadeOut(animationSpec = tween(180, easing = FastOutLinearInEasing)))
                     } else {
                         (slideInVertically(
-                            animationSpec = MotionTokens.springBouncy()
-                        ) { -it / 8 } + fadeIn(MotionTokens.springGentle())) togetherWith
+                            animationSpec = tween(280, easing = MotionTokens.EmphasizedDecelerateEasing)
+                        ) { -it / 10 } + fadeIn(animationSpec = tween(220, easing = LinearOutSlowInEasing))) togetherWith
                         (slideOutVertically(
-                            animationSpec = MotionTokens.springBouncy()
-                        ) { it / 4 } + fadeOut(MotionTokens.springGentle()))
+                            animationSpec = tween(280, easing = MotionTokens.EmphasizedAccelerateEasing)
+                        ) { it / 6 } + fadeOut(animationSpec = tween(200, easing = FastOutLinearInEasing)))
                     }
                 },
                 label = "settings_transition",
@@ -79,7 +79,8 @@ fun MainAppScreen(
                 if (inSettings) {
                     SettingsScreen(
                         viewModel = viewModel,
-                        onNavigateBack = { showSettingsScreen = false }
+                        onNavigateBack = { showSettingsScreen = false },
+                        onOpenNotifications = { showNotificationsSheet = true }
                     )
                 } else {
                     Box(modifier = Modifier.fillMaxSize()) {
@@ -87,9 +88,9 @@ fun MainAppScreen(
                         AnimatedContent(
                             targetState = currentTab,
                             transitionSpec = {
-                                (fadeIn(animationSpec = tween(180, easing = LinearOutSlowInEasing)) +
-                                 scaleIn(initialScale = 0.96f, animationSpec = tween(180, easing = LinearOutSlowInEasing))) togetherWith
-                                (fadeOut(animationSpec = tween(100, easing = FastOutLinearInEasing)))
+                                (fadeIn(animationSpec = tween(220, delayMillis = 40, easing = FastOutSlowInEasing)) +
+                                 scaleIn(initialScale = 0.96f, animationSpec = tween(220, delayMillis = 40, easing = FastOutSlowInEasing))) togetherWith
+                                (fadeOut(animationSpec = tween(80, easing = FastOutLinearInEasing)))
                             },
                             label = "tab_fade_through",
                             modifier = Modifier.fillMaxSize()
@@ -145,23 +146,11 @@ fun MainAppScreen(
                             }
                         }
 
-                        // Floating Top Controls Overlay (STRICTLY NO APP BAR - Perfectly Symmetrical)
+                        // Floating Top Controls Overlay (STRICTLY NO APP BAR - Mathematically Symmetrical)
                         FloatingTopActions(
                             currentUsername = currentUsername,
-                            isDarkTheme = isDark,
-                            onToggleTheme = {
-                                val nextMode = when (themeMode) {
-                                    AppThemeMode.SYSTEM -> if (systemInDark) AppThemeMode.LIGHT else AppThemeMode.DARK
-                                    AppThemeMode.DARK -> AppThemeMode.LIGHT
-                                    AppThemeMode.LIGHT -> AppThemeMode.DARK
-                                }
-                                viewModel.setThemeMode(nextMode)
-                            },
                             onSearchClick = { showSearchDialog = true },
-                            onNotificationsClick = { showNotificationsSheet = true },
-                            onSettingsClick = {
-                                showSettingsScreen = true
-                            },
+                            onSettingsClick = { showSettingsScreen = true },
                             modifier = Modifier.align(Alignment.TopCenter)
                         )
 

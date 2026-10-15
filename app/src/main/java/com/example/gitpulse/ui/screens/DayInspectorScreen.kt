@@ -20,13 +20,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.example.gitpulse.data.GitActivityItem
 import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.theme.*
 import com.example.gitpulse.ui.animation.AnimatedNumberCounter
 import com.example.gitpulse.ui.animation.MotionTokens
-import com.example.gitpulse.ui.animation.PulsingStatusDot
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import com.example.gitpulse.ui.viewmodel.GitPulseUiState
@@ -38,11 +39,15 @@ fun DayInspectorScreen(
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val haptic = LocalHapticFeedback.current
     val isRefreshing = uiState is GitPulseUiState.Loading
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
-        onRefresh = onRetry,
+        onRefresh = {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            onRetry()
+        },
         modifier = modifier.fillMaxSize()
     ) {
         when (uiState) {

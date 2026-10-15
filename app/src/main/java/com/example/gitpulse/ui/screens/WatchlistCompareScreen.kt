@@ -17,11 +17,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.example.gitpulse.data.MockData
 import com.example.gitpulse.theme.*
 import com.example.gitpulse.ui.animation.MotionTokens
-import com.example.gitpulse.ui.animation.PulsingStatusDot
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +33,7 @@ fun WatchlistCompareScreen(
     onPurgeCache: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val haptic = LocalHapticFeedback.current
     var dailyWarningEnabled by remember { mutableStateOf(true) }
     var showPurgeDialog by remember { mutableStateOf(false) }
     var selectedCutoffTime by remember { mutableStateOf("08:30 PM") }
@@ -86,7 +88,11 @@ fun WatchlistCompareScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            PulsingStatusDot(color = MaterialTheme.colorScheme.primary)
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .background(MaterialTheme.colorScheme.primary, CircleShape)
+                            )
                             Text(
                                 text = "Profile Comparison",
                                 style = MaterialTheme.typography.titleMedium,
