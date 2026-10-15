@@ -19,68 +19,115 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.gitpulse.data.GitActivityItem
-import com.example.gitpulse.data.MockData
+import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.theme.*
+import com.example.gitpulse.ui.viewmodel.GitPulseUiState
 
 @Composable
 fun DashboardScreen(
+    uiState: GitPulseUiState,
+    onRetry: () -> Unit,
+    onSearchClick: () -> Unit,
     onNavigateToInspector: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val profile = MockData.userProfile
-    var selectedYear by remember { mutableStateOf("2025") }
+    when (uiState) {
+        is GitPulseUiState.Loading -> {
+            LoadingDashboardSkeleton(modifier)
+        }
+        is GitPulseUiState.Error -> {
+            ErrorDashboardState(
+                message = uiState.message,
+                onRetry = onRetry,
+                onSearchClick = onSearchClick,
+                modifier = modifier
+            )
+        }
+        is GitPulseUiState.Success -> {
+            DashboardContent(
+                data = uiState.data,
+                onSearchClick = onSearchClick,
+                onNavigateToInspector = onNavigateToInspector,
+                modifier = modifier
+            )
+        }
+    }
+}
+
+@Composable
+private fun DashboardContent(
+    data: GitPulseAggregateData,
+    onSearchClick: () -> Unit,
+    onNavigateToInspector: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val profile = data.profile
+    var selectedYear by remember { mutableStateOf("2026") }
 
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(
-            top = 76.dp, // Space for floating top actions
-            bottom = 100.dp, // Space for floating bottom nav
-            start = 20.dp,
-            end = 20.dp
+            top = 72.dp,
+            bottom = 104.dp,
+            start = 16.dp,
+            end = 16.dp
         ),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 1. Profile Hero Card
+        // 1. M3 Expressive Profile Hero Card
         item {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(28.dp),
                 color = MaterialTheme.colorScheme.surface,
                 border = BorderStroke(1.dp, OutlineBorder)
             ) {
                 Column(
-                    modifier = Modifier.padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(18.dp)
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Avatar + Name + Edit button
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.Top
                     ) {
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(14.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Box {
-                                Surface(
-                                    modifier = Modifier.size(64.dp),
-                                    shape = RoundedCornerShape(16.dp),
-                                    color = MaterialTheme.colorScheme.surfaceVariant,
-                                    border = BorderStroke(1.dp, OutlineBorder)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Text(
-                                            text = "AC",
-                                            style = MaterialTheme.typography.titleLarge,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
+                                if (profile.avatarUrl.isNotBlank()) {
+                                    AsyncImage(
+                                        model = profile.avatarUrl,
+                                        contentDescription = profile.name,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .size(60.dp)
+                                            .clip(RoundedCornerShape(18.dp))
+                                            .border(1.dp, OutlineBorder, RoundedCornerShape(18.dp))
+                                    )
+                                } else {
+                                    Surface(
+                                        modifier = Modifier.size(60.dp),
+                                        shape = RoundedCornerShape(18.dp),
+                                        color = MaterialTheme.colorScheme.surfaceVariant
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Text(
+                                                text = profile.name.take(2).uppercase(),
+                                                style = MaterialTheme.typography.titleMedium,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
                                     }
                                 }
+
                                 Box(
                                     modifier = Modifier
                                         .align(Alignment.BottomEnd)
@@ -94,16 +141,16 @@ fun DashboardScreen(
                             Column {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     Text(
                                         text = profile.name,
-                                        style = MaterialTheme.typography.headlineSmall,
+                                        style = MaterialTheme.typography.titleLarge,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Icon(
                                         imageVector = Icons.Default.CheckCircle,
-                                        contentDescription = "Verified",
+                                        contentDescription = "Verified Profile",
                                         tint = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.size(16.dp)
                                     )
@@ -116,30 +163,30 @@ fun DashboardScreen(
                             }
                         }
 
-                        // Edit Pill Button
+                        // Switch Profile Button
                         Surface(
                             modifier = Modifier
-                                .height(38.dp)
+                                .height(36.dp)
                                 .clip(CircleShape)
-                                .clickable { },
+                                .clickable { onSearchClick() },
                             shape = CircleShape,
                             color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = BorderStroke(1.dp, OutlineBorder.copy(alpha = 0.5f))
+                            border = BorderStroke(1.dp, OutlineBorder)
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 14.dp),
+                                modifier = Modifier.padding(horizontal = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Edit,
-                                    contentDescription = "Edit Profile",
+                                    imageVector = Icons.Default.SwapHoriz,
+                                    contentDescription = "Switch User",
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Text(
-                                    text = "Edit",
-                                    style = MaterialTheme.typography.labelMedium,
+                                    text = "Switch",
+                                    style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
@@ -153,9 +200,9 @@ fun DashboardScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    // Metrics Bar
-                    HorizontalDivider(color = OutlineBorder.copy(alpha = 0.4f), thickness = 1.dp)
+                    HorizontalDivider(color = OutlineBorder.copy(alpha = 0.5f), thickness = 1.dp)
 
+                    // 4-Column Live Metric Counters
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -163,11 +210,7 @@ fun DashboardScreen(
                         MetricColumn(value = "${profile.reposCount}", label = "REPOS")
                         MetricColumn(value = profile.followersCount, label = "FOLLOWERS")
                         MetricColumn(value = "${profile.followingCount}", label = "FOLLOWING")
-                        MetricColumn(
-                            value = profile.starsCount,
-                            label = "STARS",
-                            hasStar = true
-                        )
+                        MetricColumn(value = profile.starsCount, label = "STARS", hasStar = true)
                     }
                 }
             }
@@ -177,15 +220,14 @@ fun DashboardScreen(
         item {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(28.dp),
                 color = MaterialTheme.colorScheme.surface,
                 border = BorderStroke(1.dp, OutlineBorder)
             ) {
                 Column(
-                    modifier = Modifier.padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Header Status
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -224,7 +266,7 @@ fun DashboardScreen(
                                 modifier = Modifier.size(14.dp)
                             )
                             Text(
-                                text = "Synced 6m ago",
+                                text = "Live GitHub Sync",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -243,7 +285,7 @@ fun DashboardScreen(
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(2.dp))
                             Row(
                                 verticalAlignment = Alignment.Bottom,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -263,15 +305,15 @@ fun DashboardScreen(
                         }
 
                         Surface(
-                            modifier = Modifier.size(56.dp),
+                            modifier = Modifier.size(54.dp),
                             shape = RoundedCornerShape(16.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = BorderStroke(1.dp, OutlineBorder.copy(alpha = 0.5f))
+                            border = BorderStroke(1.dp, OutlineBorder)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.Whatshot,
-                                    contentDescription = "Flame",
+                                    contentDescription = "Streak Flame",
                                     tint = PrimaryEmerald,
                                     modifier = Modifier.size(28.dp)
                                 )
@@ -279,8 +321,8 @@ fun DashboardScreen(
                         }
                     }
 
-                    // Milestone Progress
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Milestone Progress Bar
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -299,7 +341,7 @@ fun DashboardScreen(
 
                         val progressAnimation by animateFloatAsState(
                             targetValue = profile.goalPercentage / 100f,
-                            label = "milestone_prog"
+                            label = "milestone_anim"
                         )
                         LinearProgressIndicator(
                             progress = { progressAnimation },
@@ -315,11 +357,11 @@ fun DashboardScreen(
             }
         }
 
-        // 3. Dual Run Stats Cards (Active Run & All-Time Peak)
+        // 3. Dual Active vs Peak Run Cards
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Active Run Card
                 Surface(
@@ -329,8 +371,8 @@ fun DashboardScreen(
                     border = BorderStroke(1.dp, OutlineBorder)
                 ) {
                     Column(
-                        modifier = Modifier.padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        modifier = Modifier.padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -344,8 +386,8 @@ fun DashboardScreen(
                             )
                             Box(
                                 modifier = Modifier
-                                    .size(32.dp)
-                                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)),
+                                    .size(30.dp)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -362,14 +404,14 @@ fun DashboardScreen(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Nov 23 - Present",
+                            text = "Live Active Status",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = PrimaryEmerald
                         )
                     }
                 }
 
-                // All-Time Peak Card
+                // Peak Run Card
                 Surface(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(24.dp),
@@ -377,8 +419,8 @@ fun DashboardScreen(
                     border = BorderStroke(1.dp, OutlineBorder)
                 ) {
                     Column(
-                        modifier = Modifier.padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        modifier = Modifier.padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -392,8 +434,8 @@ fun DashboardScreen(
                             )
                             Box(
                                 modifier = Modifier
-                                    .size(32.dp)
-                                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)),
+                                    .size(30.dp)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -410,7 +452,7 @@ fun DashboardScreen(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "May - Aug 2024",
+                            text = "Record Streak",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -419,18 +461,18 @@ fun DashboardScreen(
             }
         }
 
-        // 4. Annual Contributions & Heatmap Section
+        // 4. Annual Contributions Section
         item {
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onNavigateToInspector() },
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(28.dp),
                 color = MaterialTheme.colorScheme.surface,
                 border = BorderStroke(1.dp, OutlineBorder)
             ) {
                 Column(
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Row(
@@ -441,21 +483,19 @@ fun DashboardScreen(
                         Column {
                             Text(
                                 text = "Contributions",
-                                style = MaterialTheme.typography.headlineSmall,
+                                style = MaterialTheme.typography.titleLarge,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "${profile.totalAnnualCommits} commits in the last year",
+                                text = "${profile.totalAnnualCommits} total in past 52 weeks",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
                         // Year Selector Pills
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            listOf("2025", "2024", "2023").forEach { year ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            listOf("2026", "2025", "2024").forEach { year ->
                                 val isSelected = year == selectedYear
                                 Surface(
                                     modifier = Modifier
@@ -475,7 +515,7 @@ fun DashboardScreen(
                         }
                     }
 
-                    // Heatmap Months Header
+                    // Month Labels Header
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -489,20 +529,22 @@ fun DashboardScreen(
                         }
                     }
 
-                    // Heatmap Grid Representation (15 columns x 7 rows)
+                    // Heatmap Grid: 7 rows x 16 columns (derived from actual contributions)
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         for (row in 0..6) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                for (col in 0..14) {
-                                    val intensity = (col * 7 + row * 3) % 5
-                                    val cellColor = when (intensity) {
+                                for (col in 0..15) {
+                                    val index = col * 7 + row
+                                    val day = data.contributions.getOrNull(index)
+                                    val level = day?.level ?: 0
+                                    val cellColor = when (level) {
                                         4 -> PrimaryEmerald
                                         3 -> SecondaryEmerald
                                         2 -> PrimaryDeepContainer
-                                        1 -> SurfaceContainerHigh
+                                        1 -> SurfaceContainerHighest
                                         else -> SurfaceContainerLow
                                     }
                                     Box(
@@ -516,54 +558,35 @@ fun DashboardScreen(
                         }
                     }
 
-                    // Heatmap Footer: Daily Avg + Legend
+                    // Footer Legend
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Daily Avg:",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "4.8 commits/day",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-
+                        Text(
+                            text = "Tap to inspect days",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "Less",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Text(text = "Less", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Box(modifier = Modifier.size(10.dp).background(SurfaceContainerLow, RoundedCornerShape(2.dp)))
-                            Box(modifier = Modifier.size(10.dp).background(SurfaceContainerHigh, RoundedCornerShape(2.dp)))
+                            Box(modifier = Modifier.size(10.dp).background(SurfaceContainerHighest, RoundedCornerShape(2.dp)))
                             Box(modifier = Modifier.size(10.dp).background(PrimaryDeepContainer, RoundedCornerShape(2.dp)))
                             Box(modifier = Modifier.size(10.dp).background(SecondaryEmerald, RoundedCornerShape(2.dp)))
                             Box(modifier = Modifier.size(10.dp).background(PrimaryEmerald, RoundedCornerShape(2.dp)))
-                            Text(
-                                text = "More",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Text(text = "More", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
             }
         }
 
-        // 5. Recent Git Activity Header
+        // 5. Recent Git Activity Stream
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -571,8 +594,8 @@ fun DashboardScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Recent Git Activity",
-                    style = MaterialTheme.typography.headlineSmall,
+                    text = "Recent Activity Stream",
+                    style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
@@ -584,9 +607,121 @@ fun DashboardScreen(
             }
         }
 
-        // Recent Activity Items
-        items(MockData.recentActivities) { item ->
+        items(data.recentActivities.take(5)) { item ->
             RecentActivityCard(item)
+        }
+    }
+}
+
+@Composable
+private fun LoadingDashboardSkeleton(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(top = 80.dp, start = 20.dp, end = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp)
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxWidth().height(180.dp),
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ) {}
+        Surface(
+            modifier = Modifier.fillMaxWidth().height(160.dp),
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ) {}
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Surface(
+                modifier = Modifier.weight(1f).height(110.dp),
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            ) {}
+            Surface(
+                modifier = Modifier.weight(1f).height(110.dp),
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            ) {}
+        }
+    }
+}
+
+@Composable
+private fun ErrorDashboardState(
+    message: String,
+    onRetry: () -> Unit,
+    onSearchClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, OutlineBorder)
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(52.dp)
+                        .background(MaterialTheme.colorScheme.errorContainer, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                Text(
+                    text = "GitHub Connection Failed",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onSearchClick,
+                        modifier = Modifier.weight(1f),
+                        shape = CircleShape
+                    ) {
+                        Text("Change User")
+                    }
+                    Button(
+                        onClick = onRetry,
+                        modifier = Modifier.weight(1f),
+                        shape = CircleShape,
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryEmerald)
+                    ) {
+                        Text("Retry", color = OnPrimaryEmerald)
+                    }
+                }
+            }
         }
     }
 }
@@ -600,7 +735,7 @@ fun MetricColumn(value: String, label: String, hasStar: Boolean = false) {
         ) {
             Text(
                 text = value,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface
             )
             if (hasStar) {
@@ -624,13 +759,13 @@ fun MetricColumn(value: String, label: String, hasStar: Boolean = false) {
 fun RecentActivityCard(item: GitActivityItem) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, OutlineBorder)
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -643,8 +778,8 @@ fun RecentActivityCard(item: GitActivityItem) {
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(28.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)),
+                            .size(26.dp)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -659,7 +794,7 @@ fun RecentActivityCard(item: GitActivityItem) {
                                 com.example.gitpulse.data.ActivityType.REVIEW -> TertiaryAmber
                                 else -> PrimaryEmerald
                             },
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(14.dp)
                         )
                     }
                     Text(
@@ -687,7 +822,7 @@ fun RecentActivityCard(item: GitActivityItem) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (item.commitHash != null) {
@@ -699,7 +834,7 @@ fun RecentActivityCard(item: GitActivityItem) {
                                 text = item.commitHash,
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
                         }
                     }
@@ -712,7 +847,7 @@ fun RecentActivityCard(item: GitActivityItem) {
                                 text = item.prNumber,
                                 style = MaterialTheme.typography.labelSmall,
                                 color = SecondaryEmerald,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
                         }
                     }

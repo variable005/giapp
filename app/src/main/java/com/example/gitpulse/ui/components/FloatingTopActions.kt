@@ -1,6 +1,7 @@
 package com.example.gitpulse.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,9 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,86 +22,135 @@ import androidx.compose.ui.unit.dp
 import com.example.gitpulse.theme.*
 
 /**
- * Floating top buttons container.
- * STRICTLY NO APP NAME BAR as requested:
- * "there should be no app name bar on the top just use floating buttons on the top for notifications and other things no app on the top"
+ * Material 3 Expressive Floating Top Controls.
+ * Conforms strictly to constraint: No app name bar on the top.
  */
 @Composable
 fun FloatingTopActions(
+    currentUsername: String,
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
+    onSearchClick: () -> Unit,
     onNotificationsClick: () -> Unit,
-    onProfileClick: () -> Unit,
+    onRefreshClick: () -> Unit,
     hasUnreadNotifications: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    val rotation by animateFloatAsState(
+    val themeRotation by animateFloatAsState(
         targetValue = if (isDarkTheme) 0f else 180f,
-        label = "theme_rotation"
+        label = "theme_rot"
     )
 
     Row(
         modifier = modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Floating Theme Mode Switcher Button (Left)
+        // Left: Dark/Light Mode Switcher Pill
         Surface(
             modifier = Modifier
-                .height(44.dp)
+                .height(42.dp)
                 .clip(CircleShape)
                 .clickable { onToggleTheme() },
             shape = CircleShape,
             color = MaterialTheme.colorScheme.surfaceVariant,
-            border = androidx.compose.foundation.BorderStroke(1.dp, OutlineBorder.copy(alpha = 0.6f))
+            border = BorderStroke(1.dp, OutlineBorder)
         ) {
             Row(
-                modifier = Modifier
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                modifier = Modifier.padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Icon(
                     imageVector = if (isDarkTheme) Icons.Default.DarkMode else Icons.Default.LightMode,
                     contentDescription = "Toggle Theme",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
-                        .size(18.dp)
-                        .rotate(rotation)
+                        .size(16.dp)
+                        .rotate(themeRotation)
                 )
                 Text(
                     text = if (isDarkTheme) "Dark" else "Light",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        // Center: Interactive Active User Pill (Tap to Search Any GitHub User)
+        Surface(
+            modifier = Modifier
+                .height(42.dp)
+                .clip(CircleShape)
+                .clickable { onSearchClick() },
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            border = BorderStroke(1.dp, PrimaryEmerald.copy(alpha = 0.5f))
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search User",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = "@$currentUsername",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
 
-        // Floating Action Buttons (Right: Notifications + Profile)
+        // Right Action Group: Refresh + Notifications
         Row(
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Floating Notification Bell Button with Badge
+            // Live API Refresh Button
+            Surface(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .clickable { onRefreshClick() },
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                border = BorderStroke(1.dp, OutlineBorder)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Refresh Data",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
+            // Notification Bell with Unread Badge
             Box {
                 Surface(
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(42.dp)
                         .clip(CircleShape)
                         .clickable { onNotificationsClick() },
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surfaceVariant,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, OutlineBorder.copy(alpha = 0.6f))
+                    border = BorderStroke(1.dp, OutlineBorder)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.Notifications,
                             contentDescription = "Notifications",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
@@ -112,43 +160,11 @@ fun FloatingTopActions(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(top = 2.dp, end = 2.dp)
-                            .size(10.dp)
+                            .size(9.dp)
                             .background(MaterialTheme.colorScheme.primary, CircleShape)
-                            .border(2.dp, MaterialTheme.colorScheme.background, CircleShape)
+                            .border(1.5.dp, MaterialTheme.colorScheme.background, CircleShape)
                     )
                 }
-            }
-
-            // Floating Profile / Account Switcher Circle
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .clickable { onProfileClick() }
-            ) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, OutlineBorder.copy(alpha = 0.8f))
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "GP",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-
-                // Active status pulse dot
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .size(10.dp)
-                        .background(MaterialTheme.colorScheme.primary, CircleShape)
-                        .border(2.dp, MaterialTheme.colorScheme.background, CircleShape)
-                )
             }
         }
     }

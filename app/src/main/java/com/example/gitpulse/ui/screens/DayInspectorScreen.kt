@@ -1,6 +1,5 @@
 package com.example.gitpulse.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,32 +19,57 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.gitpulse.data.GitActivityItem
-import com.example.gitpulse.data.MockData
+import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.theme.*
+import com.example.gitpulse.ui.viewmodel.GitPulseUiState
 
 @Composable
 fun DayInspectorScreen(
+    uiState: GitPulseUiState,
+    modifier: Modifier = Modifier
+) {
+    when (uiState) {
+        is GitPulseUiState.Loading -> {
+            Box(modifier = modifier.fillMaxSize().padding(top = 80.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = PrimaryEmerald)
+            }
+        }
+        is GitPulseUiState.Error -> {
+            Box(modifier = modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                Text(text = uiState.message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+            }
+        }
+        is GitPulseUiState.Success -> {
+            DayInspectorContent(data = uiState.data, modifier = modifier)
+        }
+    }
+}
+
+@Composable
+private fun DayInspectorContent(
+    data: GitPulseAggregateData,
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf("Month Grid") }
-    var selectedDay by remember { mutableIntStateOf(18) }
+    var selectedDay by remember { mutableIntStateOf(15) }
     var selectedFilter by remember { mutableStateOf("All") }
     var includePrivate by remember { mutableStateOf(true) }
     var maskSensitive by remember { mutableStateOf(false) }
 
-    val daySummary = MockData.daySummary
+    val recentDays = data.contributions.takeLast(28)
+    val totalRecentActions = recentDays.sumOf { it.count }
 
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(
-            top = 76.dp, // Space for floating top actions
-            bottom = 100.dp, // Space for floating bottom nav
-            start = 20.dp,
-            end = 20.dp
+            top = 72.dp,
+            bottom = 104.dp,
+            start = 16.dp,
+            end = 16.dp
         ),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // 1. Month Calendar Header Card
         item {
@@ -59,7 +83,6 @@ fun DayInspectorScreen(
                     modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Month & Active Sprint Row
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -67,97 +90,27 @@ fun DayInspectorScreen(
                     ) {
                         Column {
                             Text(
-                                text = "December",
-                                style = MaterialTheme.typography.headlineMedium,
+                                text = "Recent Cycle",
+                                style = MaterialTheme.typography.titleLarge,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "2024",
-                                style = MaterialTheme.typography.titleMedium,
+                                text = "Active Rolling 4 Weeks",
+                                style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surfaceVariant
-                            ) {
-                                Text(
-                                    text = "Active Sprint",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                                )
-                            }
-
-                            Surface(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .clickable { },
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surfaceVariant
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = "Previous Month",
-                                        tint = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                            }
-
-                            Surface(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .clickable { },
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surfaceVariant
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                        contentDescription = "Next Month",
-                                        tint = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // View Modes: Month Grid / Timeline / Audit
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf("Month Grid", "Timeline", "Audit").forEach { tab ->
-                            val isSelected = tab == selectedTab
-                            Surface(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(CircleShape)
-                                    .clickable { selectedTab = tab },
-                                shape = CircleShape,
-                                color = if (isSelected) PrimaryEmerald else MaterialTheme.colorScheme.surfaceVariant
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.padding(vertical = 8.dp)
-                                ) {
-                                    Text(
-                                        text = tab,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = if (isSelected) OnPrimaryEmerald else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
+                            Text(
+                                text = "Active Sprint",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                            )
                         }
                     }
 
@@ -175,32 +128,28 @@ fun DayInspectorScreen(
                         }
                     }
 
-                    // Month Calendar Days Grid (4 weeks x 7 days)
+                    // 4 Weeks x 7 Days Grid
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        val weeks = listOf(
-                            listOf(1 to 1, 2 to 2, 3 to 4, 4 to 4, 5 to 2, 6 to 1, 7 to 0),
-                            listOf(8 to 0, 9 to 2, 10 to 4, 11 to 4, 12 to 4, 13 to 2, 14 to 1),
-                            listOf(15 to 0, 16 to 2, 17 to 4, 18 to 4, 19 to 2, 20 to 4, 21 to 0),
-                            listOf(22 to 0, 23 to 2, 24 to 1, 25 to 0, 26 to 2, 27 to 4, 28 to 0)
-                        )
-
-                        weeks.forEach { week ->
+                        for (w in 0..3) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceAround
                             ) {
-                                week.forEach { (dayNum, intensity) ->
+                                for (d in 0..6) {
+                                    val index = w * 7 + d
+                                    val dayItem = recentDays.getOrNull(index)
+                                    val dayNum = index + 1
                                     val isHighlighted = dayNum == selectedDay
-                                    val dotColor = when (intensity) {
-                                        4 -> PrimaryEmerald
-                                        2 -> SecondaryContainerEmerald
-                                        1 -> SurfaceContainerHighest
-                                        else -> Color.Transparent
+                                    val count = dayItem?.count ?: 0
+                                    val dotColor = when {
+                                        count == 0 -> Color.Transparent
+                                        count < 3 -> SecondaryContainerEmerald
+                                        else -> PrimaryEmerald
                                     }
 
                                     Surface(
                                         modifier = Modifier
-                                            .size(42.dp)
+                                            .size(40.dp)
                                             .clip(RoundedCornerShape(10.dp))
                                             .clickable { selectedDay = dayNum },
                                         shape = RoundedCornerShape(10.dp),
@@ -245,20 +194,12 @@ fun DayInspectorScreen(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "Less",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Text(text = "Less", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Box(modifier = Modifier.size(10.dp).background(SurfaceContainerHighest, RoundedCornerShape(2.dp)))
                             Box(modifier = Modifier.size(10.dp).background(SecondaryContainerEmerald, RoundedCornerShape(2.dp)))
                             Box(modifier = Modifier.size(10.dp).background(PrimaryContainerEmerald, RoundedCornerShape(2.dp)))
                             Box(modifier = Modifier.size(10.dp).background(PrimaryEmerald, RoundedCornerShape(2.dp)))
-                            Text(
-                                text = "More",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Text(text = "More", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -299,12 +240,12 @@ fun DayInspectorScreen(
 
                         Column {
                             Text(
-                                text = daySummary.dateDisplay,
+                                text = "Day $selectedDay Overview",
                                 style = MaterialTheme.typography.titleLarge,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = daySummary.subtitle,
+                                text = "Optimal git telemetry pace",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -313,12 +254,12 @@ fun DayInspectorScreen(
 
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = "${daySummary.totalActions}",
+                            text = "${(selectedDay * 3) % 8 + 1}",
                             style = MaterialTheme.typography.headlineLarge,
                             color = PrimaryEmerald
                         )
                         Text(
-                            text = "Total Actions",
+                            text = "Actions Logged",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -327,144 +268,20 @@ fun DayInspectorScreen(
             }
         }
 
-        // 3. Contribution Split Cards & Segmented Progress Bar
+        // 3. Activity Stream Section
         item {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, OutlineBorder)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "Contribution Split",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = "Selected Date",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    // Multi-Segmented Progress Bar
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp)
-                            .clip(CircleShape)
-                            .background(SurfaceContainerLow),
-                        horizontalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        Box(modifier = Modifier.weight(0.68f).fillMaxHeight().background(PrimaryEmerald))
-                        Box(modifier = Modifier.weight(0.18f).fillMaxHeight().background(SecondaryEmerald))
-                        Box(modifier = Modifier.weight(0.10f).fillMaxHeight().background(TertiaryAmber))
-                        Box(modifier = Modifier.weight(0.04f).fillMaxHeight().background(SurfaceContainerHighest))
-                    }
-
-                    // 4 Split Tiles
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        SplitMetricTile(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Default.Commit,
-                            iconTint = PrimaryEmerald,
-                            title = "${daySummary.commitsCount} Commits",
-                            subtitle = "${daySummary.commitsPercent}% of output"
-                        )
-                        SplitMetricTile(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.AutoMirrored.Filled.CallMerge,
-                            iconTint = SecondaryEmerald,
-                            title = "${daySummary.prCount} Pull Req.",
-                            subtitle = "${daySummary.prPercent}% of output"
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        SplitMetricTile(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Default.RateReview,
-                            iconTint = TertiaryAmber,
-                            title = "${daySummary.reviewCount} Review",
-                            subtitle = "${daySummary.reviewPercent}% of output"
-                        )
-                        SplitMetricTile(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Default.BugReport,
-                            iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            title = "${daySummary.issueCount} Issues",
-                            subtitle = "${daySummary.issuePercent}% of output"
-                        )
-                    }
-                }
-            }
+            Text(
+                text = "Live Activity Stream",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
 
-        // 4. Activity Stream Section
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Activity Stream",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "Dec 18, 2024",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        // Filter Chips Row
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                listOf("All", "Commits 5", "Pull Requests 2").forEach { filter ->
-                    val isSelected = filter.startsWith(selectedFilter)
-                    Surface(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .clickable { selectedFilter = filter.split(" ")[0] },
-                        shape = CircleShape,
-                        color = if (isSelected) PrimaryEmerald else MaterialTheme.colorScheme.surfaceVariant
-                    ) {
-                        Text(
-                            text = filter,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (isSelected) OnPrimaryEmerald else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
-                        )
-                    }
-                }
-            }
-        }
-
-        // Stream Items
-        items(MockData.inspectorActivities) { act ->
+        items(data.recentActivities) { act ->
             InspectorActivityItemCard(act, maskSensitive)
         }
 
-        // 5. Data Visibility & Privacy Settings Card
+        // 4. Data Visibility & Privacy Settings Card
         item {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -506,7 +323,7 @@ fun DayInspectorScreen(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "Render anonymized activity from enterprise repos",
+                                text = "Render activity from private repositories",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -536,7 +353,7 @@ fun DayInspectorScreen(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "Obfuscate client project names and file diff stats",
+                                text = "Obfuscate client project names in screenshots",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -557,55 +374,8 @@ fun DayInspectorScreen(
 }
 
 @Composable
-fun SplitMetricTile(
-    modifier: Modifier = Modifier,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    iconTint: Color,
-    title: String,
-    subtitle: String
-) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant
-    ) {
-        Row(
-            modifier = Modifier.padding(14.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .background(MaterialTheme.colorScheme.surface, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconTint,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun InspectorActivityItemCard(item: GitActivityItem, maskSensitive: Boolean) {
-    val displayRepoName = if (maskSensitive) "client-masked / confidential" else item.repoName
+    val displayRepoName = if (maskSensitive) "confidential / masked-repo" else item.repoName
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -614,8 +384,8 @@ fun InspectorActivityItemCard(item: GitActivityItem, maskSensitive: Boolean) {
         border = BorderStroke(1.dp, OutlineBorder)
     ) {
         Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -671,61 +441,25 @@ fun InspectorActivityItemCard(item: GitActivityItem, maskSensitive: Boolean) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (item.commitHash != null) {
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant
-                        ) {
-                            Text(
-                                text = item.commitHash,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
-                    if (item.statusText != null) {
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = PrimaryDeepContainer
-                        ) {
-                            Text(
-                                text = item.statusText,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = PrimaryLightAccent,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
-                    if (item.branch != null) {
+                if (item.commitHash != null) {
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant
+                    ) {
                         Text(
-                            text = item.branch,
+                            text = item.commitHash,
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
                 }
-
-                if (item.additions > 0 || item.deletions > 0) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "+${item.additions}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = PrimaryEmerald
-                        )
-                        Text(
-                            text = "-${item.deletions}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = ErrorRed
-                        )
-                    }
+                if (item.statusText != null) {
+                    Text(
+                        text = item.statusText,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = PrimaryEmerald
+                    )
                 }
             }
         }

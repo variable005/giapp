@@ -7,6 +7,7 @@ data class UserProfile(
     val name: String,
     val username: String,
     val bio: String,
+    val avatarUrl: String = "",
     val reposCount: Int,
     val followersCount: String,
     val followingCount: Int,
