@@ -7,8 +7,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,14 +21,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.gitpulse.data.GitActivityItem
+import com.example.gitpulse.data.HeatmapDay
 import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.theme.*
 import com.example.gitpulse.ui.animation.AnimatedNumberCounter
@@ -501,10 +506,29 @@ private fun DashboardContent(
 
         // 4. Annual Contributions Section
         item {
+            var selectedDay by remember {
+                mutableStateOf<HeatmapDay?>(
+                    data.contributions.lastOrNull { it.count > 0 } ?: data.contributions.lastOrNull()
+                )
+            }
+
+            val dayMap = remember(data.contributions) {
+                val map = mutableMapOf<Pair<Int, Int>, HeatmapDay>()
+                data.contributions.forEachIndexed { index, day ->
+                    val w = if (day.weekOfYear > 0 || index >= 7) day.weekOfYear else (index / 7)
+                    val d = if (day.dayOfWeek in 0..6) day.dayOfWeek else (index % 7)
+                    map[Pair(w, d)] = day
+                }
+                map
+            }
+
+            val totalWeeks = remember(data.contributions, dayMap) {
+                val maxW = dayMap.keys.maxOfOrNull { it.first } ?: 0
+                maxOf(maxW + 1, (data.contributions.size + 6) / 7, 52)
+            }
+
             ElevatedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onNavigateToInspector() },
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(28.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -548,71 +572,238 @@ private fun DashboardContent(
                         }
                     }
 
-                    // Month Labels Header
+                    // Heatmap Component: Fixed Weekday column + Horizontally Scrollable 52-week matrix
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        listOf("Jan", "Mar", "May", "Jul", "Sep", "Nov").forEach { m ->
-                            Text(
-                                text = m,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    // Heatmap Grid: 7 rows x 16 columns (derived from actual contributions)
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        for (row in 0..6) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                for (col in 0..15) {
-                                    val index = col * 7 + row
-                                    val day = data.contributions.getOrNull(index)
-                                    val level = day?.level ?: 0
-                                    val cellColor = when (level) {
-                                        4 -> PrimaryEmerald
-                                        3 -> SecondaryEmerald
-                                        2 -> PrimaryDeepContainer
-                                        1 -> SurfaceContainerHighest
-                                        else -> SurfaceContainerLow
+                        // Weekday labels (fixed on left)
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(3.dp),
+                            modifier = Modifier.padding(top = 18.dp)
+                        ) {
+                            val weekdayLabels = listOf("", "M", "", "W", "", "F", "")
+                            weekdayLabels.forEach { label ->
+                                Box(
+                                    modifier = Modifier.size(width = 12.dp, height = 13.dp),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    if (label.isNotEmpty()) {
+                                        Text(
+                                            text = label,
+                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
                                     }
+                                }
+                            }
+                        }
+
+                        // Horizontally scrollable 52-week matrix
+                        val heatmapScrollState = rememberScrollState()
+                        LaunchedEffect(data.contributions.size) {
+                            heatmapScrollState.scrollTo(heatmapScrollState.maxValue)
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .horizontalScroll(heatmapScrollState),
+                            verticalArrangement = Arrangement.spacedBy(3.dp)
+                        ) {
+                            // Month Labels Header Row
+                            Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                                for (col in 0 until totalWeeks) {
+                                    val dayInCol = (0..6).firstNotNullOfOrNull { r -> dayMap[Pair(col, r)] }
+                                    val monthStr = dayInCol?.dateString?.takeIf { it.length >= 7 }?.substring(5, 7)
+                                    val prevDayInCol = if (col > 0) (0..6).firstNotNullOfOrNull { r -> dayMap[Pair(col - 1, r)] } else null
+                                    val prevMonthStr = prevDayInCol?.dateString?.takeIf { it.length >= 7 }?.substring(5, 7)
+                                    val isNewMonth = col == 0 || (monthStr != null && monthStr != prevMonthStr)
+
+                                    val monthLabel = if (isNewMonth && monthStr != null) {
+                                        when (monthStr) {
+                                            "01" -> "Jan"
+                                            "02" -> "Feb"
+                                            "03" -> "Mar"
+                                            "04" -> "Apr"
+                                            "05" -> "May"
+                                            "06" -> "Jun"
+                                            "07" -> "Jul"
+                                            "08" -> "Aug"
+                                            "09" -> "Sep"
+                                            "10" -> "Oct"
+                                            "11" -> "Nov"
+                                            "12" -> "Dec"
+                                            else -> ""
+                                        }
+                                    } else ""
+
                                     Box(
-                                        modifier = Modifier
-                                            .size(16.dp)
-                                            .clip(RoundedCornerShape(3.dp))
-                                            .background(cellColor)
-                                    )
+                                        modifier = Modifier.width(13.dp),
+                                        contentAlignment = Alignment.BottomStart
+                                    ) {
+                                        if (monthLabel.isNotEmpty()) {
+                                            Text(
+                                                text = monthLabel,
+                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 1,
+                                                softWrap = false,
+                                                overflow = TextOverflow.Visible
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 7 Rows of Contribution Cells
+                            for (row in 0..6) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                                    for (col in 0 until totalWeeks) {
+                                        val day = dayMap[Pair(col, row)]
+                                        val level = day?.level ?: 0
+                                        val isSelected = selectedDay != null && day != null && selectedDay?.dateString == day.dateString
+
+                                        val cellColor = when (level) {
+                                            4 -> PrimaryEmerald
+                                            3 -> PrimaryEmerald.copy(alpha = 0.82f)
+                                            2 -> PrimaryEmerald.copy(alpha = 0.58f)
+                                            1 -> PrimaryEmerald.copy(alpha = 0.32f)
+                                            else -> MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f)
+                                        }
+
+                                        val scaleAnim by animateFloatAsState(
+                                            targetValue = if (isSelected) 1.25f else 1.0f,
+                                            animationSpec = MotionTokens.SpringBouncy,
+                                            label = "cell_scale"
+                                        )
+
+                                        Box(
+                                            modifier = Modifier
+                                                .size(13.dp)
+                                                .scale(scaleAnim)
+                                                .clip(RoundedCornerShape(3.dp))
+                                                .background(cellColor)
+                                                .then(
+                                                    if (isSelected) {
+                                                        Modifier.border(
+                                                            width = 1.5.dp,
+                                                            color = MaterialTheme.colorScheme.onSurface,
+                                                            shape = RoundedCornerShape(3.dp)
+                                                        )
+                                                    } else Modifier
+                                                )
+                                                .clickable(enabled = day != null) {
+                                                    day?.let {
+                                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                        selectedDay = it
+                                                    }
+                                                }
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
 
-                    // Footer Legend
+                    // Selected Day Inspection Banner
+                    AnimatedVisibility(
+                        visible = selectedDay != null,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
+                        selectedDay?.let { day ->
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(12.dp)
+                                                .clip(RoundedCornerShape(3.dp))
+                                                .background(
+                                                    when (day.level) {
+                                                        4 -> PrimaryEmerald
+                                                        3 -> PrimaryEmerald.copy(alpha = 0.82f)
+                                                        2 -> PrimaryEmerald.copy(alpha = 0.58f)
+                                                        1 -> PrimaryEmerald.copy(alpha = 0.32f)
+                                                        else -> MaterialTheme.colorScheme.surfaceContainerHighest
+                                                    }
+                                                )
+                                        )
+                                        Column {
+                                            Text(
+                                                text = day.dateString.ifEmpty { "Selected Day" },
+                                                style = MaterialTheme.typography.labelMedium,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                            Text(
+                                                text = if (day.count == 0) "No contributions recorded" else "${day.count} ${if (day.count == 1) "contribution" else "contributions"}",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = if (day.count > 0) PrimaryEmerald else MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+
+                                    FilledTonalButton(
+                                        onClick = onNavigateToInspector,
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                        modifier = Modifier.height(36.dp),
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Text(
+                                            text = "Inspect Day",
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Footer Legend & Instructions
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Tap to inspect days",
+                            text = "Scroll to review past 52 weeks",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = "Less", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Box(modifier = Modifier.size(10.dp).background(SurfaceContainerLow, RoundedCornerShape(2.dp)))
-                            Box(modifier = Modifier.size(10.dp).background(SurfaceContainerHighest, RoundedCornerShape(2.dp)))
-                            Box(modifier = Modifier.size(10.dp).background(PrimaryDeepContainer, RoundedCornerShape(2.dp)))
-                            Box(modifier = Modifier.size(10.dp).background(SecondaryEmerald, RoundedCornerShape(2.dp)))
+                            Text(
+                                text = "Less",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Box(modifier = Modifier.size(10.dp).background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f), RoundedCornerShape(2.dp)))
+                            Box(modifier = Modifier.size(10.dp).background(PrimaryEmerald.copy(alpha = 0.32f), RoundedCornerShape(2.dp)))
+                            Box(modifier = Modifier.size(10.dp).background(PrimaryEmerald.copy(alpha = 0.58f), RoundedCornerShape(2.dp)))
+                            Box(modifier = Modifier.size(10.dp).background(PrimaryEmerald.copy(alpha = 0.82f), RoundedCornerShape(2.dp)))
                             Box(modifier = Modifier.size(10.dp).background(PrimaryEmerald, RoundedCornerShape(2.dp)))
-                            Text(text = "More", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                text = "More",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }

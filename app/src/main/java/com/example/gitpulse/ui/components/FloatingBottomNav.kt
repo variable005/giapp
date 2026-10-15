@@ -2,6 +2,8 @@ package com.example.gitpulse.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -80,25 +83,31 @@ fun FloatingBottomNav(
 
                     val indicatorWidth by animateDpAsState(
                         targetValue = if (isSelected) 56.dp else 36.dp,
-                        animationSpec = MotionTokens.springBouncy(),
+                        animationSpec = spring(dampingRatio = 0.52f, stiffness = 380f),
                         label = "pill_w_${tab.name}"
+                    )
+
+                    val iconScale by animateFloatAsState(
+                        targetValue = if (isSelected) 1.20f else 1.0f,
+                        animationSpec = spring(dampingRatio = 0.45f, stiffness = 450f),
+                        label = "icon_scale_${tab.name}"
                     )
 
                     val indicatorBg by animateColorAsState(
                         targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
-                        animationSpec = MotionTokens.springBouncy(),
+                        animationSpec = spring(dampingRatio = 0.65f, stiffness = 400f),
                         label = "pill_bg_${tab.name}"
                     )
 
                     val iconTint by animateColorAsState(
                         targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                        animationSpec = MotionTokens.springBouncy(),
+                        animationSpec = spring(dampingRatio = 0.65f, stiffness = 400f),
                         label = "pill_tint_${tab.name}"
                     )
 
                     val textColor by animateColorAsState(
                         targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-                        animationSpec = MotionTokens.springBouncy(),
+                        animationSpec = spring(dampingRatio = 0.65f, stiffness = 400f),
                         label = "pill_text_${tab.name}"
                     )
 
@@ -112,7 +121,7 @@ fun FloatingBottomNav(
                                 indication = null
                             ) {
                                 if (!isSelected) {
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     onTabSelected(tab)
                                 }
                             },
@@ -130,7 +139,9 @@ fun FloatingBottomNav(
                                 imageVector = tab.icon,
                                 contentDescription = tab.label,
                                 tint = iconTint,
-                                modifier = Modifier.size(19.dp)
+                                modifier = Modifier
+                                    .size(19.dp)
+                                    .scale(iconScale)
                             )
                         }
 

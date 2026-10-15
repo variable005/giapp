@@ -1,9 +1,12 @@
 package com.example.gitpulse.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
@@ -47,12 +50,30 @@ fun MainAppScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
+    // Hierarchical Android Back Navigation Mapping
+    BackHandler(enabled = showSettingsScreen) {
+        showSettingsScreen = false
+    }
+    BackHandler(enabled = !showSettingsScreen && showNotificationsSheet) {
+        showNotificationsSheet = false
+    }
+    BackHandler(enabled = !showSettingsScreen && !showNotificationsSheet && showSearchDialog) {
+        showSearchDialog = false
+    }
+    BackHandler(enabled = !showSettingsScreen && !showNotificationsSheet && !showSearchDialog && currentTab != NavigationTab.HOME) {
+        currentTab = NavigationTab.HOME
+    }
+
     GitPulseTheme(
         darkTheme = isDark,
         dynamicColor = dynamicColor,
         amoled = amoledMode
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
             // Main Container with Animated Settings Transition (Material 3 Emphasized Motion)
             AnimatedContent(
                 targetState = showSettingsScreen,
@@ -74,7 +95,9 @@ fun MainAppScreen(
                     }
                 },
                 label = "settings_transition",
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
             ) { inSettings ->
                 if (inSettings) {
                     SettingsScreen(
@@ -83,17 +106,22 @@ fun MainAppScreen(
                         onOpenNotifications = { showNotificationsSheet = true }
                     )
                 } else {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        // Main Content Area with Butter-Smooth M3 Fade-Through Transitions
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background)
+                    ) {
+                        // Main Content Area with Seamless Modern Crossfade (Zero White Flash)
                         AnimatedContent(
                             targetState = currentTab,
                             transitionSpec = {
-                                (fadeIn(animationSpec = tween(220, delayMillis = 40, easing = FastOutSlowInEasing)) +
-                                 scaleIn(initialScale = 0.96f, animationSpec = tween(220, delayMillis = 40, easing = FastOutSlowInEasing))) togetherWith
-                                (fadeOut(animationSpec = tween(80, easing = FastOutLinearInEasing)))
+                                (fadeIn(animationSpec = tween(150, easing = LinearEasing))) togetherWith
+                                (fadeOut(animationSpec = tween(150, easing = LinearEasing)))
                             },
-                            label = "tab_fade_through",
-                            modifier = Modifier.fillMaxSize()
+                            label = "tab_crossfade",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.background)
                         ) { targetTab ->
                             when (targetTab) {
                                 NavigationTab.HOME -> {
