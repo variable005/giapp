@@ -53,7 +53,7 @@ fun SearchUserDialog(
                     },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedCornerShape(20.dp)
                 )
 
                 OutlinedTextField(
@@ -70,7 +70,7 @@ fun SearchUserDialog(
                     },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedCornerShape(20.dp)
                 )
             }
         },
@@ -83,9 +83,10 @@ fun SearchUserDialog(
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryEmerald),
-                shape = CircleShape
+                shape = CircleShape,
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
             ) {
-                Text("Fetch Profile", color = OnPrimaryEmerald)
+                Text("Fetch Profile", color = OnPrimaryEmerald, style = MaterialTheme.typography.labelLarge)
             }
         },
         dismissButton = {

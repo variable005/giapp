@@ -1,32 +1,29 @@
 package com.example.gitpulse.ui.components
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Timeline
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ShortNavigationBar
+import androidx.compose.material3.ShortNavigationBarArrangement
+import androidx.compose.material3.ShortNavigationBarItem
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.example.gitpulse.ui.animation.MotionTokens
 
 enum class NavigationTab(val label: String, val icon: ImageVector) {
     HOME("Home", Icons.Default.Home),
@@ -36,9 +33,9 @@ enum class NavigationTab(val label: String, val icon: ImageVector) {
 }
 
 /**
- * Material 3 Expressive Floating Bottom Pill Navigation Bar
- * Form Factor: Detached solid full-pill floating above bottom navigation insets.
- * 100% Solid flat tonal colors. Zero glassmorphism.
+ * Material 3 Expressive floating short navigation bar.
+ * Uses [ShortNavigationBar] so the indicator, icon morph and expressive motion
+ * come from MaterialExpressiveTheme instead of a hand-rolled pill.
  */
 @Composable
 fun FloatingBottomNav(
@@ -56,73 +53,35 @@ fun FloatingBottomNav(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp),
-            shape = CircleShape,
+                .height(80.dp),
+            shape = RoundedCornerShape(28.dp),
             color = MaterialTheme.colorScheme.surfaceContainer,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-            tonalElevation = 6.dp
+            tonalElevation = 6.dp,
+            shadowElevation = 6.dp
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
+            ShortNavigationBar(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                arrangement = ShortNavigationBarArrangement.EqualWeight
             ) {
                 NavigationTab.entries.forEach { tab ->
-                    val isSelected = tab == currentTab
-
-                    val animatedBgColor by animateColorAsState(
-                        targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
-                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-                        label = "tab_bg"
-                    )
-
-                    val animatedContentColor by animateColorAsState(
-                        targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                        label = "tab_content_color"
-                    )
-
-                    val animatedScale by animateFloatAsState(
-                        targetValue = if (isSelected) 1.12f else 1.0f,
-                        animationSpec = MotionTokens.SpringBouncy,
-                        label = "tab_scale"
-                    )
-
-                    val interactionSource = remember { MutableInteractionSource() }
-
-                    Box(
-                        modifier = Modifier
-                            .height(48.dp)
-                            .clip(CircleShape)
-                            .background(animatedBgColor)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) { onTabSelected(tab) }
-                            .padding(horizontal = 16.dp, vertical = 6.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
+                    ShortNavigationBarItem(
+                        selected = tab == currentTab,
+                        onClick = { onTabSelected(tab) },
+                        icon = {
                             Icon(
                                 imageVector = tab.icon,
-                                contentDescription = tab.label,
-                                tint = animatedContentColor,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .scale(animatedScale)
+                                contentDescription = tab.label
                             )
-                            Spacer(modifier = Modifier.height(2.dp))
+                        },
+                        label = {
                             Text(
                                 text = tab.label,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = animatedContentColor
+                                style = MaterialTheme.typography.labelMedium
                             )
                         }
-                    }
+                    )
                 }
             }
         }

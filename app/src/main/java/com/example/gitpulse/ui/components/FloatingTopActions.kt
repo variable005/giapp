@@ -1,8 +1,6 @@
 package com.example.gitpulse.ui.components
 
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import com.example.gitpulse.ui.animation.MotionTokens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -23,9 +21,9 @@ import androidx.compose.ui.unit.dp
 import com.example.gitpulse.theme.*
 
 /**
- * Strict Material 3 Floating Top Action Bar.
- * 100% solid, opaque flat tonal containers. Zero glassmorphism.
- * Conforms strictly to constraint: No app name bar on the top.
+ * Material 3 Expressive floating top action bar.
+ * Larger touch targets (52dp), 20dp+ icons and labelMedium emphasis
+ * so pills read as expressive rather than compact M3.
  */
 @Composable
 fun FloatingTopActions(
@@ -42,7 +40,7 @@ fun FloatingTopActions(
 ) {
     val themeRotation by animateFloatAsState(
         targetValue = if (isDarkTheme) 0f else 180f,
-        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        animationSpec = MotionTokens.SpringBouncy,
         label = "theme_rot"
     )
 
@@ -59,30 +57,31 @@ fun FloatingTopActions(
         // Left: Dark/Light Mode Switcher Pill
         Surface(
             modifier = Modifier
-                .height(44.dp)
+                .height(52.dp)
                 .clip(CircleShape)
                 .clickable { onToggleTheme() },
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainer,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-            tonalElevation = 2.dp
+            tonalElevation = 3.dp,
+            shadowElevation = 2.dp
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 14.dp),
+                modifier = Modifier.padding(horizontal = 18.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
                     imageVector = if (isDarkTheme) Icons.Default.DarkMode else Icons.Default.LightMode,
                     contentDescription = "Toggle Theme",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
-                        .size(16.dp)
+                        .size(20.dp)
                         .rotate(themeRotation)
                 )
                 Text(
                     text = if (isDarkTheme) "Dark" else "Light",
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -91,29 +90,30 @@ fun FloatingTopActions(
         // Center: Interactive Active User Search Pill
         Surface(
             modifier = Modifier
-                .height(44.dp)
+                .height(52.dp)
                 .clip(CircleShape)
                 .clickable { onSearchClick() },
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
-            tonalElevation = 3.dp
+            color = MaterialTheme.colorScheme.primaryContainer,
+            border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary),
+            tonalElevation = 4.dp,
+            shadowElevation = 2.dp
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 14.dp),
+                modifier = Modifier.padding(horizontal = 18.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Search User",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(16.dp)
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(20.dp)
                 )
                 Text(
                     text = "@$currentUsername",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
         }
@@ -126,13 +126,14 @@ fun FloatingTopActions(
             // Live API Refresh Button with animated spinner
             Surface(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(52.dp)
                     .clip(CircleShape)
                     .clickable { onRefreshClick() },
                 shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceContainer,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                tonalElevation = 2.dp
+                tonalElevation = 3.dp,
+                shadowElevation = 2.dp
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
@@ -140,7 +141,7 @@ fun FloatingTopActions(
                         contentDescription = "Refresh Data",
                         tint = if (isLoading) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
-                            .size(18.dp)
+                            .size(22.dp)
                             .rotate(refreshRotation)
                     )
                 }
@@ -150,20 +151,21 @@ fun FloatingTopActions(
             Box {
                 Surface(
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(52.dp)
                         .clip(CircleShape)
                         .clickable { onNotificationsClick() },
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                    tonalElevation = 2.dp
+                    tonalElevation = 3.dp,
+                    shadowElevation = 2.dp
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.Notifications,
                             contentDescription = "Notifications",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                 }
@@ -173,7 +175,7 @@ fun FloatingTopActions(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(top = 2.dp, end = 2.dp)
-                            .size(10.dp)
+                            .size(12.dp)
                             .background(MaterialTheme.colorScheme.primary, CircleShape)
                             .border(2.dp, MaterialTheme.colorScheme.background, CircleShape)
                     )
@@ -183,20 +185,21 @@ fun FloatingTopActions(
             // Settings Button
             Surface(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(52.dp)
                     .clip(CircleShape)
                     .clickable { onSettingsClick() },
                 shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceContainer,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                tonalElevation = 2.dp
+                tonalElevation = 3.dp,
+                shadowElevation = 2.dp
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Settings",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }

@@ -173,7 +173,7 @@ private fun AnalyticsContent(
         item {
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(28.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
@@ -311,7 +311,7 @@ private fun AnalyticsContent(
         item {
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(28.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
@@ -341,7 +341,7 @@ private fun AnalyticsContent(
                     // Inner Preview Canvas
                     OutlinedCard(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.outlinedCardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
                         ),
@@ -457,19 +457,20 @@ private fun AnalyticsContent(
                         onClick = onShareCard,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp),
+                            .height(56.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         ),
-                        shape = CircleShape
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Text(text = "Share Telemetry Card")
+                            Text(text = "Share Telemetry Card", style = MaterialTheme.typography.labelLarge)
                         }
                     }
                 }
@@ -490,7 +491,7 @@ fun TelemetryCard(
 ) {
     OutlinedCard(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
@@ -545,7 +546,7 @@ fun TelemetryCard(
 fun ShowcaseRepoCard(repo: ShowcaseRepo) {
     OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
@@ -686,14 +687,14 @@ private fun LoadingAnalyticsSkeleton(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Box(modifier = Modifier.weight(1f).height(110.dp).clip(RoundedCornerShape(20.dp)).background(shimmer))
-            Box(modifier = Modifier.weight(1f).height(110.dp).clip(RoundedCornerShape(20.dp)).background(shimmer))
+            Box(modifier = Modifier.weight(1f).height(110.dp).clip(RoundedCornerShape(24.dp)).background(shimmer))
+            Box(modifier = Modifier.weight(1f).height(110.dp).clip(RoundedCornerShape(24.dp)).background(shimmer))
         }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp)
-                .clip(RoundedCornerShape(24.dp))
+                .clip(RoundedCornerShape(28.dp))
                 .background(shimmer)
         )
     }

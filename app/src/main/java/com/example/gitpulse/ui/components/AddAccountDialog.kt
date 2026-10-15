@@ -45,7 +45,7 @@ fun AddAccountDialog(
                         Icon(Icons.Default.AccountCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedCornerShape(20.dp)
                 )
 
                 OutlinedTextField(
@@ -57,7 +57,7 @@ fun AddAccountDialog(
                         Icon(Icons.Default.Key, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedCornerShape(20.dp)
                 )
             }
         },

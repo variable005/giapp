@@ -103,8 +103,14 @@ fun GitPulseTheme(
         else -> GitPulseLightColorScheme
     }
 
+    // NOTE: material3 1.4.0 (BOM 2026.03.01) keeps MaterialExpressiveTheme /
+    // MotionScheme.expressive() internal, so we apply the expressive *look*
+    // via theme tokens: expressive shapes + expressive type scale + expressive
+    // springs in MotionTokens. Bump to material3 1.5.x + compileSdk 37 to use
+    // MaterialExpressiveTheme / LinearWavyProgressIndicator / LoadingIndicator.
     MaterialTheme(
         colorScheme = colorScheme,
+        shapes = GitPulseShapes,
         typography = Typography,
         content = content
     )

@@ -34,15 +34,26 @@ object MotionTokens {
     const val DurationMedium = 350
     const val DurationLong = 500
 
-    // M3 Expressive Spring Specs
+    // M3 Expressive spring specs (match ExpressiveMotionTokens).
+    // Default spatial: damping 0.8, stiffness 380. Fast spatial: 0.6 / 800.
     val SpringBouncy = spring<Float>(
-        dampingRatio = Spring.DampingRatioMediumBouncy,
-        stiffness = Spring.StiffnessLow
+        dampingRatio = 0.8f,
+        stiffness = 380f
+    )
+
+    val SpringFastSpatial = spring<Float>(
+        dampingRatio = 0.6f,
+        stiffness = 800f
+    )
+
+    val SpringSlowSpatial = spring<Float>(
+        dampingRatio = 0.8f,
+        stiffness = 200f
     )
 
     val SpringGentle = spring<Float>(
-        dampingRatio = Spring.DampingRatioNoBouncy,
-        stiffness = Spring.StiffnessMediumLow
+        dampingRatio = 1f,
+        stiffness = 1600f
     )
 
     @Composable

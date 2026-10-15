@@ -122,7 +122,7 @@ fun NotificationsSheet(
                 items(sampleNotifications) { item ->
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(20.dp),
                         color = if (item.isUnread) MaterialTheme.colorScheme.surfaceVariant else SurfaceContainerLowest
                     ) {
                         Row(

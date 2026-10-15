@@ -88,7 +88,7 @@ private fun DashboardContent(
         item {
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(28.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
@@ -169,12 +169,12 @@ private fun DashboardContent(
                             }
                         }
 
-                        // Switch Profile Button
+                        // Switch Profile Button (expressive: taller, bolder)
                         FilledTonalButton(
                             onClick = onSearchClick,
                             shape = CircleShape,
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                            modifier = Modifier.height(36.dp),
+                            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+                            modifier = Modifier.height(48.dp),
                             colors = ButtonDefaults.filledTonalButtonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                                 contentColor = MaterialTheme.colorScheme.onSurface
@@ -221,7 +221,7 @@ private fun DashboardContent(
         item {
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(28.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
@@ -343,14 +343,18 @@ private fun DashboardContent(
                             animationSpec = MotionTokens.SpringBouncy,
                             label = "milestone_anim"
                         )
+                        // Expressive milestone track: thicker (12dp), fully rounded,
+                        // high-contrast track. (LinearWavyProgressIndicator needs
+                        // material3 1.5.x + compileSdk 37, so styled linear on 1.4.0.)
                         LinearProgressIndicator(
                             progress = { progressAnimation },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(8.dp)
+                                .height(12.dp)
                                 .clip(CircleShape),
                             color = MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                            trackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
                         )
                     }
                 }
@@ -366,7 +370,7 @@ private fun DashboardContent(
                 // Active Run Card
                 OutlinedCard(
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.outlinedCardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer
                     ),
@@ -417,7 +421,7 @@ private fun DashboardContent(
                 // Peak Run Card
                 OutlinedCard(
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.outlinedCardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer
                     ),
@@ -473,7 +477,7 @@ private fun DashboardContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onNavigateToInspector() },
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(28.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
@@ -624,14 +628,14 @@ private fun LoadingDashboardSkeleton(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp)
-                .clip(RoundedCornerShape(24.dp))
+                .clip(RoundedCornerShape(28.dp))
                 .background(shimmerBrush)
         )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(160.dp)
-                .clip(RoundedCornerShape(24.dp))
+                .clip(RoundedCornerShape(28.dp))
                 .background(shimmerBrush)
         )
         Row(
@@ -766,7 +770,7 @@ fun MetricColumn(value: String, label: String, hasStar: Boolean = false) {
 fun RecentActivityCard(item: GitActivityItem) {
     OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
