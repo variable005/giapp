@@ -53,24 +53,24 @@ fun MainAppScreen(
         amoled = amoledMode
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Main Container with Animated Settings Transition
+            // Main Container with Animated Settings Transition (M3 Expressive Springs)
             AnimatedContent(
                 targetState = showSettingsScreen,
                 transitionSpec = {
                     if (targetState) {
                         (slideInVertically(
-                            animationSpec = tween(MotionTokens.DurationMedium, easing = MotionTokens.EmphasizedDecelerateEasing)
-                        ) { it / 4 } + fadeIn(tween(MotionTokens.DurationShort))) togetherWith
+                            animationSpec = MotionTokens.springBouncy()
+                        ) { it / 4 } + fadeIn(MotionTokens.springGentle())) togetherWith
                         (slideOutVertically(
-                            animationSpec = tween(MotionTokens.DurationMedium, easing = MotionTokens.EmphasizedAccelerateEasing)
-                        ) { -it / 8 } + fadeOut(tween(MotionTokens.DurationShort)))
+                            animationSpec = MotionTokens.springBouncy()
+                        ) { -it / 8 } + fadeOut(MotionTokens.springGentle()))
                     } else {
                         (slideInVertically(
-                            animationSpec = tween(MotionTokens.DurationMedium, easing = MotionTokens.EmphasizedDecelerateEasing)
-                        ) { -it / 8 } + fadeIn(tween(MotionTokens.DurationShort))) togetherWith
+                            animationSpec = MotionTokens.springBouncy()
+                        ) { -it / 8 } + fadeIn(MotionTokens.springGentle())) togetherWith
                         (slideOutVertically(
-                            animationSpec = tween(MotionTokens.DurationMedium, easing = MotionTokens.EmphasizedAccelerateEasing)
-                        ) { it / 4 } + fadeOut(tween(MotionTokens.DurationShort)))
+                            animationSpec = MotionTokens.springBouncy()
+                        ) { it / 4 } + fadeOut(MotionTokens.springGentle()))
                     }
                 },
                 label = "settings_transition",
@@ -83,25 +83,25 @@ fun MainAppScreen(
                     )
                 } else {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        // Main Content Area with M3 Shared Axis Horizontal Tab Transitions
+                        // Main Content Area with M3 Expressive Shared Axis Spring Transitions
                         AnimatedContent(
                             targetState = currentTab,
                             transitionSpec = {
                                 val direction = targetState.ordinal > initialState.ordinal
                                 if (direction) {
                                     (slideInHorizontally(
-                                        animationSpec = tween(MotionTokens.DurationMedium, easing = MotionTokens.EmphasizedDecelerateEasing)
-                                    ) { it / 3 } + fadeIn(tween(MotionTokens.DurationShort))) togetherWith
+                                        animationSpec = MotionTokens.springBouncy()
+                                    ) { it / 3 } + fadeIn(MotionTokens.springGentle())) togetherWith
                                     (slideOutHorizontally(
-                                        animationSpec = tween(MotionTokens.DurationMedium, easing = MotionTokens.EmphasizedAccelerateEasing)
-                                    ) { -it / 3 } + fadeOut(tween(MotionTokens.DurationShort)))
+                                        animationSpec = MotionTokens.springBouncy()
+                                    ) { -it / 3 } + fadeOut(MotionTokens.springGentle()))
                                 } else {
                                     (slideInHorizontally(
-                                        animationSpec = tween(MotionTokens.DurationMedium, easing = MotionTokens.EmphasizedDecelerateEasing)
-                                    ) { -it / 3 } + fadeIn(tween(MotionTokens.DurationShort))) togetherWith
+                                        animationSpec = MotionTokens.springBouncy()
+                                    ) { -it / 3 } + fadeIn(MotionTokens.springGentle())) togetherWith
                                     (slideOutHorizontally(
-                                        animationSpec = tween(MotionTokens.DurationMedium, easing = MotionTokens.EmphasizedAccelerateEasing)
-                                    ) { it / 3 } + fadeOut(tween(MotionTokens.DurationShort)))
+                                        animationSpec = MotionTokens.springBouncy()
+                                    ) { it / 3 } + fadeOut(MotionTokens.springGentle()))
                                 }
                             },
                             label = "tab_transition",
@@ -120,12 +120,14 @@ fun MainAppScreen(
                                 }
                                 NavigationTab.INSPECTOR -> {
                                     DayInspectorScreen(
-                                        uiState = uiState
+                                        uiState = uiState,
+                                        onRetry = { viewModel.refresh() }
                                     )
                                 }
                                 NavigationTab.ANALYTICS -> {
                                     AnalyticsScreen(
                                         uiState = uiState,
+                                        onRetry = { viewModel.refresh() },
                                         onShareCard = {
                                             coroutineScope.launch {
                                                 snackbarHostState.showSnackbar("Telemetry card exported to gallery!")
@@ -156,7 +158,7 @@ fun MainAppScreen(
                             }
                         }
 
-                        // Floating Top Controls Overlay (STRICTLY NO APP BAR)
+                        // Floating Top Controls Overlay (STRICTLY NO APP BAR - Perfectly Symmetrical)
                         FloatingTopActions(
                             currentUsername = currentUsername,
                             isDarkTheme = isDark,
@@ -170,16 +172,9 @@ fun MainAppScreen(
                             },
                             onSearchClick = { showSearchDialog = true },
                             onNotificationsClick = { showNotificationsSheet = true },
-                            onRefreshClick = {
-                                viewModel.refresh()
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar("Refreshing GitHub stats for @$currentUsername...")
-                                }
-                            },
                             onSettingsClick = {
                                 showSettingsScreen = true
                             },
-                            isLoading = uiState is GitPulseUiState.Loading,
                             modifier = Modifier.align(Alignment.TopCenter)
                         )
 

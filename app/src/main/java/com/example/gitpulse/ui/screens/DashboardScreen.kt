@@ -27,10 +27,12 @@ import com.example.gitpulse.data.GitActivityItem
 import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.theme.*
 import com.example.gitpulse.ui.animation.AnimatedNumberCounter
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import com.example.gitpulse.ui.animation.MotionTokens
 import com.example.gitpulse.ui.animation.PulsingStatusDot
 import com.example.gitpulse.ui.viewmodel.GitPulseUiState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     uiState: GitPulseUiState,
@@ -39,25 +41,31 @@ fun DashboardScreen(
     onNavigateToInspector: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    when (uiState) {
-        is GitPulseUiState.Loading -> {
-            LoadingDashboardSkeleton(modifier)
-        }
-        is GitPulseUiState.Error -> {
-            ErrorDashboardState(
-                message = uiState.message,
-                onRetry = onRetry,
-                onSearchClick = onSearchClick,
-                modifier = modifier
-            )
-        }
-        is GitPulseUiState.Success -> {
-            DashboardContent(
-                data = uiState.data,
-                onSearchClick = onSearchClick,
-                onNavigateToInspector = onNavigateToInspector,
-                modifier = modifier
-            )
+    val isRefreshing = uiState is GitPulseUiState.Loading
+
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRetry,
+        modifier = modifier.fillMaxSize()
+    ) {
+        when (uiState) {
+            is GitPulseUiState.Loading -> {
+                LoadingDashboardSkeleton()
+            }
+            is GitPulseUiState.Error -> {
+                ErrorDashboardState(
+                    message = uiState.message,
+                    onRetry = onRetry,
+                    onSearchClick = onSearchClick
+                )
+            }
+            is GitPulseUiState.Success -> {
+                DashboardContent(
+                    data = uiState.data,
+                    onSearchClick = onSearchClick,
+                    onNavigateToInspector = onNavigateToInspector
+                )
+            }
         }
     }
 }
@@ -77,7 +85,7 @@ private fun DashboardContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(
-            top = 76.dp,
+            top = 108.dp,
             bottom = 156.dp,
             start = 16.dp,
             end = 16.dp
@@ -169,12 +177,12 @@ private fun DashboardContent(
                             }
                         }
 
-                        // Switch Profile Button (expressive: taller, bolder)
+                        // Switch Profile Button (Symmetrical M3 Tonal Button)
                         FilledTonalButton(
                             onClick = onSearchClick,
                             shape = CircleShape,
-                            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-                            modifier = Modifier.height(48.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            modifier = Modifier.height(40.dp),
                             colors = ButtonDefaults.filledTonalButtonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                                 contentColor = MaterialTheme.colorScheme.onSurface
@@ -184,12 +192,13 @@ private fun DashboardContent(
                                 imageVector = Icons.Default.SwapHoriz,
                                 contentDescription = "Switch User",
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(14.dp)
+                                modifier = Modifier.size(16.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "Switch",
-                                style = MaterialTheme.typography.labelSmall
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                             )
                         }
                     }
@@ -376,7 +385,7 @@ private fun DashboardContent(
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
                     Column(
-                        modifier = Modifier.padding(18.dp),
+                        modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Row(
@@ -427,7 +436,7 @@ private fun DashboardContent(
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
                     Column(
-                        modifier = Modifier.padding(18.dp),
+                        modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Row(

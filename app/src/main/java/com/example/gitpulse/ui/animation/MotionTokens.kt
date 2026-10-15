@@ -51,6 +51,11 @@ object MotionTokens {
         stiffness = 800f
     )
 
+    fun <T> springGentle(): SpringSpec<T> = spring(
+        dampingRatio = 0.9f,
+        stiffness = 600f
+    )
+
     val SpringFastSpatial = spring<Float>(
         dampingRatio = 0.6f,
         stiffness = 800f
@@ -107,7 +112,7 @@ object MotionTokens {
 }
 
 /**
- * Animated rolling number counter with M3 vertical slide & fade transitions.
+ * Animated rolling number counter with M3 Expressive physics spring transitions.
  */
 @Composable
 fun AnimatedNumberCounter(
@@ -122,18 +127,18 @@ fun AnimatedNumberCounter(
         transitionSpec = {
             if (targetState > initialState) {
                 (slideInVertically(
-                    animationSpec = tween(MotionTokens.DurationMedium, easing = MotionTokens.EmphasizedDecelerateEasing)
-                ) { it / 2 } + fadeIn(tween(MotionTokens.DurationShort))) togetherWith
+                    animationSpec = MotionTokens.springBouncy()
+                ) { it / 2 } + fadeIn(MotionTokens.springGentle())) togetherWith
                 (slideOutVertically(
-                    animationSpec = tween(MotionTokens.DurationMedium, easing = MotionTokens.EmphasizedAccelerateEasing)
-                ) { -it / 2 } + fadeOut(tween(MotionTokens.DurationShort)))
+                    animationSpec = MotionTokens.springBouncy()
+                ) { -it / 2 } + fadeOut(MotionTokens.springGentle()))
             } else {
                 (slideInVertically(
-                    animationSpec = tween(MotionTokens.DurationMedium, easing = MotionTokens.EmphasizedDecelerateEasing)
-                ) { -it / 2 } + fadeIn(tween(MotionTokens.DurationShort))) togetherWith
+                    animationSpec = MotionTokens.springBouncy()
+                ) { -it / 2 } + fadeIn(MotionTokens.springGentle())) togetherWith
                 (slideOutVertically(
-                    animationSpec = tween(MotionTokens.DurationMedium, easing = MotionTokens.EmphasizedAccelerateEasing)
-                ) { it / 2 } + fadeOut(tween(MotionTokens.DurationShort)))
+                    animationSpec = MotionTokens.springBouncy()
+                ) { it / 2 } + fadeOut(MotionTokens.springGentle()))
             }
         },
         label = "animated_counter",

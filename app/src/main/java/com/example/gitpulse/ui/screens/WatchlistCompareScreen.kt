@@ -23,6 +23,7 @@ import com.example.gitpulse.theme.*
 import com.example.gitpulse.ui.animation.MotionTokens
 import com.example.gitpulse.ui.animation.PulsingStatusDot
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WatchlistCompareScreen(
     currentUsername: String,
@@ -45,18 +46,23 @@ fun WatchlistCompareScreen(
         Pair("google", "Google Organization")
     )
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(
-            top = 76.dp,
-            bottom = 156.dp,
-            start = 16.dp,
-            end = 16.dp
-        ),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+        isRefreshing = false,
+        onRefresh = onPurgeCache,
+        modifier = modifier.fillMaxSize()
     ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            contentPadding = PaddingValues(
+                top = 108.dp,
+                bottom = 156.dp,
+                start = 16.dp,
+                end = 16.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
         // 1. Profile Comparison Section
         item {
             ElevatedCard(
@@ -433,6 +439,7 @@ fun WatchlistCompareScreen(
             }
         }
     }
+}
 }
 
 @Composable

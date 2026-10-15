@@ -29,29 +29,40 @@ import com.example.gitpulse.theme.*
 import com.example.gitpulse.ui.animation.AnimatedNumberCounter
 import com.example.gitpulse.ui.animation.MotionTokens
 import com.example.gitpulse.ui.animation.PulsingStatusDot
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import com.example.gitpulse.ui.viewmodel.GitPulseUiState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnalyticsScreen(
     uiState: GitPulseUiState,
+    onRetry: () -> Unit = {},
     onShareCard: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    when (uiState) {
-        is GitPulseUiState.Loading -> {
-            LoadingAnalyticsSkeleton(modifier)
-        }
-        is GitPulseUiState.Error -> {
-            Box(modifier = modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-                Text(text = uiState.message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+    val isRefreshing = uiState is GitPulseUiState.Loading
+
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRetry,
+        modifier = modifier.fillMaxSize()
+    ) {
+        when (uiState) {
+            is GitPulseUiState.Loading -> {
+                LoadingAnalyticsSkeleton()
             }
-        }
-        is GitPulseUiState.Success -> {
-            AnalyticsContent(
-                data = uiState.data,
-                onShareCard = onShareCard,
-                modifier = modifier
-            )
+            is GitPulseUiState.Error -> {
+                Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                    Text(text = uiState.message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+                }
+            }
+            is GitPulseUiState.Success -> {
+                AnalyticsContent(
+                    data = uiState.data,
+                    onShareCard = onShareCard
+                )
+            }
         }
     }
 }
@@ -69,7 +80,7 @@ private fun AnalyticsContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(
-            top = 76.dp,
+            top = 108.dp,
             bottom = 156.dp,
             start = 16.dp,
             end = 16.dp
