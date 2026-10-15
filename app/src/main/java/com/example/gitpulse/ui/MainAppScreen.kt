@@ -46,6 +46,7 @@ fun MainAppScreen(
     val uiState by viewModel.uiState.collectAsState()
     val currentUsername by viewModel.currentUsername.collectAsState()
     val personalToken by viewModel.personalToken.collectAsState()
+    val selectedYear by viewModel.selectedYear.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -127,6 +128,9 @@ fun MainAppScreen(
                                 NavigationTab.HOME -> {
                                     DashboardScreen(
                                         uiState = uiState,
+                                        selectedYear = selectedYear,
+                                        availableYears = viewModel.availableYears,
+                                        onYearSelected = { viewModel.selectYear(it) },
                                         onRetry = { viewModel.refresh() },
                                         onSearchClick = { showSearchDialog = true },
                                         onNavigateToInspector = {

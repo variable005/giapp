@@ -41,6 +41,12 @@ class GitPulseViewModel(
     private val _personalToken = MutableStateFlow<String?>(null)
     val personalToken: StateFlow<String?> = _personalToken.asStateFlow()
 
+    private val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+    val availableYears: List<Int> = listOf(currentYear, currentYear - 1, currentYear - 2)
+
+    private val _selectedYear = MutableStateFlow(currentYear)
+    val selectedYear: StateFlow<Int> = _selectedYear.asStateFlow()
+
     // Appearance & Theming Settings
     private val _themeMode = MutableStateFlow(AppThemeMode.SYSTEM)
     val themeMode: StateFlow<AppThemeMode> = _themeMode.asStateFlow()
@@ -95,16 +101,17 @@ class GitPulseViewModel(
     val savedAccounts: StateFlow<List<SavedAccount>> = _savedAccounts.asStateFlow()
 
     init {
-        loadUserData(_currentUsername.value, _personalToken.value)
+        loadUserData(_currentUsername.value, _personalToken.value, _selectedYear.value)
     }
 
-    fun loadUserData(username: String, token: String? = null) {
+    fun loadUserData(username: String, token: String? = null, year: Int = _selectedYear.value) {
         _currentUsername.value = username
         _personalToken.value = token
+        _selectedYear.value = year
 
         viewModelScope.launch {
             _uiState.value = GitPulseUiState.Loading
-            val result = apiService.fetchCompleteUserData(username, token)
+            val result = apiService.fetchCompleteUserData(username, token, year)
             result.onSuccess { data ->
                 _uiState.value = GitPulseUiState.Success(data)
             }.onFailure { error ->
@@ -116,22 +123,34 @@ class GitPulseViewModel(
     }
 
     fun refresh() {
-        loadUserData(_currentUsername.value, _personalToken.value)
+        loadUserData(_currentUsername.value, _personalToken.value, _selectedYear.value)
+    }
+
+    fun selectYear(year: Int) {
+        if (year != _selectedYear.value) {
+            loadUserData(_currentUsername.value, _personalToken.value, year)
+        }
     }
 
     fun switchUser(username: String) {
-        loadUserData(username, _personalToken.value)
+        val savedToken = _savedAccounts.value
+            .find { it.username.equals(username, ignoreCase = true) }?.token
+            ?: _personalToken.value
+        loadUserData(username, savedToken, _selectedYear.value)
     }
 
     fun addAccount(username: String, token: String?) {
         val trimmed = username.trim()
         if (trimmed.isNotBlank()) {
             val updated = _savedAccounts.value.toMutableList()
-            if (updated.none { it.username.equals(trimmed, ignoreCase = true) }) {
+            val existingIndex = updated.indexOfFirst { it.username.equals(trimmed, ignoreCase = true) }
+            if (existingIndex == -1) {
                 updated.add(SavedAccount(username = trimmed, token = token))
-                _savedAccounts.value = updated
+            } else {
+                updated[existingIndex] = updated[existingIndex].copy(token = token)
             }
-            loadUserData(trimmed, token)
+            _savedAccounts.value = updated
+            loadUserData(trimmed, token, _selectedYear.value)
         }
     }
 
@@ -211,6 +230,6 @@ class GitPulseViewModel(
         _maskSensitiveRepositories.value = false
         _anonymizeCommitMessages.value = false
         _cacheRetentionHours.value = 6
-        loadUserData("variable005", null)
+        loadUserData("variable005", null, currentYear)
     }
 }

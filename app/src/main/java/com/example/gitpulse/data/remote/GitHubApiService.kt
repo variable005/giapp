@@ -25,13 +25,14 @@ class GitHubApiService {
 
     suspend fun fetchCompleteUserData(
         username: String,
-        token: String? = null
+        token: String? = null,
+        year: Int? = null
     ): Result<GitPulseAggregateData> = withContext(Dispatchers.IO) {
         try {
             val userProfile = fetchUserProfile(username, token)
             val repos = fetchUserRepos(username, token)
             val events = fetchUserEvents(username, token)
-            val contributions = fetchContributionCalendar(username, token)
+            val contributions = fetchContributionCalendar(username, token, year)
 
             // Compute total stars earned across all repos
             val totalStars = repos.sumOf { it.stars }
@@ -117,47 +118,54 @@ class GitHubApiService {
     }
 
     private fun fetchUserRepos(username: String, token: String?): List<ShowcaseRepo> {
-        val requestBuilder = Request.Builder()
-            .url("https://api.github.com/users/$username/repos?per_page=100&sort=updated")
-            .header("Accept", "application/vnd.github.v3+json")
+        val list = mutableListOf<ShowcaseRepo>()
+        // Paginate past the first 100 public repos (up to 5 pages).
+        for (page in 1..5) {
+            val requestBuilder = Request.Builder()
+                .url("https://api.github.com/users/$username/repos?per_page=100&page=$page&sort=updated")
+                .header("Accept", "application/vnd.github.v3+json")
 
-        if (!token.isNullOrBlank()) {
-            requestBuilder.header("Authorization", "Bearer $token")
-        }
-
-        client.newCall(requestBuilder.build()).execute().use { response ->
-            if (!response.isSuccessful) return emptyList()
-            val body = response.body?.string() ?: return emptyList()
-            val array = JSONArray(body)
-            val list = mutableListOf<ShowcaseRepo>()
-
-            for (i in 0 until array.length()) {
-                val obj = array.getJSONObject(i)
-                val repoName = obj.optString("name", "")
-                val description = obj.optString("description", "Repository maintained on GitHub.")
-                val language = obj.optString("language", "Code")
-                val stars = obj.optInt("stargazers_count", 0)
-                val forks = obj.optInt("forks_count", 0)
-                val licenseObj = obj.optJSONObject("license")
-                val license = licenseObj?.optString("spdx_id", "MIT") ?: "MIT"
-
-                val langColor = getLanguageColor(language)
-
-                list.add(
-                    ShowcaseRepo(
-                        owner = username,
-                        name = repoName,
-                        description = description,
-                        language = language,
-                        languageColor = langColor,
-                        stars = stars,
-                        forks = forks,
-                        license = license
-                    )
-                )
+            if (!token.isNullOrBlank()) {
+                requestBuilder.header("Authorization", "Bearer $token")
             }
-            return list.sortedByDescending { it.stars }
+
+            var pageCount = 0
+            client.newCall(requestBuilder.build()).execute().use { response ->
+                if (!response.isSuccessful) return list.sortedByDescending { it.stars }
+                val body = response.body?.string() ?: return list.sortedByDescending { it.stars }
+                val array = JSONArray(body)
+                pageCount = array.length()
+                if (pageCount == 0) return list.sortedByDescending { it.stars }
+
+                for (i in 0 until array.length()) {
+                    val obj = array.getJSONObject(i)
+                    val repoName = obj.optString("name", "")
+                    val description = obj.optString("description", "Repository maintained on GitHub.")
+                    val language = obj.optString("language", "Code")
+                    val stars = obj.optInt("stargazers_count", 0)
+                    val forks = obj.optInt("forks_count", 0)
+                    val licenseObj = obj.optJSONObject("license")
+                    val license = licenseObj?.optString("spdx_id", "MIT") ?: "MIT"
+
+                    val langColor = getLanguageColor(language)
+
+                    list.add(
+                        ShowcaseRepo(
+                            owner = username,
+                            name = repoName,
+                            description = description,
+                            language = language,
+                            languageColor = langColor,
+                            stars = stars,
+                            forks = forks,
+                            license = license
+                        )
+                    )
+                }
+            }
+            if (pageCount < 100) break
         }
+        return list.sortedByDescending { it.stars }
     }
 
     private fun fetchUserEvents(username: String, token: String?): List<GitActivityItem> {
@@ -240,17 +248,42 @@ class GitHubApiService {
                             )
                         )
                     }
+                    "IssuesEvent" -> {
+                        val issueObj = payload?.optJSONObject("issue")
+                        val title = issueObj?.optString("title", "Issue activity") ?: "Issue activity"
+                        val action = payload?.optString("action", "opened")
+                        val number = issueObj?.optInt("number", 0) ?: 0
+
+                        list.add(
+                            GitActivityItem(
+                                id = id,
+                                repoName = repoName,
+                                timeAgo = timeAgo,
+                                message = title,
+                                type = ActivityType.ISSUE,
+                                prNumber = if (number > 0) "#$number" else null,
+                                statusText = "Issue $action"
+                            )
+                        )
+                    }
                 }
             }
-            return if (list.isNotEmpty()) list else MockData.recentActivities
+            // Return real (possibly empty) public activity — never mock data.
+            return list
         }
     }
 
-    private fun fetchContributionCalendar(username: String, token: String?): List<HeatmapDay> {
-        // If token is available, perform GraphQL query
+    private fun fetchContributionCalendar(username: String, token: String?, year: Int? = null): List<HeatmapDay> {
+        // With a token, prefer GraphQL (includes private contributions when
+        // the token owner matches the requested user).
         if (!token.isNullOrBlank()) {
+            val collectionArgs = if (year != null) {
+                "(from: \"${year}-01-01T00:00:00Z\", to: \"${year}-12-31T23:59:59Z\")"
+            } else {
+                ""
+            }
             val query = """
-                {"query": "query { user(login: \"$username\") { contributionsCollection { contributionCalendar { totalContributions weeks { contributionDays { date contributionCount contributionLevel } } } } } }"}
+                {"query": "query { user(login: \"$username\") { contributionsCollection$collectionArgs { contributionCalendar { totalContributions weeks { contributionDays { date contributionCount contributionLevel } } } } }"}
             """.trimIndent()
 
             val request = Request.Builder()
@@ -259,19 +292,94 @@ class GitHubApiService {
                 .post(query.toRequestBody(jsonMediaType))
                 .build()
 
-            client.newCall(request).execute().use { response ->
-                if (response.isSuccessful) {
-                    val body = response.body?.string()
-                    if (body != null) {
-                        val parsed = parseGraphQLContributions(body)
-                        if (parsed.isNotEmpty()) return parsed
+            try {
+                client.newCall(request).execute().use { response ->
+                    if (response.isSuccessful) {
+                        val body = response.body?.string()
+                        if (body != null) {
+                            val parsed = parseGraphQLContributions(body)
+                            if (parsed.isNotEmpty()) return parsed
+                        }
                     }
                 }
+            } catch (_: Exception) {
+                // Fall through to public web calendar below.
             }
         }
 
-        // Fallback: Generate real rolling calendar structure matching the user's past 52 weeks
-        return generateRollingCalendar()
+        // No token (or GraphQL failed): public contributions are still visible
+        // without auth via the profile calendar page. No fake data.
+        return fetchPublicContributionsViaWeb(username, year)
+    }
+
+    private fun fetchPublicContributionsViaWeb(username: String, year: Int?): List<HeatmapDay> {
+        return try {
+            val url = if (year != null) {
+                "https://github.com/users/$username/contributions?from=$year-01-01&to=$year-12-31"
+            } else {
+                "https://github.com/users/$username/contributions"
+            }
+            val request = Request.Builder()
+                .url(url)
+                .header("User-Agent", "GitPulse-Android/1.0")
+                .header("Accept", "text/html")
+                .build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return emptyList()
+                val html = response.body?.string() ?: return emptyList()
+                parseWebContributions(html)
+            }
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    private fun parseWebContributions(html: String): List<HeatmapDay> {
+        try {
+            val countById = mutableMapOf<String, Int>()
+            val tipRegex = Regex("""<tool-tip[^>]*for="([^"]+)"[^>]*>([^<]*)</tool-tip>""")
+            for (match in tipRegex.findAll(html)) {
+                val id = match.groupValues[1]
+                val text = match.groupValues[2].trim()
+                val count = if (text.startsWith("No", ignoreCase = true)) {
+                    0
+                } else {
+                    Regex("""(\d+)""").find(text)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                }
+                countById[id] = count
+            }
+
+            val dateRegex = Regex("""data-date="(\d{4}-\d{2}-\d{2})"""")
+            val levelRegex = Regex("""data-level="(\d+)"""")
+            val idRegex = Regex("""id="(contribution-day-component-(\d+)-(\d+))"""")
+            val list = mutableListOf<HeatmapDay>()
+            for (td in Regex("""<td[^>]*>""").findAll(html)) {
+                val tag = td.value
+                if (!tag.contains("ContributionCalendar-day")) continue
+                val dateMatch = dateRegex.find(tag) ?: continue
+                val date = dateMatch.groupValues[1]
+                val level = levelRegex.find(tag)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                val idMatch = idRegex.find(tag)
+                val id = idMatch?.groupValues?.get(1) ?: ""
+                val row = idMatch?.groupValues?.get(2)?.toIntOrNull()
+                    ?: weekdayFromDate(date, fallback = -1)
+                val col = idMatch?.groupValues?.get(3)?.toIntOrNull() ?: -1
+                if (row !in 0..6 || col < 0) continue
+                val count = countById[id] ?: 0
+                list.add(
+                    HeatmapDay(
+                        dateString = date,
+                        dayOfWeek = row,
+                        weekOfYear = col,
+                        level = level.coerceIn(0, 4),
+                        count = count
+                    )
+                )
+            }
+            return list.sortedBy { it.dateString }
+        } catch (_: Exception) {
+            return emptyList()
+        }
     }
 
     private fun parseGraphQLContributions(jsonString: String): List<HeatmapDay> {
@@ -299,38 +407,35 @@ class GitHubApiService {
                         "FOURTH_QUARTILE" -> 4
                         else -> if (count > 0) 1 else 0
                     }
-                    list.add(HeatmapDay(dateString = date, dayOfWeek = d, weekOfYear = w, level = level, count = count))
+                    // Use the real weekday from the date (0=Sunday). The API's
+                    // first/last weeks can be partial, so array index `d` would
+                    // shift cells to the wrong rows vs github.com.
+                    val dayOfWeek = weekdayFromDate(date, fallback = d)
+                    list.add(HeatmapDay(dateString = date, dayOfWeek = dayOfWeek, weekOfYear = w, level = level, count = count))
                 }
             }
         } catch (_: Exception) {}
         return list
     }
 
-    private fun generateRollingCalendar(): List<HeatmapDay> {
-        val list = mutableListOf<HeatmapDay>()
-        val cal = Calendar.getInstance()
-        cal.add(Calendar.DAY_OF_YEAR, -364)
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-
-        for (i in 0 until 365) {
-            val dateStr = sdf.format(cal.time)
-            val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK) - 1
-            val weekOfYear = i / 7
-            val count = (i * 17 + dayOfWeek * 5) % 9
-            val level = when {
-                count == 0 -> 0
-                count < 3 -> 1
-                count < 5 -> 2
-                count < 7 -> 3
-                else -> 4
-            }
-            list.add(HeatmapDay(dateString = dateStr, dayOfWeek = dayOfWeek, weekOfYear = weekOfYear, level = level, count = count))
-            cal.add(Calendar.DAY_OF_YEAR, 1)
+    private fun weekdayFromDate(dateString: String, fallback: Int): Int {
+        return try {
+            if (dateString.length < 10) return fallback
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            sdf.timeZone = TimeZone.getTimeZone("UTC")
+            val date = sdf.parse(dateString) ?: return fallback
+            val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+            cal.time = date
+            (cal.get(Calendar.DAY_OF_WEEK) - 1).coerceIn(0, 6)
+        } catch (_: Exception) {
+            fallback
         }
-        return list
     }
 
     private fun computeStreaks(contributions: List<HeatmapDay>): StreakCalculation {
+        if (contributions.isEmpty()) {
+            return StreakCalculation(currentStreak = 0, longestStreak = 0, todayCount = 0)
+        }
         var currentStreak = 0
         var longestStreak = 0
         var tempStreak = 0
@@ -361,8 +466,8 @@ class GitHubApiService {
         }
 
         return StreakCalculation(
-            currentStreak = currentStreak.coerceAtLeast(1),
-            longestStreak = longestStreak.coerceAtLeast(currentStreak).coerceAtLeast(14),
+            currentStreak = currentStreak,
+            longestStreak = longestStreak.coerceAtLeast(currentStreak),
             todayCount = todayCount
         )
     }

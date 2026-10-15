@@ -43,6 +43,9 @@ import com.example.gitpulse.ui.viewmodel.GitPulseUiState
 @Composable
 fun DashboardScreen(
     uiState: GitPulseUiState,
+    selectedYear: Int,
+    availableYears: List<Int>,
+    onYearSelected: (Int) -> Unit,
     onRetry: () -> Unit,
     onSearchClick: () -> Unit,
     onNavigateToInspector: () -> Unit = {},
@@ -73,6 +76,9 @@ fun DashboardScreen(
             is GitPulseUiState.Success -> {
                 DashboardContent(
                     data = uiState.data,
+                    selectedYear = selectedYear,
+                    availableYears = availableYears,
+                    onYearSelected = onYearSelected,
                     onSearchClick = onSearchClick,
                     onNavigateToInspector = onNavigateToInspector
                 )
@@ -84,13 +90,15 @@ fun DashboardScreen(
 @Composable
 private fun DashboardContent(
     data: GitPulseAggregateData,
+    selectedYear: Int,
+    availableYears: List<Int>,
+    onYearSelected: (Int) -> Unit,
     onSearchClick: () -> Unit,
     onNavigateToInspector: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
     val profile = data.profile
-    var selectedYear by remember { mutableStateOf("2026") }
 
     LazyColumn(
         modifier = modifier
@@ -506,7 +514,7 @@ private fun DashboardContent(
 
         // 4. Annual Contributions Section
         item {
-            var selectedDay by remember {
+            var selectedDay by remember(data.contributions) {
                 mutableStateOf<HeatmapDay?>(
                     data.contributions.lastOrNull { it.count > 0 } ?: data.contributions.lastOrNull()
                 )
@@ -514,17 +522,17 @@ private fun DashboardContent(
 
             val dayMap = remember(data.contributions) {
                 val map = mutableMapOf<Pair<Int, Int>, HeatmapDay>()
-                data.contributions.forEachIndexed { index, day ->
-                    val w = if (day.weekOfYear > 0 || index >= 7) day.weekOfYear else (index / 7)
-                    val d = if (day.dayOfWeek in 0..6) day.dayOfWeek else (index % 7)
-                    map[Pair(w, d)] = day
+                data.contributions.forEach { day ->
+                    if (day.weekOfYear >= 0 && day.dayOfWeek in 0..6) {
+                        map[Pair(day.weekOfYear, day.dayOfWeek)] = day
+                    }
                 }
                 map
             }
 
             val totalWeeks = remember(data.contributions, dayMap) {
-                val maxW = dayMap.keys.maxOfOrNull { it.first } ?: 0
-                maxOf(maxW + 1, (data.contributions.size + 6) / 7, 52)
+                val maxW = dayMap.keys.maxOfOrNull { it.first } ?: -1
+                maxOf(maxW + 1, 0)
             }
 
             ElevatedCard(
@@ -551,28 +559,53 @@ private fun DashboardContent(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "${profile.totalAnnualCommits} total in past 52 weeks",
+                                text = if (data.contributions.isEmpty()) "No public contributions in $selectedYear" else "${profile.totalAnnualCommits} total in $selectedYear",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
-                        // Year Selector Segmented Buttons
-                        val years = listOf("2026", "2025", "2024")
+                        // Year Selector Segmented Buttons (actually refetches)
                         SingleChoiceSegmentedButtonRow {
-                            years.forEachIndexed { index, year ->
+                            availableYears.forEachIndexed { index, year ->
                                 SegmentedButton(
                                     selected = year == selectedYear,
-                                    onClick = { selectedYear = year },
-                                    shape = SegmentedButtonDefaults.itemShape(index = index, count = years.size)
+                                    onClick = { onYearSelected(year) },
+                                    shape = SegmentedButtonDefaults.itemShape(index = index, count = availableYears.size)
                                 ) {
-                                    Text(year, style = MaterialTheme.typography.labelSmall)
+                                    Text("$year", style = MaterialTheme.typography.labelSmall)
                                 }
                             }
                         }
                     }
 
-                    // Heatmap Component: Fixed Weekday column + Horizontally Scrollable 52-week matrix
+                    if (data.contributions.isEmpty()) {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "No public contributions in $selectedYear",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "This profile has no public activity in this year. Public graphs load without a token — a token is only needed for private contributions.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                FilledTonalButton(onClick = onSearchClick) {
+                                    Text("Switch user")
+                                }
+                            }
+                        }
+                    } else {
+                    // Heatmap Component: Fixed Weekday column + Horizontally Scrollable matrix
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -781,7 +814,7 @@ private fun DashboardContent(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Scroll to review past 52 weeks",
+                            text = "Scroll to review $selectedYear",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -806,6 +839,7 @@ private fun DashboardContent(
                             )
                         }
                     }
+                    } // end heatmap else
                 }
             }
         }
@@ -830,6 +864,16 @@ private fun DashboardContent(
 
         items(data.recentActivities.take(5)) { item ->
             RecentActivityCard(item)
+        }
+
+        if (data.recentActivities.isEmpty()) {
+            item {
+                Text(
+                    text = "No recent public activity found.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
