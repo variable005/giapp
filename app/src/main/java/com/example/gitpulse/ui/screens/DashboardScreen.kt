@@ -73,8 +73,8 @@ private fun DashboardContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(
-            top = 72.dp,
-            bottom = 104.dp,
+            top = 100.dp,
+            bottom = 128.dp,
             start = 16.dp,
             end = 16.dp
         ),
@@ -200,7 +200,7 @@ private fun DashboardContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    HorizontalDivider(color = OutlineBorder.copy(alpha = 0.5f), thickness = 1.dp)
+                    HorizontalDivider(color = OutlineBorder, thickness = 1.dp)
 
                     // 4-Column Live Metric Counters
                     Row(
@@ -619,18 +619,18 @@ private fun LoadingDashboardSkeleton(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(top = 80.dp, start = 20.dp, end = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp)
+            .padding(top = 100.dp, start = 16.dp, end = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth().height(180.dp),
             shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            color = MaterialTheme.colorScheme.surfaceVariant
         ) {}
         Surface(
             modifier = Modifier.fillMaxWidth().height(160.dp),
             shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            color = MaterialTheme.colorScheme.surfaceVariant
         ) {}
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -639,12 +639,12 @@ private fun LoadingDashboardSkeleton(modifier: Modifier = Modifier) {
             Surface(
                 modifier = Modifier.weight(1f).height(110.dp),
                 shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                color = MaterialTheme.colorScheme.surfaceVariant
             ) {}
             Surface(
                 modifier = Modifier.weight(1f).height(110.dp),
                 shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                color = MaterialTheme.colorScheme.surfaceVariant
             ) {}
         }
     }

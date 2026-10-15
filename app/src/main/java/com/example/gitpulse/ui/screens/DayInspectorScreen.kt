@@ -64,8 +64,8 @@ private fun DayInspectorContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(
-            top = 72.dp,
-            bottom = 104.dp,
+            top = 100.dp,
+            bottom = 128.dp,
             start = 16.dp,
             end = 16.dp
         ),
@@ -338,7 +338,7 @@ private fun DayInspectorContent(
                         )
                     }
 
-                    HorizontalDivider(color = OutlineBorder.copy(alpha = 0.4f), thickness = 1.dp)
+                    HorizontalDivider(color = OutlineBorder, thickness = 1.dp)
 
                     // Switch 2: Mask Sensitive Repositories
                     Row(

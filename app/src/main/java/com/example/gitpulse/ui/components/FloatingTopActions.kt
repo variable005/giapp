@@ -7,7 +7,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -22,7 +21,8 @@ import androidx.compose.ui.unit.dp
 import com.example.gitpulse.theme.*
 
 /**
- * Material 3 Expressive Floating Top Controls.
+ * Strict Material 3 Floating Controls.
+ * 100% solid, opaque flat tonal containers. Zero glassmorphism.
  * Conforms strictly to constraint: No app name bar on the top.
  */
 @Composable
@@ -49,10 +49,10 @@ fun FloatingTopActions(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Left: Dark/Light Mode Switcher Pill
+        // Left: Dark/Light Mode Switcher Pill (Solid SurfaceContainerHigh, 100% Opaque)
         Surface(
             modifier = Modifier
-                .height(42.dp)
+                .height(44.dp)
                 .clip(CircleShape)
                 .clickable { onToggleTheme() },
             shape = CircleShape,
@@ -60,7 +60,7 @@ fun FloatingTopActions(
             border = BorderStroke(1.dp, OutlineBorder)
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 12.dp),
+                modifier = Modifier.padding(horizontal = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -80,15 +80,15 @@ fun FloatingTopActions(
             }
         }
 
-        // Center: Interactive Active User Pill (Tap to Search Any GitHub User)
+        // Center: Interactive Active User Pill (Solid SurfaceContainerHigh, 100% Opaque)
         Surface(
             modifier = Modifier
-                .height(42.dp)
+                .height(44.dp)
                 .clip(CircleShape)
                 .clickable { onSearchClick() },
             shape = CircleShape,
             color = MaterialTheme.colorScheme.surfaceVariant,
-            border = BorderStroke(1.dp, PrimaryEmerald.copy(alpha = 0.5f))
+            border = BorderStroke(1.dp, PrimaryEmerald)
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 14.dp),
@@ -114,10 +114,10 @@ fun FloatingTopActions(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Live API Refresh Button
+            // Live API Refresh Button (Solid SurfaceContainerHigh, 100% Opaque)
             Surface(
                 modifier = Modifier
-                    .size(42.dp)
+                    .size(44.dp)
                     .clip(CircleShape)
                     .clickable { onRefreshClick() },
                 shape = CircleShape,
@@ -138,7 +138,7 @@ fun FloatingTopActions(
             Box {
                 Surface(
                     modifier = Modifier
-                        .size(42.dp)
+                        .size(44.dp)
                         .clip(CircleShape)
                         .clickable { onNotificationsClick() },
                     shape = CircleShape,
@@ -160,9 +160,9 @@ fun FloatingTopActions(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(top = 2.dp, end = 2.dp)
-                            .size(9.dp)
+                            .size(10.dp)
                             .background(MaterialTheme.colorScheme.primary, CircleShape)
-                            .border(1.5.dp, MaterialTheme.colorScheme.background, CircleShape)
+                            .border(2.dp, MaterialTheme.colorScheme.background, CircleShape)
                     )
                 }
             }

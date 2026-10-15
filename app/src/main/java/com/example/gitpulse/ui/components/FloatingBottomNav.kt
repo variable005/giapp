@@ -9,7 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
@@ -25,7 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.example.gitpulse.theme.OutlineHigh
+import com.example.gitpulse.theme.*
 
 enum class NavigationTab(val label: String, val icon: ImageVector) {
     HOME("Home", Icons.Default.Home),
@@ -36,7 +35,8 @@ enum class NavigationTab(val label: String, val icon: ImageVector) {
 
 /**
  * Material 3 Expressive Floating Bottom Pill Navigation Bar
- * Form Factor: Detached full-pill floating 16px above bottom edge.
+ * Form Factor: Detached solid full-pill floating above bottom navigation insets.
+ * 100% Solid flat tonal colors. Zero glassmorphism.
  */
 @Composable
 fun FloatingBottomNav(
@@ -48,7 +48,7 @@ fun FloatingBottomNav(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(bottom = 16.dp, start = 20.dp, end = 20.dp),
+            .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
         contentAlignment = Alignment.Center
     ) {
         Surface(
@@ -63,7 +63,7 @@ fun FloatingBottomNav(
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 10.dp),
+                    .padding(horizontal = 8.dp),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -71,13 +71,13 @@ fun FloatingBottomNav(
                     val isSelected = tab == currentTab
 
                     val animatedBgColor by animateColorAsState(
-                        targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f) else Color.Transparent,
+                        targetValue = if (isSelected) PrimaryDeepContainer else Color.Transparent,
                         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
                         label = "tab_bg"
                     )
 
                     val animatedContentColor by animateColorAsState(
-                        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        targetValue = if (isSelected) PrimaryLightAccent else MaterialTheme.colorScheme.onSurfaceVariant,
                         label = "tab_content_color"
                     )
 
@@ -92,7 +92,7 @@ fun FloatingBottomNav(
                                 interactionSource = interactionSource,
                                 indication = null
                             ) { onTabSelected(tab) }
-                            .padding(horizontal = 14.dp, vertical = 6.dp),
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(

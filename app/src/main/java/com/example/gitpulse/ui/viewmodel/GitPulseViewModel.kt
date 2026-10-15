@@ -23,7 +23,7 @@ class GitPulseViewModel(
     private val _uiState = MutableStateFlow<GitPulseUiState>(GitPulseUiState.Loading)
     val uiState: StateFlow<GitPulseUiState> = _uiState.asStateFlow()
 
-    private val _currentUsername = MutableStateFlow("torvalds")
+    private val _currentUsername = MutableStateFlow("variable005")
     val currentUsername: StateFlow<String> = _currentUsername.asStateFlow()
 
     private val _personalToken = MutableStateFlow<String?>(null)
