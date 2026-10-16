@@ -41,6 +41,7 @@ fun MainAppScreen(
     var currentTab by remember { mutableStateOf(NavigationTab.HOME) }
     var showSettingsScreen by remember { mutableStateOf(false) }
     var showProjectsScreen by remember { mutableStateOf(false) }
+    var showCompareScreen by remember { mutableStateOf(false) }
     var selectedRepoForReadme by remember { mutableStateOf<com.example.gitpulse.data.ShowcaseRepo?>(null) }
     var showProductReadme by remember { mutableStateOf(false) }
     var showNotificationsSheet by remember { mutableStateOf(false) }
@@ -67,13 +68,16 @@ fun MainAppScreen(
     BackHandler(enabled = selectedRepoForReadme == null && !showProductReadme && !showProjectsScreen && showSettingsScreen) {
         showSettingsScreen = false
     }
-    BackHandler(enabled = selectedRepoForReadme == null && !showProductReadme && !showProjectsScreen && !showSettingsScreen && showNotificationsSheet) {
+    BackHandler(enabled = selectedRepoForReadme == null && !showProductReadme && !showProjectsScreen && !showSettingsScreen && showCompareScreen) {
+        showCompareScreen = false
+    }
+    BackHandler(enabled = selectedRepoForReadme == null && !showProductReadme && !showProjectsScreen && !showSettingsScreen && !showCompareScreen && showNotificationsSheet) {
         showNotificationsSheet = false
     }
-    BackHandler(enabled = selectedRepoForReadme == null && !showProductReadme && !showProjectsScreen && !showSettingsScreen && !showNotificationsSheet && showSearchDialog) {
+    BackHandler(enabled = selectedRepoForReadme == null && !showProductReadme && !showProjectsScreen && !showSettingsScreen && !showNotificationsSheet && !showCompareScreen && showSearchDialog) {
         showSearchDialog = false
     }
-    BackHandler(enabled = selectedRepoForReadme == null && !showProductReadme && !showProjectsScreen && !showSettingsScreen && !showNotificationsSheet && !showSearchDialog && currentTab != NavigationTab.HOME) {
+    BackHandler(enabled = selectedRepoForReadme == null && !showProductReadme && !showProjectsScreen && !showSettingsScreen && !showNotificationsSheet && !showSearchDialog && !showCompareScreen && currentTab != NavigationTab.HOME) {
         currentTab = NavigationTab.HOME
     }
 
@@ -82,6 +86,7 @@ fun MainAppScreen(
         showProductReadme -> "PRODUCT_README"
         showProjectsScreen -> "PROJECTS"
         showSettingsScreen -> "SETTINGS"
+        showCompareScreen -> "COMPARE"
         else -> "MAIN"
     }
 
@@ -161,6 +166,25 @@ fun MainAppScreen(
                             }
                         )
                     }
+                    "COMPARE" -> {
+                        WatchlistCompareScreen(
+                            currentUsername = currentUsername,
+                            onSwitchUser = { username ->
+                                viewModel.switchUser(username)
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Switched active profile to @$username")
+                                }
+                            },
+                            onAddAccountClick = { showSearchDialog = true },
+                            onPurgeCache = {
+                                viewModel.refresh()
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Cache purged. Reloading live data.")
+                                }
+                            },
+                            onBack = { showCompareScreen = false }
+                        )
+                    }
                     else -> {
                         Box(
                             modifier = Modifier
@@ -212,24 +236,13 @@ fun MainAppScreen(
                                             onViewAllProjects = { showProjectsScreen = true }
                                         )
                                     }
-                                    NavigationTab.COMPARE -> {
-                                        WatchlistCompareScreen(
-                                            currentUsername = currentUsername,
-                                            onSwitchUser = { username ->
-                                                viewModel.switchUser(username)
-                                                coroutineScope.launch {
-                                                    snackbarHostState.showSnackbar("Switched active profile to @$username")
-                                                }
-                                            },
-                                            onAddAccountClick = {
-                                                showSearchDialog = true
-                                            },
-                                            onPurgeCache = {
-                                                viewModel.refresh()
-                                                coroutineScope.launch {
-                                                    snackbarHostState.showSnackbar("Cache purged. Reloading live data.")
-                                                }
-                                            }
+                                    NavigationTab.README -> {
+                                        ProjectReadmeScreen(
+                                            repo = null,
+                                            isProductReadme = true,
+                                            viewModel = viewModel,
+                                            onBack = {},
+                                            embedded = true
                                         )
                                     }
                                 }
@@ -240,6 +253,8 @@ fun MainAppScreen(
                                 currentUsername = currentUsername,
                                 onSearchClick = { showSearchDialog = true },
                                 onSettingsClick = { showSettingsScreen = true },
+                                onNotificationsClick = { showNotificationsSheet = true },
+                                onCompareClick = { showCompareScreen = true },
                                 modifier = Modifier.align(Alignment.TopCenter)
                             )
 

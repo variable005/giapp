@@ -1,5 +1,6 @@
 package com.example.gitpulse.data.remote
 
+import android.util.Base64
 import androidx.compose.ui.graphics.Color
 import com.example.gitpulse.data.*
 import com.example.gitpulse.theme.*
@@ -531,7 +532,7 @@ class GitHubApiService {
     suspend fun fetchRepoReadme(owner: String, repo: String, token: String?): String = withContext(Dispatchers.IO) {
         val requestBuilder = Request.Builder()
             .url("https://api.github.com/repos/$owner/$repo/readme")
-            .header("Accept", "application/vnd.github.raw")
+            .header("Accept", "application/vnd.github+json")
 
         if (!token.isNullOrBlank()) {
             requestBuilder.header("Authorization", "Bearer $token")
@@ -540,8 +541,12 @@ class GitHubApiService {
         try {
             client.newCall(requestBuilder.build()).execute().use { response ->
                 if (response.isSuccessful) {
-                    val content = response.body?.string()
-                    if (!content.isNullOrBlank()) content else generateFallbackReadme(owner, repo)
+                    val body = response.body?.string()
+                    if (!body.isNullOrBlank()) {
+                        decodeReadmeBody(owner, repo, body)
+                    } else {
+                        generateFallbackReadme(owner, repo)
+                    }
                 } else {
                     generateFallbackReadme(owner, repo)
                 }
@@ -549,6 +554,50 @@ class GitHubApiService {
         } catch (_: Exception) {
             generateFallbackReadme(owner, repo)
         }
+    }
+
+    /** The JSON readme payload carries base64 content plus the raw download
+     *  URL, which we use to turn relative image paths into absolute ones. */
+    private fun decodeReadmeBody(owner: String, repo: String, body: String): String {
+        return try {
+            val json = JSONObject(body)
+            val rawContent = json.optString("content")
+            val downloadUrl = json.optString("download_url")
+            if (rawContent.isBlank()) return generateFallbackReadme(owner, repo)
+            val markdown = String(
+                Base64.decode(rawContent.replace("\n", ""), Base64.DEFAULT),
+                Charsets.UTF_8
+            )
+            if (markdown.isBlank()) {
+                generateFallbackReadme(owner, repo)
+            } else {
+                absolutizeReadmeUrls(markdown, downloadUrl)
+            }
+        } catch (_: Exception) {
+            // Endpoint answered with raw markdown instead of JSON — render as-is.
+            body
+        }
+    }
+
+    /** Rewrites relative image sources in a README to raw.githubusercontent.com
+     *  URLs so Coil can actually load screenshots and badges. */
+    private fun absolutizeReadmeUrls(markdown: String, downloadUrl: String): String {
+        val repoRoot = downloadUrl.substringBeforeLast('/', missingDelimiterValue = "")
+        if (repoRoot.isBlank()) return markdown
+        val base = "$repoRoot/"
+
+        fun resolve(target: String): String {
+            if (target.isBlank()) return target
+            if (target.startsWith("http://") || target.startsWith("https://")) return target
+            if (target.startsWith("data:") || target.startsWith("#")) return target
+            return base + target.removePrefix("./").removePrefix("/")
+        }
+
+        val imageToken = Regex("""(!\[[^\]]*\]\(\s*)([^)\s]+)""")
+        var out = imageToken.replace(markdown) { m -> m.groupValues[1] + resolve(m.groupValues[2]) }
+        val htmlImgToken = Regex("""(<img[^>]*\ssrc\s*=\s*["'])([^"']+)""", RegexOption.IGNORE_CASE)
+        out = htmlImgToken.replace(out) { m -> m.groupValues[1] + resolve(m.groupValues[2]) }
+        return out
     }
 
     private fun generateFallbackReadme(owner: String, repo: String): String {

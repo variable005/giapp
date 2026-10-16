@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gitpulse.data.ShowcaseRepo
 import com.example.gitpulse.ui.animation.MotionTokens
+import com.example.gitpulse.ui.components.FloatingBackButton
 import com.example.gitpulse.ui.components.MarkdownView
 import com.example.gitpulse.ui.viewmodel.GitPulseViewModel
 
@@ -36,6 +37,7 @@ fun ProjectReadmeScreen(
     isProductReadme: Boolean = false,
     viewModel: GitPulseViewModel,
     onBack: () -> Unit,
+    embedded: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -44,8 +46,9 @@ fun ProjectReadmeScreen(
     var isLoading by remember { mutableStateOf(true) }
     var readmeContent by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var reloadKey by remember { mutableStateOf(0) }
 
-    LaunchedEffect(repo, isProductReadme) {
+    LaunchedEffect(repo, isProductReadme, reloadKey) {
         isLoading = true
         errorMessage = null
         try {
@@ -61,73 +64,39 @@ fun ProjectReadmeScreen(
         }
     }
 
-    Scaffold(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            text = if (isProductReadme) "GitPulse Documentation" else (repo?.name ?: "Repository README"),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1
-                        )
-                        Text(
-                            text = if (isProductReadme) "Product Overview & Architecture" else "${repo?.owner ?: "github"} / README.md",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            onBack()
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                },
-                actions = {
-                    if (!isProductReadme && repo != null) {
-                        IconButton(
-                            onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                val url = "https://github.com/${repo.owner}/${repo.name}"
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                                context.startActivity(intent)
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.OpenInBrowser,
-                                contentDescription = "Open on GitHub",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            )
-        }
-    ) { paddingValues ->
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                top = if (embedded) 108.dp else 100.dp,
+                bottom = if (embedded) 156.dp else 32.dp,
+                start = 16.dp,
+                end = 16.dp
+            ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // In-content screen title (there is no app bar anywhere in GitPulse)
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = if (isProductReadme) "GitPulse Documentation" else (repo?.name ?: "Repository README"),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1
+                    )
+                    Text(
+                        text = if (isProductReadme) "Product overview & architecture" else "${repo?.owner ?: "github"} / README.md",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
             // Header Card if inspecting a specific repo
             if (!isProductReadme && repo != null) {
                 item {
@@ -279,6 +248,26 @@ fun ProjectReadmeScreen(
                                     )
                                 }
                             }
+
+                            FilledTonalButton(
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    val url = "https://github.com/${repo.owner}/${repo.name}"
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(40.dp),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.OpenInBrowser,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(15.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Open on GitHub", style = MaterialTheme.typography.labelMedium)
+                            }
                         }
                     }
                 }
@@ -309,7 +298,7 @@ fun ProjectReadmeScreen(
                                 modifier = Modifier.size(18.dp)
                             )
                             Text(
-                                text = "README.md",
+                                text = if (isProductReadme) "Product Documentation" else "README.md",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -342,6 +331,7 @@ fun ProjectReadmeScreen(
                                         onClick = {
                                             isLoading = true
                                             errorMessage = null
+                                            reloadKey++
                                         }
                                     ) {
                                         Text("Retry")
@@ -356,8 +346,8 @@ fun ProjectReadmeScreen(
                 }
             }
 
-            // Bottom Return Button
-            item {
+            // Bottom Return Button (hidden when the README is a root tab)
+            if (!embedded) item {
                 OutlinedButton(
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -380,6 +370,13 @@ fun ProjectReadmeScreen(
                     )
                 }
             }
+        }
+
+        if (!embedded) {
+            FloatingBackButton(
+                onClick = onBack,
+                modifier = Modifier.align(Alignment.TopStart)
+            )
         }
     }
 }

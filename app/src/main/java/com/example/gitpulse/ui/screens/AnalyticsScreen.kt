@@ -468,23 +468,31 @@ private fun AnalyticsContent(
                                 }
                             }
 
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 1.dp)
+
+                            // Three equal stat columns — mathematically symmetrical
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Column {
-                                    Text(text = "ANNUAL COMMITS", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    Text(text = "${profile.totalAnnualCommits}", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
-                                }
-                                Column {
-                                    Text(text = "REPOSITORIES", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    Text(text = "${profile.reposCount}", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
-                                }
-                                Column {
-                                    Text(text = "TOTAL STARS", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    Text(text = "${data.totalStars}", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
-                                }
+                                TelemetryStat(
+                                    modifier = Modifier.weight(1f),
+                                    value = "${profile.totalAnnualCommits}",
+                                    label = "ANNUAL COMMITS"
+                                )
+                                TelemetryStat(
+                                    modifier = Modifier.weight(1f),
+                                    value = "${profile.reposCount}",
+                                    label = "REPOSITORIES"
+                                )
+                                TelemetryStat(
+                                    modifier = Modifier.weight(1f),
+                                    value = "${data.totalStars}",
+                                    label = "TOTAL STARS"
+                                )
                             }
+
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 1.dp)
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -599,6 +607,35 @@ fun TelemetryCard(
                 )
             }
         }
+    }
+}
+
+/** One evenly weighted column inside the telemetry card preview. */
+@Composable
+private fun TelemetryStat(
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            maxLines = 2
+        )
     }
 }
 

@@ -64,6 +64,7 @@ dependencies {
   implementation(libs.androidx.compose.material.icons.extended)
   implementation(libs.okhttp)
   implementation(libs.coil.compose)
+  implementation(libs.coil.svg)
   // Tooling
   debugImplementation(libs.androidx.compose.ui.tooling)
   // Instrumented tests

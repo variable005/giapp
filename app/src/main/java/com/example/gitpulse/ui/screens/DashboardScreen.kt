@@ -280,11 +280,7 @@ private fun DashboardContent(
                     modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top
-                    ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Column {
                             Text(
                                 text = "Contributions",
@@ -298,13 +294,14 @@ private fun DashboardContent(
                             )
                         }
 
-                        // Year Selector Segmented Buttons (actually refetches)
-                        SingleChoiceSegmentedButtonRow {
+                        // Year selector: equal-width segments spanning the card for perfect symmetry.
+                        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                             availableYears.forEachIndexed { index, year ->
                                 SegmentedButton(
                                     selected = year == selectedYear,
                                     onClick = { onYearSelected(year) },
-                                    shape = SegmentedButtonDefaults.itemShape(index = index, count = availableYears.size)
+                                    shape = SegmentedButtonDefaults.itemShape(index = index, count = availableYears.size),
+                                    modifier = Modifier.weight(1f)
                                 ) {
                                     Text("$year", style = MaterialTheme.typography.labelSmall)
                                 }

@@ -1,5 +1,6 @@
 package com.example.gitpulse.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -22,6 +24,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+
+/** One image reference from markdown, with a badge heuristic for tiny status shields. */
+data class MdImage(val alt: String, val url: String, val isBadge: Boolean)
 
 sealed class MarkdownBlock {
     data class Header(val level: Int, val text: String) : MarkdownBlock()
@@ -31,6 +37,7 @@ sealed class MarkdownBlock {
     data class BulletList(val items: List<String>) : MarkdownBlock()
     object Divider : MarkdownBlock()
     data class Table(val headers: List<String>, val rows: List<List<String>>) : MarkdownBlock()
+    data class ImageRow(val images: List<MdImage>) : MarkdownBlock()
 }
 
 @Composable
@@ -56,6 +63,7 @@ fun MarkdownView(
                     thickness = 1.dp
                 )
                 is MarkdownBlock.Table -> MarkdownTable(block)
+                is MarkdownBlock.ImageRow -> MarkdownImageRow(block)
             }
         }
     }
@@ -268,6 +276,83 @@ private fun MarkdownTable(table: MarkdownBlock.Table) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun MarkdownImageRow(row: MarkdownBlock.ImageRow) {
+    val images = row.images
+    if (images.size == 1 && !images[0].isBadge) {
+        // Full-width screenshot inside a soft frame.
+        Surface(
+            shape = RoundedCornerShape(14.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            AsyncImage(
+                model = images[0].url,
+                contentDescription = images[0].alt.ifBlank { null },
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 120.dp)
+            )
+        }
+    } else {
+        // Badge rows flow at their natural small size.
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            images.forEach { image ->
+                AsyncImage(
+                    model = image.url,
+                    contentDescription = image.alt.ifBlank { null },
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .height(24.dp)
+                        .widthIn(max = 240.dp)
+                )
+            }
+        }
+    }
+}
+
+private val MdImageToken = Regex("""!\[([^\]]*)\]\(\s*([^)\s]+?)(?:\s+"[^"]*")?\s*\)""")
+private val MdLinkToken = Regex("""\[([^\]]*)\]\(\s*[^)\s]*\s*\)""")
+private val HtmlImageToken = Regex("""<img[^>]*\ssrc\s*=\s*["'][^"']+["'][^>]*>""", RegexOption.IGNORE_CASE)
+
+private fun isBadgeUrl(url: String): Boolean =
+    url.contains("shields.io") || url.contains("badge", ignoreCase = true) ||
+        url.contains("badgen") || url.endsWith(".svg", ignoreCase = true)
+
+private fun extractImages(line: String): List<MdImage> {
+    val images = mutableListOf<MdImage>()
+    MdImageToken.findAll(line).forEach { m ->
+        val url = m.groupValues[2]
+        images.add(MdImage(alt = m.groupValues[1], url = url, isBadge = isBadgeUrl(url)))
+    }
+    HtmlImageToken.findAll(line).forEach { m ->
+        val url = m.groupValues[1]
+        images.add(MdImage(alt = "", url = url, isBadge = isBadgeUrl(url)))
+    }
+    return images
+}
+
+private fun stripImages(line: String): String =
+    MdImageToken.replace(HtmlImageToken.replace(line, ""), "").replace("&nbsp;", " ").trim()
+
+/** Returns the images when a line contains nothing but images, badges or
+ *  link-wrapped badges; null means the line should render as text. */
+private fun parseImagesOnlyLine(line: String): List<MdImage>? {
+    if (line.isBlank()) return null
+    val images = extractImages(line)
+    if (images.isEmpty()) return null
+    var remainder = stripImages(line)
+    remainder = MdLinkToken.replace(remainder, "").trim()
+    return if (remainder.isEmpty()) images else null
+}
+
 private fun parseMarkdown(raw: String): List<MarkdownBlock> {
     val lines = raw.lines()
     val blocks = mutableListOf<MarkdownBlock>()
@@ -277,6 +362,17 @@ private fun parseMarkdown(raw: String): List<MarkdownBlock> {
         val line = lines[i]
 
         when {
+            // Image / badge rows (consecutive image lines merge into one row)
+            parseImagesOnlyLine(line) != null -> {
+                val images = mutableListOf<MdImage>()
+                while (i < lines.size) {
+                    val lineImages = parseImagesOnlyLine(lines[i]) ?: break
+                    images.addAll(lineImages)
+                    i++
+                }
+                blocks.add(MarkdownBlock.ImageRow(images))
+            }
+
             // Code block
             line.trimStart().startsWith("```") -> {
                 val lang = line.trimStart().removePrefix("```").trim()
@@ -372,7 +468,15 @@ private fun parseMarkdown(raw: String): List<MarkdownBlock> {
                     paraLines.add(lines[i].trim())
                     i++
                 }
-                blocks.add(MarkdownBlock.Paragraph(text = paraLines.joinToString(" ")))
+                val rawParagraph = paraLines.joinToString(" ")
+                val inlineImages = extractImages(rawParagraph)
+                val textOnly = stripImages(rawParagraph)
+                if (textOnly.isNotBlank()) {
+                    blocks.add(MarkdownBlock.Paragraph(text = textOnly))
+                }
+                if (inlineImages.isNotEmpty()) {
+                    blocks.add(MarkdownBlock.ImageRow(inlineImages))
+                }
             }
         }
     }

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.example.gitpulse.data.MockData
 import com.example.gitpulse.theme.*
 import com.example.gitpulse.ui.animation.MotionTokens
+import com.example.gitpulse.ui.components.FloatingBackButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,6 +32,7 @@ fun WatchlistCompareScreen(
     onSwitchUser: (String) -> Unit,
     onAddAccountClick: () -> Unit = {},
     onPurgeCache: () -> Unit = {},
+    onBack: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
@@ -58,8 +60,8 @@ fun WatchlistCompareScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background),
             contentPadding = PaddingValues(
-                top = 108.dp,
-                bottom = 156.dp,
+                top = 100.dp,
+                bottom = 32.dp,
                 start = 16.dp,
                 end = 16.dp
             ),
@@ -445,6 +447,11 @@ fun WatchlistCompareScreen(
             }
         }
     }
+
+        FloatingBackButton(
+            onClick = onBack,
+            modifier = Modifier.align(Alignment.TopStart)
+        )
 }
 }
 

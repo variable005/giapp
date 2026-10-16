@@ -6,13 +6,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
@@ -20,11 +27,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 /**
- * Material 3 Expressive mathematically symmetrical floating top actions header.
- * Strictly no app name bar.
- * Symmetrical 44dp left Search pod, centered active user capsule, and 44dp right Settings pod.
- * Theme toggle relocated exclusively to Settings.
- * Pulsing dots removed in favor of clean static status indicators.
+ * Material 3 Expressive floating top actions header.
+ * Strictly no app bar. Symmetrical pods flank the active user capsule:
+ * Search + Notifications on the left, Compare + Settings on the right.
+ * The Compare workspace lives here as a pushed screen since its bottom nav
+ * slot now belongs to the README tab.
  */
 @Composable
 fun FloatingTopActions(
@@ -32,9 +39,8 @@ fun FloatingTopActions(
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isDarkTheme: Boolean = false,
-    onToggleTheme: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
+    onCompareClick: () -> Unit = {},
     hasUnreadNotifications: Boolean = false
 ) {
     val haptic = LocalHapticFeedback.current
@@ -46,30 +52,25 @@ fun FloatingTopActions(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Left Symmetrical Pod: Search / Switch Profile (44dp circle)
-        Surface(
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .size(44.dp)
-                .clip(CircleShape)
-                .clickable {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onSearchClick()
-                },
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-            tonalElevation = 3.dp,
-            shadowElevation = 2.dp
+        // Left symmetrical pod pair: Search + Notifications
+        Row(
+            modifier = Modifier.align(Alignment.CenterStart),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search Profile",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
+            ActionPod(
+                icon = Icons.Default.Search,
+                contentDescription = "Search Profile",
+                tint = MaterialTheme.colorScheme.primary,
+                onClick = onSearchClick
+            )
+            ActionPod(
+                icon = Icons.Default.Notifications,
+                contentDescription = "Notifications",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                showDot = hasUnreadNotifications,
+                onClick = onNotificationsClick
+            )
         }
 
         // Center Symmetrical Element: Active Profile Pill (Mathematically Centered)
@@ -109,28 +110,67 @@ fun FloatingTopActions(
             }
         }
 
-        // Right Symmetrical Pod: Settings Gear (44dp circle)
-        Surface(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .size(44.dp)
-                .clip(CircleShape)
-                .clickable {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onSettingsClick()
-                },
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-            tonalElevation = 3.dp,
-            shadowElevation = 2.dp
+        // Right symmetrical pod pair: Compare + Settings
+        Row(
+            modifier = Modifier.align(Alignment.CenterEnd),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
+            ActionPod(
+                icon = Icons.Default.People,
+                contentDescription = "Compare Profiles",
+                tint = MaterialTheme.colorScheme.primary,
+                onClick = onCompareClick
+            )
+            ActionPod(
+                icon = Icons.Default.Settings,
+                contentDescription = "Settings",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                onClick = onSettingsClick
+            )
+        }
+    }
+}
+
+/** A single 44dp floating action pod matching the top bar design language. */
+@Composable
+private fun ActionPod(
+    icon: ImageVector,
+    contentDescription: String,
+    tint: Color,
+    onClick: () -> Unit,
+    showDot: Boolean = false
+) {
+    val haptic = LocalHapticFeedback.current
+
+    Surface(
+        modifier = Modifier
+            .size(44.dp)
+            .clip(CircleShape)
+            .clickable {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onClick()
+            },
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        tonalElevation = 3.dp,
+        shadowElevation = 2.dp
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = tint,
+                modifier = Modifier.size(20.dp)
+            )
+            if (showDot) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 10.dp, end = 10.dp)
+                        .size(7.dp)
+                        .background(MaterialTheme.colorScheme.primary, CircleShape)
                 )
             }
         }

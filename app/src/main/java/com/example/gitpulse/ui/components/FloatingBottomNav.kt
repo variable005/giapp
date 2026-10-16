@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.Icon
@@ -38,12 +39,12 @@ enum class NavigationTab(val label: String, val icon: ImageVector) {
     HOME("Home", Icons.Default.Home),
     INSPECTOR("Inspector", Icons.Default.CalendarMonth),
     ANALYTICS("Analytics", Icons.Default.Timeline),
-    COMPARE("Compare", Icons.Default.People)
+    README("README", Icons.Default.MenuBook)
 }
 
 /**
  * Authentic Material 3 Expressive floating pill navigation bar.
- * Ensures all 4 destinations (Home, Inspector, Analytics, Compare) are
+ * Ensures all 4 destinations (Home, Inspector, Analytics, README) are
  * always visible, equally weighted, and feature animated M3 pill indicators.
  */
 @Composable
