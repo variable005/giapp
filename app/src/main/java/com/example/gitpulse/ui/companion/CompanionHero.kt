@@ -4,6 +4,7 @@ import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -193,6 +194,11 @@ fun CompanionHero(
         infiniteRepeatable(tween(2600, easing = FastOutSlowInEasing), RepeatMode.Reverse),
         label = "tail_sway"
     )
+    val sway by transition.animateFloat(
+        -1f, 1f,
+        infiniteRepeatable(tween(4400, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "sway"
+    )
     val ahogeSway by transition.animateFloat(
         -1f, 1f,
         infiniteRepeatable(tween(1900, easing = FastOutSlowInEasing), RepeatMode.Reverse),
@@ -229,6 +235,12 @@ fun CompanionHero(
     val bobA by transition.animateFloat(0f, -4f, infiniteRepeatable(tween(3200, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "bob_a")
     val bobB by transition.animateFloat(0f, -4f, infiniteRepeatable(tween(3700, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "bob_b")
     val bobC by transition.animateFloat(0f, -4f, infiniteRepeatable(tween(4200, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "bob_c")
+    // Slow ambient loop (drifting leaves by day, fireflies at night).
+    val ambientPhase by transition.animateFloat(
+        0f, 1f,
+        infiniteRepeatable(tween(60000, easing = LinearEasing), RepeatMode.Restart),
+        label = "ambient"
+    )
 
     val happyBlend by animateFloatAsState(
         targetValue = if (reaction == KitsuReaction.HAPPY) 1f else 0f,
@@ -252,13 +264,20 @@ fun CompanionHero(
             earTwitch = earTwitch,
             happy = happyBlend,
             tilt = tiltBlend,
-            hop = hop.value * 15f
+            hop = hop.value * 15f,
+            sway = sway
         )
     }
 
     // Companion art shipped with the app: drawn on the meadow crest when
     // present; the hand-drawn vector fox stays as the fallback.
     val companionArt = ImageBitmap.imageResource(R.drawable.kitsu_companion)
+
+    // Fluid rig: warps the art through a GPU mesh each frame. If setup ever
+    // fails the scene quietly falls back to the static drawImage path.
+    val companionWarp = remember(companionArt) {
+        runCatching { CompanionWarp(companionArt) }.getOrNull()
+    }
 
     Column(modifier = modifier.fillMaxWidth()) {
         // Full-bleed scene: no card, the world sits directly on the screen.
@@ -276,7 +295,10 @@ fun CompanionHero(
                     sunUp = isLight && hour in 6..17,
                     tails = tails,
                     levels = levels,
-                    companion = companionArt
+                    companion = companionArt,
+                    companionWarp = companionWarp,
+                    reducedMotion = reducedMotion,
+                    ambientPhase = ambientPhase
                 )
 
                 // Heart burst on tap: a handful of hearts drifting upward.

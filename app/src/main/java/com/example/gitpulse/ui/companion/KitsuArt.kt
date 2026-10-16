@@ -21,7 +21,10 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.gitpulse.theme.PrimaryEmerald
 import com.example.gitpulse.theme.TertiaryAmber
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.roundToInt
+import kotlin.math.sin
 
 /**
  * Kitsu companion art (v3, hand-authored vector fox).
@@ -216,7 +219,9 @@ data class KitsuMotion(
     /** Whole-body lean in degrees, used for the curious long-press pose. */
     val tilt: Float = 0f,
     /** Vertical lift in virtual units for the tap hop. */
-    val hop: Float = 0f
+    val hop: Float = 0f,
+    /** Idle body sway in -1..1; drives the fluid companion warp. */
+    val sway: Float = 0f
 )
 
 /** Palette for the scene and the fox. Character tones are brand-locked; the
@@ -322,7 +327,10 @@ fun DrawScope.drawKitsuScene(
     tails: Int,
     levels: List<Int>,
     foxVisible: Boolean = true,
-    companion: ImageBitmap? = null
+    companion: ImageBitmap? = null,
+    companionWarp: CompanionWarp? = null,
+    reducedMotion: Boolean = false,
+    ambientPhase: Float = 0f
 ) {
     val w = size.width
     val h = size.height
@@ -401,25 +409,30 @@ fun DrawScope.drawKitsuScene(
     )
 
     // Companion: the illustration art sits where the fox stands — bottom edge
-    // on the crest, centred. Idle breath bob, plus the vector fox's reaction
-    // vocabulary in art scale: tap hop, happy rise and the curious lean.
+    // on the crest, centred. When the fluid rig is available the art is drawn
+    // through a deformation mesh (the tail bends, the body breathes, the ears
+    // flex); the static path stays for reduced motion and as a fallback.
     if (companion != null) {
         val artHeight = 152.dp.toPx()
-        val artWidth = artHeight * companion.width / companion.height
         val groundLineY = groundCenter + 5.dp.toPx()
-        val bob = motion.breath * 2.dp.toPx()
-        val lift = motion.hop * artHeight / 185f + motion.happy * 3.dp.toPx()
-        withTransform({
-            rotate(motion.tilt, pivot = Offset(w / 2f, groundLineY))
-        }) {
-            drawImage(
-                image = companion,
-                dstOffset = IntOffset(
-                    (w / 2f - artWidth / 2f).roundToInt(),
-                    (groundLineY - artHeight - bob - lift).roundToInt()
-                ),
-                dstSize = IntSize(artWidth.roundToInt(), artHeight.roundToInt())
-            )
+        val fluid = companionWarp != null && !reducedMotion &&
+            companionWarp.draw(this, motion, w / 2f, groundLineY, artHeight)
+        if (!fluid) {
+            val artWidth = artHeight * companion.width / companion.height
+            val bob = motion.breath * 2.dp.toPx()
+            val lift = motion.hop * artHeight / 185f + motion.happy * 3.dp.toPx()
+            withTransform({
+                rotate(motion.tilt, pivot = Offset(w / 2f, groundLineY))
+            }) {
+                drawImage(
+                    image = companion,
+                    dstOffset = IntOffset(
+                        (w / 2f - artWidth / 2f).roundToInt(),
+                        (groundLineY - artHeight - bob - lift).roundToInt()
+                    ),
+                    dstSize = IntSize(artWidth.roundToInt(), artHeight.roundToInt())
+                )
+            }
         }
     } else if (foxVisible) {
         val foxScale = 145.dp.toPx() / 185f
@@ -430,6 +443,62 @@ fun DrawScope.drawKitsuScene(
             scale(foxScale, foxScale, pivot = Offset.Zero)
         }) {
             drawKitsu(paths, palette, motion, tails)
+        }
+    }
+
+    // Ambient life over the meadow: drifting leaves by day, fireflies at
+    // night. Parked together with the rest of the motion under reduced-motion.
+    if (!reducedMotion) {
+        drawAmbient(nightDecor, ambientPhase, palette, w, h)
+    }
+}
+
+/**
+ * Ambient life over the meadow. [phase] is a 0..1 loop and every position is
+ * a function of it, so the animation is deterministic and wraps seamlessly
+ * (each drifting item is off-screen exactly when its own loop restarts).
+ */
+private fun DrawScope.drawAmbient(
+    night: Boolean,
+    phase: Float,
+    palette: KitsuPalette,
+    w: Float,
+    h: Float
+) {
+    val seeds = floatArrayOf(0.11f, 0.27f, 0.44f, 0.58f, 0.73f, 0.88f)
+    val tau = (2f * PI).toFloat()
+    if (night) {
+        // Fireflies: soft glows drifting over the meadow, pulsing on and off.
+        seeds.forEachIndexed { i, s ->
+            val t = (phase + s) * tau
+            val x = (0.10f + 0.80f * ((s * 7.31f) % 1f)) * w + sin(t * 1.1f + i) * 12f.dp.toPx()
+            val y = (0.52f + 0.40f * ((s * 3.7f) % 1f)) * h + cos(t * 0.9f + i * 1.7f) * 8f.dp.toPx()
+            val pulse = 0.35f + 0.65f * (0.5f + 0.5f * sin(t * 2.6f + s * 9f))
+            val color = if (i % 3 == 1) palette.amber else palette.emerald
+            drawCircle(color.copy(alpha = 0.14f * pulse), 5.5f.dp.toPx(), Offset(x, y))
+            drawCircle(color.copy(alpha = 0.55f * pulse), 1.5f.dp.toPx(), Offset(x, y))
+        }
+    } else {
+        // Leaves: paper-cut greens drift across the scene, tumbling slowly.
+        val margin = 46f.dp.toPx()
+        seeds.forEachIndexed { i, s ->
+            val speed = 0.55f + 0.9f * ((s * 11.17f) % 1f)
+            val p = phase * speed + s
+            val x01 = p % 1f
+            val x = -margin + x01 * (w + 2f * margin)
+            val baseY = (0.26f + 0.62f * ((s * 5.13f) % 1f)) * h
+            val y = baseY + sin(p * tau) * 9f.dp.toPx()
+            val edge = (minOf(x01, 1f - x01) * 7f).coerceAtMost(1f)
+            val alpha = 0.62f * edge
+            if (alpha < 0.02f) return@forEachIndexed
+            val leaf = if (i % 2 == 0) palette.emerald else palette.emeraldDeep
+            rotate(360f * (p * (0.35f + 0.5f * s) + s * 2f), pivot = Offset(x, y)) {
+                drawOval(
+                    color = leaf.copy(alpha = alpha),
+                    topLeft = Offset(x - 4.2f.dp.toPx(), y - 2.6f.dp.toPx()),
+                    size = Size(8.4f.dp.toPx(), 5.2f.dp.toPx())
+                )
+            }
         }
     }
 }
