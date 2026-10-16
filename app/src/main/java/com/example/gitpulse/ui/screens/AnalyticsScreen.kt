@@ -470,25 +470,40 @@ private fun AnalyticsContent(
 
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 1.dp)
 
-                            // Three equal stat columns — mathematically symmetrical
+                            // Hero metric — centered for perfect symmetry
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                AnimatedNumberCounter(
+                                    count = profile.totalAnnualCommits,
+                                    style = MaterialTheme.typography.headlineLarge,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "Commits this year",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            // Secondary metrics — two equal tiles
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                TelemetryStat(
+                                TelemetryMiniTile(
                                     modifier = Modifier.weight(1f),
-                                    value = "${profile.totalAnnualCommits}",
-                                    label = "ANNUAL COMMITS"
-                                )
-                                TelemetryStat(
-                                    modifier = Modifier.weight(1f),
-                                    value = "${profile.reposCount}",
-                                    label = "REPOSITORIES"
-                                )
-                                TelemetryStat(
-                                    modifier = Modifier.weight(1f),
+                                    icon = Icons.Default.Star,
                                     value = "${data.totalStars}",
-                                    label = "TOTAL STARS"
+                                    label = "Total Stars"
+                                )
+                                TelemetryMiniTile(
+                                    modifier = Modifier.weight(1f),
+                                    icon = Icons.Default.Folder,
+                                    value = "${profile.reposCount}",
+                                    label = "Repositories"
                                 )
                             }
 
@@ -610,32 +625,49 @@ fun TelemetryCard(
     }
 }
 
-/** One evenly weighted column inside the telemetry card preview. */
+/** One evenly weighted mini tile inside the telemetry card preview. */
 @Composable
-private fun TelemetryStat(
+private fun TelemetryMiniTile(
     value: String,
     label: String,
+    icon: ImageVector,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    Surface(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp)
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh
     ) {
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 1
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            maxLines = 2
-        )
+        Column(
+            modifier = Modifier.padding(vertical = 12.dp, horizontal = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(15.dp)
+                )
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1
+                )
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1
+            )
+        }
     }
 }
 

@@ -45,7 +45,12 @@ fun MarkdownView(
     markdown: String,
     modifier: Modifier = Modifier
 ) {
-    val blocks = remember(markdown) { parseMarkdown(markdown) }
+    val blocks = remember(markdown) {
+        runCatching { parseMarkdown(markdown) }.getOrElse {
+            // Never take a screen down over an exotic README — fall back to raw text.
+            listOf(MarkdownBlock.Paragraph(text = markdown.take(6000)))
+        }
+    }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -353,7 +358,7 @@ private fun parseImagesOnlyLine(line: String): List<MdImage>? {
     return if (remainder.isEmpty()) images else null
 }
 
-private fun parseMarkdown(raw: String): List<MarkdownBlock> {
+internal fun parseMarkdown(raw: String): List<MarkdownBlock> {
     val lines = raw.lines()
     val blocks = mutableListOf<MarkdownBlock>()
     var i = 0
@@ -362,11 +367,19 @@ private fun parseMarkdown(raw: String): List<MarkdownBlock> {
         val line = lines[i]
 
         when {
-            // Image / badge rows (consecutive image lines merge into one row)
+            // Image / badge rows (consecutive badge lines merge into one row)
             parseImagesOnlyLine(line) != null -> {
                 val images = mutableListOf<MdImage>()
                 while (i < lines.size) {
                     val lineImages = parseImagesOnlyLine(lines[i]) ?: break
+                    if (lineImages.size == 1 && !lineImages[0].isBadge) {
+                        // Standalone screenshot: own full-width row, never glued to badges.
+                        if (images.isEmpty()) {
+                            images.add(lineImages[0])
+                            i++
+                        }
+                        break
+                    }
                     images.addAll(lineImages)
                     i++
                 }
@@ -465,6 +478,13 @@ private fun parseMarkdown(raw: String): List<MarkdownBlock> {
                     !lines[i].startsWith("* ") &&
                     lines[i].trim() !in listOf("---", "***")
                 ) {
+                    paraLines.add(lines[i].trim())
+                    i++
+                }
+                if (paraLines.isEmpty()) {
+                    // Defensive: odd line shapes (e.g. "#tag", "##### deep heading",
+                    // "###### x") must never stall the parser — take the line as plain
+                    // text and advance so the loop always makes progress.
                     paraLines.add(lines[i].trim())
                     i++
                 }

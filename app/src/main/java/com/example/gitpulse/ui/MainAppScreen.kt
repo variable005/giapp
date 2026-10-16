@@ -237,10 +237,10 @@ fun MainAppScreen(
                                         )
                                     }
                                     NavigationTab.README -> {
-                                        ProjectReadmeScreen(
-                                            repo = null,
-                                            isProductReadme = true,
-                                            viewModel = viewModel,
+                                        ProjectsScreen(
+                                            repos = (uiState as? GitPulseUiState.Success)?.data?.showcaseRepos ?: emptyList(),
+                                            onSelectRepo = { repo -> selectedRepoForReadme = repo },
+                                            onViewProductReadme = { showProductReadme = true },
                                             onBack = {},
                                             embedded = true
                                         )
