@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -15,9 +16,12 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.gitpulse.theme.PrimaryEmerald
 import com.example.gitpulse.theme.TertiaryAmber
+import kotlin.math.roundToInt
 
 /**
  * Kitsu companion art (v3, hand-authored vector fox).
@@ -300,13 +304,14 @@ private fun groundY(x: Float, w: Float, h: Float): Float {
 
 /**
  * Draws the full scene: sky decor, rolling hills, the contribution meadow
- * and the fox standing on the field crest. No sky is painted; the scene
+ * and the companion on the field crest. No sky is painted; the scene
  * blends straight into the screen background.
  *
  * [sunUp] adds a small sun instead of the moon; [tails] is the evolution
- * stage from the longest streak. With [foxVisible] off the crest keeps its
- * contact shadow but the 2D fox steps aside — the 3D Kitsu (Kitsu3DFox)
- * renders in its place.
+ * stage from the longest streak. [companion] is the illustration art drawn
+ * on the crest (bottom edge on the ground line); when it is null the
+ * hand-drawn vector fox is used unless [foxVisible] is off. The crest
+ * keeps its contact shadow either way.
  */
 fun DrawScope.drawKitsuScene(
     paths: KitsuPaths,
@@ -316,7 +321,8 @@ fun DrawScope.drawKitsuScene(
     sunUp: Boolean,
     tails: Int,
     levels: List<Int>,
-    foxVisible: Boolean = true
+    foxVisible: Boolean = true,
+    companion: ImageBitmap? = null
 ) {
     val w = size.width
     val h = size.height
@@ -394,8 +400,28 @@ fun DrawScope.drawKitsuScene(
         size = Size(104.dp.toPx(), 14.dp.toPx())
     )
 
-    // Fox: fixed 145dp tall, centered, standing on the crest.
-    if (foxVisible) {
+    // Companion: the illustration art sits where the fox stands — bottom edge
+    // on the crest, centred. Idle breath bob, plus the vector fox's reaction
+    // vocabulary in art scale: tap hop, happy rise and the curious lean.
+    if (companion != null) {
+        val artHeight = 152.dp.toPx()
+        val artWidth = artHeight * companion.width / companion.height
+        val groundLineY = groundCenter + 5.dp.toPx()
+        val bob = motion.breath * 2.dp.toPx()
+        val lift = motion.hop * artHeight / 185f + motion.happy * 3.dp.toPx()
+        withTransform({
+            rotate(motion.tilt, pivot = Offset(w / 2f, groundLineY))
+        }) {
+            drawImage(
+                image = companion,
+                dstOffset = IntOffset(
+                    (w / 2f - artWidth / 2f).roundToInt(),
+                    (groundLineY - artHeight - bob - lift).roundToInt()
+                ),
+                dstSize = IntSize(artWidth.roundToInt(), artHeight.roundToInt())
+            )
+        }
+    } else if (foxVisible) {
         val foxScale = 145.dp.toPx() / 185f
         val foxTx = w / 2f - 100f * foxScale
         val foxTy = groundCenter + 5.dp.toPx() - 185f * foxScale

@@ -52,17 +52,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.example.gitpulse.R
 import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.ui.animation.AnimatedNumberCounter
 import com.example.gitpulse.ui.animation.MotionTokens
@@ -121,7 +124,6 @@ fun CompanionHero(
     var reaction by remember { mutableStateOf(KitsuReaction.NONE) }
     var happyStamp by remember { mutableStateOf(0) }
     var lastSyncTick by remember { mutableStateOf(syncTick) }
-    var fox3dReady by remember { mutableStateOf(false) }
 
     val hop = remember { Animatable(0f) }
     val heartBurst = remember { Animatable(1f) }
@@ -254,6 +256,10 @@ fun CompanionHero(
         )
     }
 
+    // Companion art shipped with the app: drawn on the meadow crest when
+    // present; the hand-drawn vector fox stays as the fallback.
+    val companionArt = ImageBitmap.imageResource(R.drawable.kitsu_companion)
+
     Column(modifier = modifier.fillMaxWidth()) {
         // Full-bleed scene: no card, the world sits directly on the screen.
         Box(
@@ -270,7 +276,7 @@ fun CompanionHero(
                     sunUp = isLight && hour in 6..17,
                     tails = tails,
                     levels = levels,
-                    foxVisible = !fox3dReady
+                    companion = companionArt
                 )
 
                 // Heart burst on tap: a handful of hearts drifting upward.
@@ -299,20 +305,10 @@ fun CompanionHero(
                 }
             }
 
-            // Kitsu, now in 3D: a transparent SceneView (Filament) layered over
-            // the meadow canvas. The canvas keeps drawing the world but drops
-            // its 2D fox once the model node exists (fox3dReady), so the fox
-            // never appears twice — and if the model never loads, the 2D fox
-            // simply stays on screen.
-            Kitsu3DFox(
-                motion = motion,
-                night = !isLight,
-                reducedMotion = reducedMotion,
-                onReady = { fox3dReady = true },
-                modifier = Modifier.matchParentSize()
-            )
+            // (Kitsu3DFox.kt — the SceneView 3D pipeline — stays in the tree,
+            // unmounted, ready for a future 3D return.)
 
-            // Invisible tap target wrapped around the fox.
+            // Invisible tap target wrapped around the companion.
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
