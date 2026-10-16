@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -68,10 +67,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.gitpulse.R
 import com.example.gitpulse.data.remote.GitPulseAggregateData
-import com.example.gitpulse.ui.animation.AnimatedNumberCounter
 import com.example.gitpulse.ui.animation.MotionTokens
 import java.util.Calendar
-import java.util.Locale
 import kotlin.math.sin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -84,7 +81,7 @@ private enum class KitsuReaction { NONE, HAPPY, CURIOUS }
  *
  * The fox lives on a meadow built from the last 28 contribution days and is
  * now properly interactive:
- *  - tap the fox: happy hop, heart burst, a quip in a speech bubble
+ *  - tap the fox: heart burst and a quip in a speech bubble
  *  - long-press: the fox tilts its head and shows its stat card
  *  - new data: the fox celebrates the sync by itself
  *  - idle: breathing, tail sway, blinking and the occasional ear twitch
@@ -126,7 +123,6 @@ fun CompanionHero(
     var happyStamp by remember { mutableStateOf(0) }
     var lastSyncTick by remember { mutableStateOf(syncTick) }
 
-    val hop = remember { Animatable(0f) }
     val heartBurst = remember { Animatable(1f) }
 
     fun reactHappy() {
@@ -135,11 +131,6 @@ fun CompanionHero(
         happyStamp += 1
         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         if (!reducedMotion) {
-            scope.launch {
-                hop.snapTo(0f)
-                hop.animateTo(1f, tween(170, easing = FastOutSlowInEasing))
-                hop.animateTo(0f, tween(340, easing = FastOutSlowInEasing))
-            }
             scope.launch {
                 heartBurst.snapTo(0f)
                 heartBurst.animateTo(1f, tween(950, easing = FastOutSlowInEasing))
@@ -232,9 +223,6 @@ fun CompanionHero(
         ),
         label = "ear_twitch"
     )
-    val bobA by transition.animateFloat(0f, -4f, infiniteRepeatable(tween(3200, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "bob_a")
-    val bobB by transition.animateFloat(0f, -4f, infiniteRepeatable(tween(3700, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "bob_b")
-    val bobC by transition.animateFloat(0f, -4f, infiniteRepeatable(tween(4200, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "bob_c")
     // Slow ambient loop (drifting leaves by day, fireflies at night).
     val ambientPhase by transition.animateFloat(
         0f, 1f,
@@ -264,7 +252,6 @@ fun CompanionHero(
             earTwitch = earTwitch,
             happy = happyBlend,
             tilt = tiltBlend,
-            hop = hop.value * 15f,
             sway = sway
         )
     }
@@ -383,60 +370,6 @@ fun CompanionHero(
                     .padding(end = 20.dp, top = 2.dp)
             )
 
-            StatBubble(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .offset(x = 16.dp, y = (-26).dp)
-                    .offset { IntOffset(0, bobA.dp.roundToPx()) }
-            ) {
-                AnimatedNumberCounter(
-                    count = profile.activeStreakDays,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = colorScheme.primary
-                )
-                Text(
-                    text = "day streak",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colorScheme.onSurfaceVariant
-                )
-            }
-
-            StatBubble(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .offset(x = (-16).dp, y = (-56).dp)
-                    .offset { IntOffset(0, bobB.dp.roundToPx()) }
-            ) {
-                AnimatedNumberCounter(
-                    count = profile.commitsToday,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = colorScheme.onSurface
-                )
-                Text(
-                    text = "commits today",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colorScheme.onSurfaceVariant
-                )
-            }
-
-            StatBubble(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .offset(x = (-16).dp, y = 44.dp)
-                    .offset { IntOffset(0, bobC.dp.roundToPx()) }
-            ) {
-                Text(
-                    text = formatCompact(profile.totalAnnualCommits),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = colorScheme.onSurface
-                )
-                Text(
-                    text = "this year",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colorScheme.onSurfaceVariant
-                )
-            }
-
             // Tap reaction: a quip bubble above the fox's head.
             KitsuQuipBubble(
                 text = quip ?: "",
@@ -526,26 +459,6 @@ private fun MoodChip(mood: CompanionMood, modifier: Modifier = Modifier) {
                 color = accent
             )
         }
-    }
-}
-
-@Composable
-private fun StatBubble(
-    modifier: Modifier = Modifier,
-    content: @Composable RowScope.() -> Unit
-) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.94f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 11.dp, vertical = 7.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            content = content
-        )
     }
 }
 
@@ -703,6 +616,3 @@ private fun rememberReducedMotion(): Boolean {
         Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
     }
 }
-
-private fun formatCompact(value: Int): String =
-    if (value >= 1000) String.format(Locale.US, "%.1fk", value / 1000f) else "$value"
