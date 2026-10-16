@@ -23,13 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.example.gitpulse.data.GitActivityItem
 import com.example.gitpulse.data.HeatmapDay
 import com.example.gitpulse.data.remote.GitPulseAggregateData
@@ -37,6 +35,7 @@ import com.example.gitpulse.theme.*
 import com.example.gitpulse.ui.animation.AnimatedNumberCounter
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import com.example.gitpulse.ui.animation.MotionTokens
+import com.example.gitpulse.ui.companion.CompanionHero
 import com.example.gitpulse.ui.viewmodel.GitPulseUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -107,305 +106,37 @@ private fun DashboardContent(
         contentPadding = PaddingValues(
             top = 108.dp,
             bottom = 156.dp,
-            start = 16.dp,
-            end = 16.dp
+            start = 0.dp,
+            end = 0.dp
         ),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 1. M3 Expressive Profile Hero Card
+        // 1. Kitsu companion hero: the fox lives on your contribution meadow.
         item {
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.elevatedCardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
-                ),
-                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box {
-                                if (profile.avatarUrl.isNotBlank()) {
-                                    AsyncImage(
-                                        model = profile.avatarUrl,
-                                        contentDescription = profile.name,
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .size(52.dp)
-                                            .clip(RoundedCornerShape(16.dp))
-                                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
-                                    )
-                                } else {
-                                    Surface(
-                                        modifier = Modifier.size(52.dp),
-                                        shape = RoundedCornerShape(16.dp),
-                                        color = MaterialTheme.colorScheme.surfaceContainerHigh
-                                    ) {
-                                        Box(contentAlignment = Alignment.Center) {
-                                            Text(
-                                                text = profile.name.take(2).uppercase(),
-                                                style = MaterialTheme.typography.titleMedium,
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                    }
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .offset(x = 2.dp, y = 2.dp)
-                                        .size(12.dp)
-                                        .background(MaterialTheme.colorScheme.primary, CircleShape)
-                                        .border(2.dp, MaterialTheme.colorScheme.surfaceContainer, CircleShape)
-                                )
-                            }
-
-                            Column {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    Text(
-                                        text = profile.name,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Icon(
-                                        imageVector = Icons.Default.CheckCircle,
-                                        contentDescription = "Verified Profile",
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                                Text(
-                                    text = "@${profile.username}",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-
-                        // Switch Profile Button (Symmetrical M3 Tonal Button)
-                        FilledTonalButton(
-                            onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                onSearchClick()
-                            },
-                            shape = CircleShape,
-                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                            modifier = Modifier.height(36.dp),
-                            colors = ButtonDefaults.filledTonalButtonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                contentColor = MaterialTheme.colorScheme.onSurface
-                            )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SwapHoriz,
-                                contentDescription = "Switch User",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(15.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "Switch",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
-                            )
-                        }
-                    }
-
-                    // Bio
-                    Text(
-                        text = profile.bio,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
-
-                    // 4-Column Live Metric Tonal Tiles
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        MetricTile(value = "${profile.reposCount}", label = "REPOS")
-                        MetricTile(value = profile.followersCount, label = "FOLLOWERS")
-                        MetricTile(value = "${profile.followingCount}", label = "FOLLOWING")
-                        MetricTile(value = profile.starsCount, label = "STARS", hasStar = true)
-                    }
-                }
-            }
+            CompanionHero(data = data)
         }
 
-        // 2. Live Flow Hero Streak Card
+        // 2. Profile metric tiles
         item {
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.elevatedCardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
-                ),
-                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primaryContainer
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(6.dp)
-                                        .background(MaterialTheme.colorScheme.onPrimaryContainer, CircleShape)
-                                )
-                                Text(
-                                    text = "ACTIVE • ${profile.commitsToday} COMMITS TODAY",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            }
-                        }
-
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Schedule,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Text(
-                                    text = "Live Sync",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-
-                    // Main Streak Count with Animated Number Counter
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Bottom
-                    ) {
-                        Column {
-                            Text(
-                                text = "CURRENT FLOW",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Row(
-                                verticalAlignment = Alignment.Bottom,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                AnimatedNumberCounter(
-                                    count = profile.activeStreakDays,
-                                    style = MaterialTheme.typography.displayMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "Days Streak",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(bottom = 4.dp)
-                                )
-                            }
-                        }
-
-                        Surface(
-                            modifier = Modifier.size(48.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.tertiaryContainer,
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f))
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.Whatshot,
-                                    contentDescription = "Streak Flame",
-                                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    // Milestone Progress Bar with Spring Physics
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "Milestone Progress",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "Next goal: ${profile.currentGoalDays} Days (${profile.goalPercentage}%)",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-
-                        val progressAnimation by animateFloatAsState(
-                            targetValue = (profile.goalPercentage / 100f).coerceIn(0f, 1f),
-                            animationSpec = MotionTokens.SpringBouncy,
-                            label = "milestone_anim"
-                        )
-                        LinearProgressIndicator(
-                            progress = { progressAnimation },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp)
-                                .clip(CircleShape),
-                            color = MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                            strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
-                        )
-                    }
-                }
+                MetricTile(value = "${profile.reposCount}", label = "REPOS")
+                MetricTile(value = profile.followersCount, label = "FOLLOWERS")
+                MetricTile(value = "${profile.followingCount}", label = "FOLLOWING")
+                MetricTile(value = profile.starsCount, label = "STARS", hasStar = true)
             }
         }
 
         // 3. Dual Active vs Peak Run Outlined Cards
         item {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Active Run Card
@@ -536,7 +267,9 @@ private fun DashboardContent(
             }
 
             ElevatedCard(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -847,7 +580,9 @@ private fun DashboardContent(
         // 5. Recent Git Activity Stream Header
         item {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -863,13 +598,16 @@ private fun DashboardContent(
         }
 
         items(data.recentActivities.take(5)) { item ->
-            RecentActivityCard(item)
+            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                RecentActivityCard(item)
+            }
         }
 
         if (data.recentActivities.isEmpty()) {
             item {
                 Text(
                     text = "No recent public activity found.",
+                    modifier = Modifier.padding(horizontal = 16.dp),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -892,7 +630,7 @@ private fun LoadingDashboardSkeleton(modifier: Modifier = Modifier) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(180.dp)
+                .height(300.dp)
                 .clip(RoundedCornerShape(28.dp))
                 .background(shimmerBrush)
         )
