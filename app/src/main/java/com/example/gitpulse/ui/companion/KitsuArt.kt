@@ -304,7 +304,9 @@ private fun groundY(x: Float, w: Float, h: Float): Float {
  * blends straight into the screen background.
  *
  * [sunUp] adds a small sun instead of the moon; [tails] is the evolution
- * stage from the longest streak.
+ * stage from the longest streak. With [foxVisible] off the crest keeps its
+ * contact shadow but the 2D fox steps aside — the 3D Kitsu (Kitsu3DFox)
+ * renders in its place.
  */
 fun DrawScope.drawKitsuScene(
     paths: KitsuPaths,
@@ -313,7 +315,8 @@ fun DrawScope.drawKitsuScene(
     nightDecor: Boolean,
     sunUp: Boolean,
     tails: Int,
-    levels: List<Int>
+    levels: List<Int>,
+    foxVisible: Boolean = true
 ) {
     val w = size.width
     val h = size.height
@@ -392,14 +395,16 @@ fun DrawScope.drawKitsuScene(
     )
 
     // Fox: fixed 145dp tall, centered, standing on the crest.
-    val foxScale = 145.dp.toPx() / 185f
-    val foxTx = w / 2f - 100f * foxScale
-    val foxTy = groundCenter + 5.dp.toPx() - 185f * foxScale
-    withTransform({
-        translate(foxTx, foxTy)
-        scale(foxScale, foxScale, pivot = Offset.Zero)
-    }) {
-        drawKitsu(paths, palette, motion, tails)
+    if (foxVisible) {
+        val foxScale = 145.dp.toPx() / 185f
+        val foxTx = w / 2f - 100f * foxScale
+        val foxTy = groundCenter + 5.dp.toPx() - 185f * foxScale
+        withTransform({
+            translate(foxTx, foxTy)
+            scale(foxScale, foxScale, pivot = Offset.Zero)
+        }) {
+            drawKitsu(paths, palette, motion, tails)
+        }
     }
 }
 

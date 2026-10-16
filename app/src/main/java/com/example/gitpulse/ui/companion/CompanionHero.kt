@@ -121,6 +121,7 @@ fun CompanionHero(
     var reaction by remember { mutableStateOf(KitsuReaction.NONE) }
     var happyStamp by remember { mutableStateOf(0) }
     var lastSyncTick by remember { mutableStateOf(syncTick) }
+    var fox3dReady by remember { mutableStateOf(false) }
 
     val hop = remember { Animatable(0f) }
     val heartBurst = remember { Animatable(1f) }
@@ -268,7 +269,8 @@ fun CompanionHero(
                     nightDecor = !isLight,
                     sunUp = isLight && hour in 6..17,
                     tails = tails,
-                    levels = levels
+                    levels = levels,
+                    foxVisible = !fox3dReady
                 )
 
                 // Heart burst on tap: a handful of hearts drifting upward.
@@ -296,6 +298,19 @@ fun CompanionHero(
                     }
                 }
             }
+
+            // Kitsu, now in 3D: a transparent SceneView (Filament) layered over
+            // the meadow canvas. The canvas keeps drawing the world but drops
+            // its 2D fox once the model node exists (fox3dReady), so the fox
+            // never appears twice — and if the model never loads, the 2D fox
+            // simply stays on screen.
+            Kitsu3DFox(
+                motion = motion,
+                night = !isLight,
+                reducedMotion = reducedMotion,
+                onReady = { fox3dReady = true },
+                modifier = Modifier.matchParentSize()
+            )
 
             // Invisible tap target wrapped around the fox.
             Box(
