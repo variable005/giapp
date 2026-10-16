@@ -3,10 +3,7 @@ package com.example.gitpulse.ui.companion
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -23,10 +20,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.gitpulse.theme.PrimaryEmerald
 import com.example.gitpulse.theme.TertiaryAmber
-import kotlin.math.PI
-import kotlin.math.cos
 import kotlin.math.roundToInt
-import kotlin.math.sin
 
 /**
  * Kitsu companion art (v3, hand-authored vector fox).
@@ -40,10 +34,10 @@ import kotlin.math.sin
  * anime eyes with emerald irises, a forehead diamond, dark-tipped ears and a
  * pair of expressions (idle / happy) that the hero crossfades between.
  *
- * The scene (sky decor, rolling field, contribution meadow) is drawn in
- * canvas pixel space so it stretches with the screen while the fox keeps its
- * proportions. The scene paints no sky: it sits directly on the screen
- * background, full bleed, as if it were part of the app itself.
+ * The companion is drawn in canvas pixel space so she stretches with the
+ * screen while keeping her proportions. Nothing else is painted: she sits
+ * directly on the screen background, full bleed, as if she were part of the
+ * app itself.
  */
 
 /** Paths for one idle chibi fox, in the 200 x 185 virtual space. */
@@ -277,9 +271,6 @@ fun kitsuPalette(colorScheme: ColorScheme, isLight: Boolean): KitsuPalette = Kit
     sparkle = Color(0xFF565D6B),
     cloud = Color(0xFFE7E8EC)
 )
-private val GrassAlphas = floatArrayOf(0f, 0.5f, 0.68f, 0.85f, 1f)
-
-/** Soft second fur tone used for the neck shadow, body shade and tail shading. */
 private val FurShade = Color(0xFFEAD3AE)
 
 /** Tail fan geometry per evolution stage: base angle (degrees) and a small
@@ -295,161 +286,38 @@ private val TailOffsets = mapOf(
     3 to listOf(-4f, 0f, 4f)
 )
 
-/** Faint background tufts scattered under the crest so the field below the
- *  meadow reads as a continuation of the grass rather than empty ground. */
-private val ScatterTufts = listOf(
-    0.06f to 0.86f, 0.14f to 0.92f, 0.23f to 0.88f, 0.33f to 0.95f, 0.44f to 0.90f,
-    0.56f to 0.87f, 0.67f to 0.94f, 0.78f to 0.89f, 0.90f to 0.93f
-)
-
-/** Y of the field crest at horizontal position [x]: a single gentle quadratic
- *  from (0, 0.76h) to (w, 0.76h), cresting at 0.72h in the middle. */
-private fun groundY(x: Float, w: Float, h: Float): Float {
-    val t = (x / w).coerceIn(0f, 1f)
-    return (1 - t) * (1 - t) * (0.76f * h) + 2 * (1 - t) * t * (0.72f * h) + t * t * (0.76f * h)
-}
-
 /**
- * Draws the full scene: sky decor, rolling hills, the contribution meadow
- * and the companion on the field crest. No sky is painted; the scene
- * blends straight into the screen background.
+ * Draws the companion by herself. Nothing else is painted — no sky, no
+ * ground — so she sits directly on the app background, full bleed.
  *
- * [sunUp] adds a small sun instead of the moon; [tails] is the evolution
- * stage from the longest streak. [companion] is the illustration art drawn
- * on the crest (bottom edge on the ground line); when it is null the
- * hand-drawn vector fox is used unless [foxVisible] is off. The crest
- * keeps its contact shadow either way.
- *
- * [meadow] is the illustrated grassy mound the companion stands on: when
- * present it replaces the drawn contribution meadow, its plateau meeting
- * the companion's feet (dimmed softly after dark). Without it the scene
- * falls back to the hand-drawn ground line and meadow.
+ * [tails] is the evolution stage from the longest streak. [companion] is
+ * the illustration art (bottom edge on her anchor line, centred); when it
+ * is null the hand-drawn vector fox is used unless [foxVisible] is off.
+ * When the fluid rig is available the art is drawn through a deformation
+ * mesh (the tail bends, the body breathes, the ears flex); the static path
+ * stays for reduced motion and as a fallback.
  */
 fun DrawScope.drawKitsuScene(
     paths: KitsuPaths,
     palette: KitsuPalette,
     motion: KitsuMotion,
-    nightDecor: Boolean,
-    sunUp: Boolean,
     tails: Int,
-    levels: List<Int>,
     foxVisible: Boolean = true,
     companion: ImageBitmap? = null,
-    meadow: ImageBitmap? = null,
     companionWarp: CompanionWarp? = null,
-    reducedMotion: Boolean = false,
-    ambientPhase: Float = 0f
+    reducedMotion: Boolean = false
 ) {
     val w = size.width
     val h = size.height
 
-    // Celestial body: sun by day, moon otherwise.
-    val celestial = Offset(0.84f * w, 0.16f * h)
-    if (sunUp) {
-        drawCircle(palette.amber.copy(alpha = 0.25f), 15.dp.toPx(), celestial)
-        drawCircle(palette.amber, 9.dp.toPx(), celestial)
-    } else {
-        drawCircle(palette.furLight, 9.dp.toPx(), celestial)
-        drawCircle(
-            palette.line.copy(alpha = 0.18f), 2.2.dp.toPx(),
-            Offset(celestial.x - 3.dp.toPx(), celestial.y - 3.dp.toPx())
-        )
-        drawCircle(
-            palette.line.copy(alpha = 0.18f), 1.4.dp.toPx(),
-            Offset(celestial.x + 3.dp.toPx(), celestial.y + 3.dp.toPx())
-        )
-    }
+    // Her anchor line, kept from the old field crest: three quarters down.
+    val groundCenter = 0.74f * h
 
-    // Sky decor: stars at night, flat clouds by day.
-    if (nightDecor) {
-        drawCircle(palette.star, 1.7.dp.toPx(), Offset(0.111f * w, 0.15f * h))
-        drawCircle(palette.starDim, 1.3.dp.toPx(), Offset(0.215f * w, 0.09f * h))
-        drawCircle(palette.star, 1.5.dp.toPx(), Offset(0.354f * w, 0.17f * h))
-        drawCircle(palette.starDim, 1.2.dp.toPx(), Offset(0.472f * w, 0.08f * h))
-        drawCircle(palette.star, 1.6.dp.toPx(), Offset(0.91f * w, 0.43f * h))
-        drawPath(sparklePath(0.583f * w, 0.221f * h, 6.dp.toPx()), palette.sparkle)
-    } else {
-        drawCircle(palette.cloud, 9.dp.toPx(), Offset(0.181f * w, 0.23f * h))
-        drawCircle(palette.cloud, 11.dp.toPx(), Offset(0.222f * w, 0.21f * h))
-        drawCircle(palette.cloud, 8.dp.toPx(), Offset(0.264f * w, 0.235f * h))
-        drawCircle(palette.cloud, 7.dp.toPx(), Offset(0.826f * w, 0.37f * h))
-        drawCircle(palette.cloud, 8.5.dp.toPx(), Offset(0.861f * w, 0.355f * h))
-        drawCircle(palette.cloud, 6.dp.toPx(), Offset(0.896f * w, 0.375f * h))
-    }
-
-    // Rolling field: two hill silhouettes run down to the scene's bottom edge.
-    val farHill = Path().apply {
-        moveTo(0f, 0.74f * h)
-        quadraticBezierTo(0.25f * w, 0.52f * h, 0.52f * w, 0.70f * h)
-        quadraticBezierTo(0.78f * w, 0.86f * h, w, 0.67f * h)
-        lineTo(w, h)
-        lineTo(0f, h)
-        close()
-    }
-    drawPath(farHill, palette.hillFar)
-
-    val nearHill = Path().apply {
-        moveTo(0f, 0.80f * h)
-        quadraticBezierTo(0.31f * w, 0.63f * h, 0.62f * w, 0.76f * h)
-        quadraticBezierTo(0.93f * w, 0.88f * h, w, 0.75f * h)
-        lineTo(w, h)
-        lineTo(0f, h)
-        close()
-    }
-    drawPath(nearHill, palette.hillNear)
-
-    // Where the companion's feet meet the ground: the shared anchor for
-    // the meadow art, the fallback crest and the contact shadow.
-    val groundCenter = groundY(w / 2f, w, h)
-
-    if (meadow != null) {
-        // Illustrated grassy mound: fills the scene width (a hair of bleed
-        // on both sides) with its plateau meeting the companion's feet.
-        // The art's stand line sits at 170/428 of its source height; the
-        // height cap keeps the whole mound inside the scene on wide screens.
-        val meadowScale = minOf(
-            w * 1.04f / meadow.width,
-            118.dp.toPx() / meadow.height
-        )
-        val meadowW = meadow.width * meadowScale
-        val meadowH = meadow.height * meadowScale
-        val stand = meadow.height * (170f / 428f)
-        drawImage(
-            image = meadow,
-            dstOffset = IntOffset(
-                ((w - meadowW) / 2f).roundToInt(),
-                (groundCenter + 5.dp.toPx() - 6.dp.toPx() - stand * meadowScale).roundToInt()
-            ),
-            dstSize = IntSize(meadowW.roundToInt(), meadowH.roundToInt()),
-            colorFilter = if (nightDecor) {
-                ColorFilter.tint(Color(0xFFCCD6FA), BlendMode.Modulate)
-            } else {
-                null
-            }
-        )
-    } else {
-        // The crest line the meadow roots on: one gentle arc, no band edges.
-        val groundLine = Path().apply {
-            moveTo(0f, 0.76f * h)
-            quadraticBezierTo(0.5f * w, 0.72f * h, w, 0.76f * h)
-        }
-        drawPath(groundLine, palette.groundLine, style = Stroke(width = 2.dp.toPx()))
-
-        drawMeadow(palette, levels, w, h)
-        drawScatteredTufts(palette, w, h)
-    }
-
-    // Soft contact shadow where the fox meets the crest.
-    drawOval(
-        color = Color.Black.copy(alpha = 0.15f),
-        topLeft = Offset(w / 2f - 52.dp.toPx(), groundCenter),
-        size = Size(104.dp.toPx(), 14.dp.toPx())
-    )
-
-    // Companion: the illustration art sits where the fox stands — bottom edge
-    // on the crest, centred. When the fluid rig is available the art is drawn
-    // through a deformation mesh (the tail bends, the body breathes, the ears
-    // flex); the static path stays for reduced motion and as a fallback.
+    // Companion: the illustration art sits on her anchor line — bottom edge
+    // a touch below it, centred. When the fluid rig is available the art is
+    // drawn through a deformation mesh (the tail bends, the body breathes,
+    // the ears flex); the static path stays for reduced motion and as a
+    // fallback.
     if (companion != null) {
         val artHeight = 152.dp.toPx()
         val groundLineY = groundCenter + 5.dp.toPx()
@@ -483,62 +351,6 @@ fun DrawScope.drawKitsuScene(
             drawKitsu(paths, palette, motion, tails)
         }
     }
-
-    // Ambient life over the meadow: drifting leaves by day, fireflies at
-    // night. Parked together with the rest of the motion under reduced-motion.
-    if (!reducedMotion) {
-        drawAmbient(nightDecor, ambientPhase, palette, w, h)
-    }
-}
-
-/**
- * Ambient life over the meadow. [phase] is a 0..1 loop and every position is
- * a function of it, so the animation is deterministic and wraps seamlessly
- * (each drifting item is off-screen exactly when its own loop restarts).
- */
-private fun DrawScope.drawAmbient(
-    night: Boolean,
-    phase: Float,
-    palette: KitsuPalette,
-    w: Float,
-    h: Float
-) {
-    val seeds = floatArrayOf(0.11f, 0.27f, 0.44f, 0.58f, 0.73f, 0.88f)
-    val tau = (2f * PI).toFloat()
-    if (night) {
-        // Fireflies: soft glows drifting over the meadow, pulsing on and off.
-        seeds.forEachIndexed { i, s ->
-            val t = (phase + s) * tau
-            val x = (0.10f + 0.80f * ((s * 7.31f) % 1f)) * w + sin(t * 1.1f + i) * 12f.dp.toPx()
-            val y = (0.52f + 0.40f * ((s * 3.7f) % 1f)) * h + cos(t * 0.9f + i * 1.7f) * 8f.dp.toPx()
-            val pulse = 0.35f + 0.65f * (0.5f + 0.5f * sin(t * 2.6f + s * 9f))
-            val color = if (i % 3 == 1) palette.amber else palette.emerald
-            drawCircle(color.copy(alpha = 0.14f * pulse), 5.5f.dp.toPx(), Offset(x, y))
-            drawCircle(color.copy(alpha = 0.55f * pulse), 1.5f.dp.toPx(), Offset(x, y))
-        }
-    } else {
-        // Leaves: paper-cut greens drift across the scene, tumbling slowly.
-        val margin = 46f.dp.toPx()
-        seeds.forEachIndexed { i, s ->
-            val speed = 0.55f + 0.9f * ((s * 11.17f) % 1f)
-            val p = phase * speed + s
-            val x01 = p % 1f
-            val x = -margin + x01 * (w + 2f * margin)
-            val baseY = (0.26f + 0.62f * ((s * 5.13f) % 1f)) * h
-            val y = baseY + sin(p * tau) * 9f.dp.toPx()
-            val edge = (minOf(x01, 1f - x01) * 7f).coerceAtMost(1f)
-            val alpha = 0.62f * edge
-            if (alpha < 0.02f) return@forEachIndexed
-            val leaf = if (i % 2 == 0) palette.emerald else palette.emeraldDeep
-            rotate(360f * (p * (0.35f + 0.5f * s) + s * 2f), pivot = Offset(x, y)) {
-                drawOval(
-                    color = leaf.copy(alpha = alpha),
-                    topLeft = Offset(x - 4.2f.dp.toPx(), y - 2.6f.dp.toPx()),
-                    size = Size(8.4f.dp.toPx(), 5.2f.dp.toPx())
-                )
-            }
-        }
-    }
 }
 
 /** A small filled heart used for the tap celebration burst. */
@@ -560,90 +372,6 @@ fun DrawScope.drawCompanionHeart(center: Offset, radius: Float, color: Color) {
     drawPath(heart, color)
 }
 
-/** One dry dash per zero day, grass tufts (3 blades) otherwise; level 4 days
- *  grow a tiny flower. The strip mirrors the annual heatmap's activity tiers
- *  and roots on the field crest curve. */
-private fun DrawScope.drawMeadow(palette: KitsuPalette, levels: List<Int>, w: Float, h: Float) {
-    if (levels.isEmpty()) return
-    val cellW = w / levels.size
-    val bladeW = 2.dp.toPx()
-
-    levels.forEachIndexed { index, level ->
-        val x = cellW * (index + 0.5f)
-        val base = groundY(x, w, h)
-        if (level <= 0) {
-            drawLine(
-                palette.dry.copy(alpha = 0.6f),
-                Offset(x - 3.dp.toPx(), base),
-                Offset(x + 3.dp.toPx(), base),
-                strokeWidth = 1.6.dp.toPx(),
-                cap = StrokeCap.Round
-            )
-            return@forEachIndexed
-        }
-
-        val alpha = GrassAlphas[level.coerceIn(0, 4)]
-        val bladeH = (7f + level * 3.6f).dp.toPx()
-        val bladeColor = palette.grass.copy(alpha = alpha)
-
-        drawPath(
-            bladePath(x, base, x - 1.dp.toPx(), base - bladeH * 0.6f, x - 2.5.dp.toPx(), base - bladeH),
-            bladeColor, style = Stroke(bladeW, cap = StrokeCap.Round)
-        )
-        drawPath(
-            bladePath(x - 2.dp.toPx(), base, x - 4.dp.toPx(), base - bladeH * 0.45f, x - 6.dp.toPx(), base - bladeH * 0.72f),
-            bladeColor.copy(alpha = alpha * 0.9f), style = Stroke(bladeW, cap = StrokeCap.Round)
-        )
-        drawPath(
-            bladePath(x + 2.dp.toPx(), base, x + 4.dp.toPx(), base - bladeH * 0.5f, x + 5.5.dp.toPx(), base - bladeH * 0.8f),
-            bladeColor.copy(alpha = alpha * 0.9f), style = Stroke(bladeW, cap = StrokeCap.Round)
-        )
-
-        if (level >= 4) {
-            drawCircle(
-                palette.flower,
-                radius = 1.8.dp.toPx(),
-                center = Offset(x - 2.5.dp.toPx(), base - bladeH - 1.5.dp.toPx())
-            )
-        }
-    }
-}
-
-private fun DrawScope.drawScatteredTufts(palette: KitsuPalette, w: Float, h: Float) {
-    ScatterTufts.forEachIndexed { i, (fx, fy) ->
-        val x = fx * w
-        val base = fy * h
-        val bladeH = (5f + (i % 3) * 1.5f).dp.toPx()
-        val color = palette.grass.copy(alpha = 0.28f)
-        drawPath(
-            bladePath(x, base, x - 0.8.dp.toPx(), base - bladeH * 0.6f, x - 2.dp.toPx(), base - bladeH),
-            color, style = Stroke(1.8.dp.toPx(), cap = StrokeCap.Round)
-        )
-        drawPath(
-            bladePath(x + 1.5f.dp.toPx(), base, x + 3.dp.toPx(), base - bladeH * 0.5f, x + 4.dp.toPx(), base - bladeH * 0.75f),
-            color.copy(alpha = 0.2f), style = Stroke(1.8.dp.toPx(), cap = StrokeCap.Round)
-        )
-    }
-}
-
-private fun bladePath(x0: Float, y0: Float, cx: Float, cy: Float, x1: Float, y1: Float) =
-    Path().apply {
-        moveTo(x0, y0)
-        quadraticBezierTo(cx, cy, x1, y1)
-    }
-
-private fun sparklePath(cx: Float, cy: Float, d: Float) = Path().apply {
-    val i = d * 0.3f
-    moveTo(cx, cy - d)
-    lineTo(cx + i, cy - i)
-    lineTo(cx + d, cy)
-    lineTo(cx + i, cy + i)
-    lineTo(cx, cy + d)
-    lineTo(cx - i, cy + i)
-    lineTo(cx - d, cy)
-    lineTo(cx - i, cy - i)
-    close()
-}
 // ---------------------------------------------------------------- fox body
 
 private fun DrawScope.drawKitsu(

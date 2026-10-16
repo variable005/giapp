@@ -4,7 +4,6 @@ import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -79,8 +78,7 @@ private enum class KitsuReaction { NONE, HAPPY, CURIOUS }
 /**
  * Kitsu companion hero (v3).
  *
- * The fox lives on a meadow built from the last 28 contribution days and is
- * now properly interactive:
+ * The fox floats on the app background by herself and is interactive:
  *  - tap the fox: heart burst and a quip in a speech bubble
  *  - long-press: the fox tilts its head and shows its stat card
  *  - new data: the fox celebrates the sync by itself
@@ -109,7 +107,6 @@ fun CompanionHero(
     val recentDays = remember(data.contributions) {
         data.contributions.sortedBy { it.dateString }.takeLast(28)
     }
-    val levels = remember(recentDays) { recentDays.map { it.level } }
     val activeThisWeek = remember(recentDays) { recentDays.takeLast(7).count { it.count > 0 } }
     val mood = companionMood(activeThisWeek)
     val tails = kitsuTailCount(profile.longestStreakDays)
@@ -223,13 +220,6 @@ fun CompanionHero(
         ),
         label = "ear_twitch"
     )
-    // Slow ambient loop (drifting leaves by day, fireflies at night).
-    val ambientPhase by transition.animateFloat(
-        0f, 1f,
-        infiniteRepeatable(tween(60000, easing = LinearEasing), RepeatMode.Restart),
-        label = "ambient"
-    )
-
     val happyBlend by animateFloatAsState(
         targetValue = if (reaction == KitsuReaction.HAPPY) 1f else 0f,
         animationSpec = tween(240, easing = FastOutSlowInEasing),
@@ -256,13 +246,9 @@ fun CompanionHero(
         )
     }
 
-    // Companion art shipped with the app: drawn on the meadow crest when
-    // present; the hand-drawn vector fox stays as the fallback.
+    // Companion art shipped with the app; the hand-drawn vector fox stays
+    // as the fallback.
     val companionArt = ImageBitmap.imageResource(R.drawable.kitsu_companion)
-
-    // Illustrated meadow the companion stands on; the drawn ground stays
-    // as a fallback whenever the art is absent.
-    val meadowArt = ImageBitmap.imageResource(R.drawable.kitsu_meadow)
 
     // Fluid rig: warps the art through a GPU mesh each frame. If setup ever
     // fails the scene quietly falls back to the static drawImage path.
@@ -282,15 +268,10 @@ fun CompanionHero(
                     paths = paths,
                     palette = palette,
                     motion = motion,
-                    nightDecor = !isLight,
-                    sunUp = isLight && hour in 6..17,
                     tails = tails,
-                    levels = levels,
                     companion = companionArt,
-                    meadow = meadowArt,
                     companionWarp = companionWarp,
-                    reducedMotion = reducedMotion,
-                    ambientPhase = ambientPhase
+                    reducedMotion = reducedMotion
                 )
 
                 // Heart burst on tap: a handful of hearts drifting upward.
