@@ -229,7 +229,7 @@ fun MainAppScreen(
                                             onRetry = { viewModel.refresh() },
                                             onShareCard = {
                                                 coroutineScope.launch {
-                                                    snackbarHostState.showSnackbar("Telemetry card exported to gallery!")
+                                                    snackbarHostState.showSnackbar("Telemetry card ready to share!")
                                                 }
                                             },
                                             onSelectRepo = { repo -> selectedRepoForReadme = repo },

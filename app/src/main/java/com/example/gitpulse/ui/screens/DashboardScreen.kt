@@ -277,7 +277,7 @@ private fun DashboardContent(
                 elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp),
+                    modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -621,7 +621,7 @@ private fun LoadingDashboardSkeleton(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(top = 100.dp, start = 16.dp, end = 16.dp),
+            .padding(top = 108.dp, start = 16.dp, end = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Box(
@@ -758,7 +758,8 @@ fun RowScope.MetricTile(value: String, label: String, hasStar: Boolean = false) 
                     text = value,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1
                 )
                 if (hasStar) {
                     Icon(
@@ -833,6 +834,7 @@ fun RecentActivityCard(item: GitActivityItem) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
+                    modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -860,7 +862,9 @@ fun RecentActivityCard(item: GitActivityItem) {
                     Text(
                         text = item.repoName,
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
                 Text(

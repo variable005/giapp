@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.luminance
@@ -146,18 +147,23 @@ fun CompanionHero(
             Column(
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(start = 20.dp, top = 2.dp)
+                    .fillMaxWidth(0.7f)
+                    .padding(start = 16.dp, top = 2.dp)
             ) {
                 Text(
                     text = "$greeting, @${profile.username}",
                     style = MaterialTheme.typography.titleMedium,
-                    color = colorScheme.onSurface
+                    color = colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = mood.subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = colorScheme.onSurfaceVariant
+                    color = colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
@@ -227,7 +233,7 @@ fun CompanionHero(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 20.dp, end = 20.dp, top = 12.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 12.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Row(

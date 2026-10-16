@@ -23,6 +23,20 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import android.content.Intent
+import android.graphics.Bitmap
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.layer.GraphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
+import com.example.gitpulse.data.HeatmapDay
+import java.io.File
+import kotlinx.coroutines.launch
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import com.example.gitpulse.data.LanguageStat
@@ -87,6 +101,9 @@ private fun AnalyticsContent(
 ) {
     val haptic = LocalHapticFeedback.current
     val profile = data.profile
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val graphicsLayer = rememberGraphicsLayer()
 
     LazyColumn(
         modifier = modifier
@@ -263,6 +280,7 @@ private fun AnalyticsContent(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Row(
+                                            modifier = Modifier.weight(1f, fill = false),
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
@@ -275,7 +293,8 @@ private fun AnalyticsContent(
                                                 text = lang.name,
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 fontWeight = FontWeight.Medium,
-                                                color = MaterialTheme.colorScheme.onSurface
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                maxLines = 1
                                             )
                                             Surface(
                                                 shape = CircleShape,
@@ -390,146 +409,235 @@ private fun AnalyticsContent(
                         )
                     }
 
-                    // Inner Preview Canvas
-                    OutlinedCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.outlinedCardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                        ),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                    // Shareable telemetry panel — captured as an image when sharing
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .drawWithContent {
+                                graphicsLayer.record { this@drawWithContent.drawContent() }
+                                drawLayer(graphicsLayer)
+                            }
                     ) {
-                        Column(
-                            modifier = Modifier.padding(18.dp),
-                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(26.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                            border = BorderStroke(
+                                1.5.dp,
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)
+                            )
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                            Column(
+                                modifier = Modifier.padding(18.dp),
+                                verticalArrangement = Arrangement.spacedBy(14.dp)
                             ) {
+                                // Brand strip
                                 Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(10.dp)
+                                                .background(
+                                                    MaterialTheme.colorScheme.primary,
+                                                    CircleShape
+                                                )
+                                        )
+                                        Text(
+                                            text = "GITPULSE",
+                                            style = MaterialTheme.typography.labelMedium
+                                                .copy(letterSpacing = 2.sp),
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                    Text(
+                                        text = "2026 EDITION",
+                                        style = MaterialTheme.typography.labelSmall
+                                            .copy(letterSpacing = 1.sp),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                HorizontalDivider(
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                )
+
+                                // Identity row
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
                                     if (profile.avatarUrl.isNotBlank()) {
                                         AsyncImage(
                                             model = profile.avatarUrl,
                                             contentDescription = null,
-                                            modifier = Modifier.size(36.dp).clip(CircleShape)
+                                            modifier = Modifier
+                                                .size(44.dp)
+                                                .clip(CircleShape)
                                         )
                                     } else {
                                         Surface(
-                                            modifier = Modifier.size(36.dp),
+                                            modifier = Modifier.size(44.dp),
                                             shape = CircleShape,
                                             color = MaterialTheme.colorScheme.surfaceContainerHigh
                                         ) {
                                             Box(contentAlignment = Alignment.Center) {
-                                                Text(text = profile.name.take(2).uppercase(), color = MaterialTheme.colorScheme.primary)
+                                                Text(
+                                                    text = profile.name.take(2).uppercase(),
+                                                    style = MaterialTheme.typography.titleSmall,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
                                             }
                                         }
                                     }
 
-                                    Column {
+                                    Column(modifier = Modifier.weight(1f)) {
                                         Text(
                                             text = profile.name,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                         Text(
-                                            text = "@${profile.username} • 2026 Impact",
+                                            text = "@${profile.username}",
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
+
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = MaterialTheme.colorScheme.surfaceContainerHigh
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Whatshot,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.tertiary,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Text(
+                                                text = "${profile.activeStreakDays} DAY STREAK",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                    }
                                 }
 
-                                Surface(
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.surfaceContainerHigh
+                                // Hero metric
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
+                                    AnimatedNumberCounter(
+                                        count = profile.totalAnnualCommits,
+                                        style = MaterialTheme.typography.displaySmall,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = "COMMITS THIS YEAR",
+                                        style = MaterialTheme.typography.labelSmall
+                                            .copy(letterSpacing = 1.5.sp),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                // Contribution micro-grid — last eight weeks
+                                ContributionSparkline(
+                                    contributions = data.contributions,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+
+                                // Secondary metrics
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    TelemetryStatCluster(
+                                        icon = Icons.Default.Star,
+                                        value = data.totalStars.toString(),
+                                        label = "Stars",
+                                        tint = MaterialTheme.colorScheme.tertiary
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .width(1.dp)
+                                            .height(26.dp)
+                                            .background(MaterialTheme.colorScheme.outlineVariant)
+                                    )
+                                    TelemetryStatCluster(
+                                        icon = Icons.Default.Folder,
+                                        value = profile.reposCount.toString(),
+                                        label = "Repositories",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+
+                                HorizontalDivider(
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                )
+
+                                // Footer
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "gitpulse.dev/@${profile.username}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.weight(1f),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
                                     Row(
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.Whatshot,
+                                            imageVector = Icons.Default.Verified,
                                             contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.tertiary,
-                                            modifier = Modifier.size(14.dp)
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(13.dp)
                                         )
                                         Text(
-                                            text = "${profile.activeStreakDays} Days",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                            text = "VERIFIED",
+                                            style = MaterialTheme.typography.labelSmall
+                                                .copy(letterSpacing = 1.sp),
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
                                         )
                                     }
                                 }
-                            }
-
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 1.dp)
-
-                            // Hero metric — centered for perfect symmetry
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                AnimatedNumberCounter(
-                                    count = profile.totalAnnualCommits,
-                                    style = MaterialTheme.typography.headlineLarge,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                Text(
-                                    text = "Commits this year",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            // Secondary metrics — two equal tiles
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                TelemetryMiniTile(
-                                    modifier = Modifier.weight(1f),
-                                    icon = Icons.Default.Star,
-                                    value = "${data.totalStars}",
-                                    label = "Total Stars"
-                                )
-                                TelemetryMiniTile(
-                                    modifier = Modifier.weight(1f),
-                                    icon = Icons.Default.Folder,
-                                    value = "${profile.reposCount}",
-                                    label = "Repositories"
-                                )
-                            }
-
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 1.dp)
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "gitpulse.dev/@${profile.username}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = "Verified Auth",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
                             }
                         }
                     }
 
                     Button(
-                        onClick = onShareCard,
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            coroutineScope.launch {
+                                shareTelemetryCard(context, graphicsLayer, profile.username)
+                                onShareCard()
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
@@ -565,7 +673,7 @@ fun TelemetryCard(
     iconTint: Color
 ) {
     OutlinedCard(
-        modifier = modifier.height(130.dp),
+        modifier = modifier.heightIn(min = 130.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -575,7 +683,7 @@ fun TelemetryCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(14.dp),
+                .padding(16.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
@@ -621,52 +729,6 @@ fun TelemetryCard(
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
-        }
-    }
-}
-
-/** One evenly weighted mini tile inside the telemetry card preview. */
-@Composable
-private fun TelemetryMiniTile(
-    value: String,
-    label: String,
-    icon: ImageVector,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh
-    ) {
-        Column(
-            modifier = Modifier.padding(vertical = 12.dp, horizontal = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(15.dp)
-                )
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1
-                )
-            }
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1
-            )
         }
     }
 }
@@ -844,7 +906,7 @@ private fun LoadingAnalyticsSkeleton(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(top = 100.dp, start = 16.dp, end = 16.dp),
+            .padding(top = 108.dp, start = 16.dp, end = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Box(
@@ -868,5 +930,116 @@ private fun LoadingAnalyticsSkeleton(modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(28.dp))
                 .background(shimmer)
         )
+    }
+}
+
+
+/** Mini GitHub-style contribution grid — the visual signature of the share card. */
+@Composable
+private fun ContributionSparkline(
+    contributions: List<HeatmapDay>,
+    modifier: Modifier = Modifier
+) {
+    val weeks = remember(contributions) { contributions.takeLast(56).chunked(7) }
+    if (weeks.isEmpty()) return
+
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        weeks.forEach { week ->
+            Column(
+                modifier = Modifier.padding(horizontal = 2.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                week.forEach { day ->
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .background(
+                                contributionLevelColor(day.level),
+                                RoundedCornerShape(3.dp)
+                            )
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Flat emerald intensity ramp for the sparkline (theme-aware, no gradients). */
+@Composable
+private fun contributionLevelColor(level: Int): Color {
+    val primary = MaterialTheme.colorScheme.primary
+    return when {
+        level >= 4 -> primary
+        level == 3 -> primary.copy(alpha = 0.78f)
+        level == 2 -> primary.copy(alpha = 0.55f)
+        level == 1 -> primary.copy(alpha = 0.32f)
+        else -> MaterialTheme.colorScheme.surfaceContainerHigh
+    }
+}
+
+/** Icon + big value + label cluster for the panel's secondary metrics. */
+@Composable
+private fun TelemetryStatCluster(
+    icon: ImageVector,
+    value: String,
+    label: String,
+    tint: Color
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(18.dp)
+        )
+        Column {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+/**
+ * Renders the captured telemetry panel to a PNG in cache and opens the system
+ * share sheet. Returns false when capture or export fails.
+ */
+private suspend fun shareTelemetryCard(
+    context: android.content.Context,
+    graphicsLayer: GraphicsLayer,
+    username: String
+): Boolean {
+    return try {
+        val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
+        val shareDir = File(context.cacheDir, "shared").apply { mkdirs() }
+        val file = File(shareDir, "gitpulse-telemetry-$username.png")
+        file.outputStream().use { out -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, out) }
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+        val sendIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "image/png"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            putExtra(Intent.EXTRA_TEXT, "My 2026 GitHub telemetry — via GitPulse")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(sendIntent, "Share Telemetry Card"))
+        true
+    } catch (_: Exception) {
+        false
     }
 }

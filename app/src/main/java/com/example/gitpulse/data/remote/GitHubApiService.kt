@@ -563,6 +563,7 @@ class GitHubApiService {
             val json = JSONObject(body)
             val rawContent = json.optString("content")
             val downloadUrl = json.optString("download_url")
+            val path = json.optString("path")
             if (rawContent.isBlank()) return generateFallbackReadme(owner, repo)
             val markdown = String(
                 Base64.decode(rawContent.replace("\n", ""), Base64.DEFAULT),
@@ -571,7 +572,17 @@ class GitHubApiService {
             if (markdown.isBlank()) {
                 generateFallbackReadme(owner, repo)
             } else {
-                absolutizeReadmeUrls(markdown, downloadUrl)
+                // Preferred: the raw download URL's directory. Fallback: the repo's
+                // HEAD ref (needs no branch metadata) so relative image paths always
+                // turn into loadable absolute URLs.
+                val base = if (downloadUrl.isNotBlank()) {
+                    downloadUrl.substringBeforeLast('/', "") + "/"
+                } else {
+                    val dir = path.substringBeforeLast('/', "")
+                    "https://raw.githubusercontent.com/$owner/$repo/HEAD/" +
+                        if (dir.isBlank()) "" else "$dir/"
+                }
+                absolutizeReadmeUrls(markdown, base)
             }
         } catch (_: Exception) {
             // Endpoint answered with raw markdown instead of JSON — render as-is.
@@ -581,10 +592,8 @@ class GitHubApiService {
 
     /** Rewrites relative image sources in a README to raw.githubusercontent.com
      *  URLs so Coil can actually load screenshots and badges. */
-    private fun absolutizeReadmeUrls(markdown: String, downloadUrl: String): String {
-        val repoRoot = downloadUrl.substringBeforeLast('/', missingDelimiterValue = "")
-        if (repoRoot.isBlank()) return markdown
-        val base = "$repoRoot/"
+    private fun absolutizeReadmeUrls(markdown: String, base: String): String {
+        if (base.isBlank()) return markdown
 
         fun resolve(target: String): String {
             if (target.isBlank()) return target
@@ -603,6 +612,8 @@ class GitHubApiService {
     private fun generateFallbackReadme(owner: String, repo: String): String {
         return """
 # $repo
+
+> WARNING Live README could not be loaded (network or API rate limit) — showing a generated summary instead.
 
 > Public repository maintained by @$owner
 

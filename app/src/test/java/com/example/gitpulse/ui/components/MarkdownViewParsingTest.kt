@@ -67,4 +67,59 @@ class MarkdownViewParsingTest {
         assertFalse(paragraph.text.contains("docs/screen.png"))
         assertTrue(blocks.filterIsInstance<MarkdownBlock.ImageRow>().isNotEmpty())
     }
+
+    @Test
+    fun realWorldHtmlLauncherIconBecomesSmallBadge() {
+        val markdown = "<img src=\"app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp\" height=\"72\">"
+
+        val rows = parseMarkdown(markdown).filterIsInstance<MarkdownBlock.ImageRow>()
+
+        assertEquals(1, rows.size)
+        val image = rows.first().images.first()
+        assertTrue(image.isBadge)
+        assertEquals(36, image.preferredHeightDp)
+    }
+
+    @Test
+    fun htmlImagesWithoutHeightStayFullWidthScreenshots() {
+        val markdown = "<img src=\"docs/screenshot.png\" width=\"800\">"
+
+        val rows = parseMarkdown(markdown).filterIsInstance<MarkdownBlock.ImageRow>()
+
+        assertEquals(1, rows.size)
+        val image = rows.first().images.first()
+        assertFalse(image.isBadge)
+        assertTrue(image.preferredHeightDp == null)
+    }
+
+    @Test
+    fun htmlWrappersAreStrippedFromProse() {
+        val markdown = buildString {
+            appendLine("<p align=\"center\">")
+            appendLine("Some <b>bold</b> text<br>on two lines")
+            appendLine("</p>")
+            appendLine("<details><summary>More</summary>")
+            appendLine("Hidden body")
+            appendLine("</details>")
+        }
+
+        val text = parseMarkdown(markdown)
+            .filterIsInstance<MarkdownBlock.Paragraph>()
+            .joinToString(" ") { it.text }
+
+        assertFalse(text.contains("<"))
+        assertFalse(text.contains(">"))
+        assertTrue(text.contains("Some bold text"))
+        assertTrue(text.contains("More"))
+    }
+
+    @Test
+    fun imageTagClosedByWrapperStillBecomesARow() {
+        val markdown = "<img src=\"docs/banner.png\" height=\"100\"></p>"
+
+        val rows = parseMarkdown(markdown).filterIsInstance<MarkdownBlock.ImageRow>()
+
+        assertEquals(1, rows.size)
+        assertTrue(rows.first().images.first().isBadge)
+    }
 }

@@ -77,6 +77,7 @@ fun FloatingTopActions(
         Surface(
             modifier = Modifier
                 .align(Alignment.Center)
+                .widthIn(max = 132.dp)
                 .height(44.dp)
                 .clip(CircleShape)
                 .clickable {

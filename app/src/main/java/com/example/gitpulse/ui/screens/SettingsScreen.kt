@@ -19,6 +19,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
+import com.example.gitpulse.ui.components.FloatingBackButton
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -76,44 +78,26 @@ fun SettingsScreen(
     val cutoffOptions = listOf("07:00 PM", "08:00 PM", "08:30 PM", "09:30 PM", "11:00 PM")
     val cacheOptions = listOf(1, 6, 12, 24)
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(
-            top = 56.dp,
-            bottom = 128.dp,
-            start = 16.dp,
-            end = 16.dp
-        ),
+    Box(modifier = modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            contentPadding = PaddingValues(
+                top = 100.dp,
+                bottom = 32.dp,
+                start = 16.dp,
+                end = 16.dp
+            ),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // 1. Navigation Header
         item {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(vertical = 8.dp)
             ) {
-                FilledTonalIconButton(
-                    onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        onNavigateBack()
-                    },
-                    shape = CircleShape,
-                    colors = IconButtonDefaults.filledTonalIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Navigate Back"
-                    )
-                }
-
                 Column {
                     Text(
                         text = "Preferences",
@@ -151,14 +135,17 @@ fun SettingsScreen(
                         Text(
                             text = "GitHub Account",
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.weight(1f)
                         )
                         AssistChip(
                             onClick = {},
                             label = {
                                 Text(
                                     if (personalToken.isNullOrBlank()) "60 req/hr (Public)" else "5000 req/hr (Authenticated)",
-                                    style = MaterialTheme.typography.labelSmall
+                                    style = MaterialTheme.typography.labelSmall,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             },
                             leadingIcon = {
@@ -711,10 +698,9 @@ fun SettingsScreen(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
 
                     // Weekly Target Days
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             text = "Target Days Per Week",
@@ -722,7 +708,9 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         val dayOptions = listOf(5, 6, 7)
-                        SingleChoiceSegmentedButtonRow {
+                        SingleChoiceSegmentedButtonRow(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             dayOptions.forEachIndexed { index, days ->
                                 SegmentedButton(
                                     selected = targetDays == days,
@@ -852,17 +840,18 @@ fun SettingsScreen(
                     )
 
                     // Cache Retention Hours
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             text = "Cache TTL (Time To Live)",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        SingleChoiceSegmentedButtonRow {
+                        SingleChoiceSegmentedButtonRow(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             cacheOptions.forEachIndexed { index, hrs ->
                                 SegmentedButton(
                                     selected = cacheRetention == hrs,
@@ -908,11 +897,12 @@ fun SettingsScreen(
                                 .weight(1f)
                                 .height(48.dp),
                             shape = CircleShape,
+                            contentPadding = PaddingValues(horizontal = 10.dp),
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
                         ) {
                             Icon(Icons.Default.DeleteOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Purge Cache", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelMedium, maxLines = 1)
+                            Text("Purge Cache", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
 
                         OutlinedButton(
@@ -924,11 +914,12 @@ fun SettingsScreen(
                                 .weight(1f)
                                 .height(48.dp),
                             shape = CircleShape,
+                            contentPadding = PaddingValues(horizontal = 10.dp),
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                         ) {
                             Icon(Icons.Default.RestartAlt, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Reset Defaults", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium, maxLines = 1)
+                            Text("Reset Defaults", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     }
                 }
@@ -1010,6 +1001,15 @@ fun SettingsScreen(
             }
         )
     }
+
+        FloatingBackButton(
+            onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                onNavigateBack()
+            },
+            modifier = Modifier.align(Alignment.TopStart)
+        )
+        }
 }
 
 /**

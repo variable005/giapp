@@ -24,10 +24,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import androidx.compose.foundation.Image
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BrokenImage
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
 
 /** One image reference from markdown, with a badge heuristic for tiny status shields. */
-data class MdImage(val alt: String, val url: String, val isBadge: Boolean)
+data class MdImage(val alt: String, val url: String, val isBadge: Boolean, val preferredHeightDp: Int? = null)
 
 sealed class MarkdownBlock {
     data class Header(val level: Int, val text: String) : MarkdownBlock()
@@ -152,6 +156,7 @@ private fun MarkdownBlockquote(quote: MarkdownBlock.Blockquote) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(IntrinsicSize.Min)
                 .padding(14.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -286,22 +291,7 @@ private fun MarkdownTable(table: MarkdownBlock.Table) {
 private fun MarkdownImageRow(row: MarkdownBlock.ImageRow) {
     val images = row.images
     if (images.size == 1 && !images[0].isBadge) {
-        // Full-width screenshot inside a soft frame.
-        Surface(
-            shape = RoundedCornerShape(14.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            AsyncImage(
-                model = images[0].url,
-                contentDescription = images[0].alt.ifBlank { null },
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 120.dp)
-            )
-        }
+        MarkdownScreenshot(images[0])
     } else {
         // Badge rows flow at their natural small size.
         FlowRow(
@@ -310,22 +300,88 @@ private fun MarkdownImageRow(row: MarkdownBlock.ImageRow) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             images.forEach { image ->
-                AsyncImage(
-                    model = image.url,
-                    contentDescription = image.alt.ifBlank { null },
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .height(24.dp)
-                        .widthIn(max = 240.dp)
-                )
+                MarkdownBadge(image)
             }
         }
     }
 }
 
+/** Full-width framed screenshot; failures are visible instead of silent. */
+@Composable
+private fun MarkdownScreenshot(image: MdImage) {
+    val painter = rememberAsyncImagePainter(model = image.url)
+
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        if (painter.state is AsyncImagePainter.State.Error) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.BrokenImage,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(22.dp)
+                )
+                Text(
+                    text = image.alt.ifBlank { "Image unavailable" },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            Image(
+                painter = painter,
+                contentDescription = image.alt.ifBlank { null },
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 120.dp)
+            )
+        }
+    }
+}
+
+/** Small in-flow badge (shields.io, store badges, launcher icons). */
+@Composable
+private fun MarkdownBadge(image: MdImage) {
+    val painter = rememberAsyncImagePainter(model = image.url)
+    val height = (image.preferredHeightDp ?: 24).dp
+
+    if (painter.state is AsyncImagePainter.State.Error) {
+        Box(
+            modifier = Modifier
+                .height(height)
+                .widthIn(min = 44.dp, max = 120.dp)
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(4.dp))
+        )
+    } else {
+        Image(
+            painter = painter,
+            contentDescription = image.alt.ifBlank { null },
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .height(height)
+                .widthIn(min = 44.dp, max = 240.dp)
+        )
+    }
+}
+
 private val MdImageToken = Regex("""!\[([^\]]*)\]\(\s*([^)\s]+?)(?:\s+"[^"]*")?\s*\)""")
 private val MdLinkToken = Regex("""\[([^\]]*)\]\(\s*[^)\s]*\s*\)""")
-private val HtmlImageToken = Regex("""<img[^>]*\ssrc\s*=\s*["'][^"']+["'][^>]*>""", RegexOption.IGNORE_CASE)
+private val HtmlImageToken = Regex("""<img([^>]*)>""", RegexOption.IGNORE_CASE)
+private val HtmlSrcAttr = Regex("""src\s*=\s*["']([^"']+)["']""", RegexOption.IGNORE_CASE)
+private val HtmlHeightAttr = Regex("""height\s*=\s*["']?(\d+)""", RegexOption.IGNORE_CASE)
+private val HtmlContainerTag = Regex("""</?(p|div|center|details|summary|b|i|strong|em|a|h[1-6])[^>]*>""", RegexOption.IGNORE_CASE)
+private val HtmlBreakTag = Regex("""<br\s*/?>""", RegexOption.IGNORE_CASE)
 
 private fun isBadgeUrl(url: String): Boolean =
     url.contains("shields.io") || url.contains("badge", ignoreCase = true) ||
@@ -338,11 +394,29 @@ private fun extractImages(line: String): List<MdImage> {
         images.add(MdImage(alt = m.groupValues[1], url = url, isBadge = isBadgeUrl(url)))
     }
     HtmlImageToken.findAll(line).forEach { m ->
-        val url = m.groupValues[1]
-        images.add(MdImage(alt = "", url = url, isBadge = isBadgeUrl(url)))
+        val attrs = m.groupValues[1]
+        val url = HtmlSrcAttr.find(attrs)?.groupValues?.get(1) ?: return@forEach
+        val height = HtmlHeightAttr.find(attrs)?.groupValues?.get(1)?.toIntOrNull()
+        // Small fixed-height tags are badge-style assets (launcher icons, store
+        // badges); anything larger stays on the full-width screenshot path.
+        val small = height != null && height <= 160
+        images.add(
+            MdImage(
+                alt = "",
+                url = url,
+                isBadge = isBadgeUrl(url) || small,
+                preferredHeightDp = if (small) (height / 2).coerceIn(20, 72) else null
+            )
+        )
     }
     return images
 }
+
+/** Removes simple GitHub-flavoured HTML wrappers so prose stays readable. */
+private fun stripHtmlTags(text: String): String =
+    HtmlContainerTag.replace(HtmlBreakTag.replace(text, " "), " ")
+        .replace(Regex(" {2,}"), " ")
+        .trim()
 
 private fun stripImages(line: String): String =
     MdImageToken.replace(HtmlImageToken.replace(line, ""), "").replace("&nbsp;", " ").trim()
@@ -439,7 +513,7 @@ internal fun parseMarkdown(raw: String): List<MarkdownBlock> {
             line.trimStart().startsWith("- ") || line.trimStart().startsWith("* ") -> {
                 val items = mutableListOf<String>()
                 while (i < lines.size && (lines[i].trimStart().startsWith("- ") || lines[i].trimStart().startsWith("* "))) {
-                    val itemText = lines[i].trimStart().removePrefix("- ").removePrefix("* ").trim()
+                    val itemText = stripHtmlTags(lines[i].trimStart().removePrefix("- ").removePrefix("* ").trim())
                     items.add(itemText)
                     i++
                 }
@@ -490,7 +564,7 @@ internal fun parseMarkdown(raw: String): List<MarkdownBlock> {
                 }
                 val rawParagraph = paraLines.joinToString(" ")
                 val inlineImages = extractImages(rawParagraph)
-                val textOnly = stripImages(rawParagraph)
+                val textOnly = stripHtmlTags(stripImages(rawParagraph))
                 if (textOnly.isNotBlank()) {
                     blocks.add(MarkdownBlock.Paragraph(text = textOnly))
                 }
