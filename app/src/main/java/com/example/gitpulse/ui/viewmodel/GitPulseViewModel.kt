@@ -35,6 +35,11 @@ class GitPulseViewModel(
     private val _uiState = MutableStateFlow<GitPulseUiState>(GitPulseUiState.Loading)
     val uiState: StateFlow<GitPulseUiState> = _uiState.asStateFlow()
 
+    /** Increments after every successful data load; the companion fox
+     *  celebrates fresh pulls (skipping the very first one). */
+    private val _syncCount = MutableStateFlow(0)
+    val syncCount: StateFlow<Int> = _syncCount.asStateFlow()
+
     private val _currentUsername = MutableStateFlow("variable005")
     val currentUsername: StateFlow<String> = _currentUsername.asStateFlow()
 
@@ -114,6 +119,7 @@ class GitPulseViewModel(
             val result = apiService.fetchCompleteUserData(username, token, year)
             result.onSuccess { data ->
                 _uiState.value = GitPulseUiState.Success(data)
+                _syncCount.value += 1
             }.onFailure { error ->
                 _uiState.value = GitPulseUiState.Error(
                     error.message ?: "Failed to load GitHub data for $username. Please check username or connectivity."

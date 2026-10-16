@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
@@ -19,11 +20,16 @@ import com.example.gitpulse.theme.PrimaryEmerald
 import com.example.gitpulse.theme.TertiaryAmber
 
 /**
- * Kitsu companion art (Phase 0).
+ * Kitsu companion art (v3, hand-authored vector fox).
  *
  * All fox geometry lives in a fixed 200 x 185 virtual space so the Paths can be
  * built once and reused under a single scene transform. Stroke widths are
  * expressed in that same virtual space and scale with the fox.
+ *
+ * v3 highlights: layered cel-shaded fur (body shade, chest ruff, rim light),
+ * a kitsune tail fan that grows with the longest streak (1-3 tails), almond
+ * anime eyes with emerald irises, a forehead diamond, dark-tipped ears and a
+ * pair of expressions (idle / happy) that the hero crossfades between.
  *
  * The scene (sky decor, rolling field, contribution meadow) is drawn in
  * canvas pixel space so it stretches with the screen while the fox keeps its
@@ -33,95 +39,180 @@ import com.example.gitpulse.theme.TertiaryAmber
 
 /** Paths for one idle chibi fox, in the 200 x 185 virtual space. */
 class KitsuPaths {
-    val shadow = Path().apply { addOval(Rect(54f, 168.5f, 146f, 181.5f)) }
-
     val tail = Path().apply {
-        moveTo(82f, 150f)
-        cubicTo(46f, 158f, 12f, 128f, 16f, 90f)
-        cubicTo(19f, 64f, 30f, 52f, 42f, 50f)
+        moveTo(84f, 152f)
+        cubicTo(54f, 158f, 26f, 134f, 26f, 98f)
+        cubicTo(27f, 76f, 36f, 64f, 46f, 60f)
     }
     val tailTip = Path().apply {
-        moveTo(33f, 62f)
-        cubicTo(35f, 56f, 38f, 52f, 42f, 50f)
+        moveTo(26f, 98f)
+        cubicTo(27f, 76f, 36f, 64f, 46f, 60f)
     }
     val tailShade = Path().apply {
-        moveTo(74f, 146f)
-        cubicTo(46f, 150f, 24f, 128f, 26f, 100f)
+        moveTo(80f, 146f)
+        cubicTo(56f, 150f, 34f, 130f, 34f, 106f)
+    }
+
+    val body = Path().apply {
+        moveTo(100f, 110f)
+        cubicTo(84f, 110f, 72f, 122f, 69f, 141f)
+        cubicTo(66f, 158f, 78f, 171f, 100f, 171f)
+        cubicTo(122f, 171f, 134f, 158f, 131f, 141f)
+        cubicTo(128f, 122f, 116f, 110f, 100f, 110f)
+        close()
+    }
+    val bodyShade = Path().apply {
+        moveTo(126f, 118f)
+        cubicTo(132f, 126f, 134f, 142f, 130f, 154f)
+        cubicTo(128f, 163f, 122f, 168f, 114f, 170f)
+        cubicTo(122f, 160f, 126f, 146f, 124f, 130f)
+        cubicTo(123f, 124f, 124f, 121f, 126f, 118f)
+        close()
+    }
+    val chest = Path().apply {
+        moveTo(78f, 131f)
+        cubicTo(82f, 122f, 91f, 117f, 100f, 117f)
+        cubicTo(109f, 117f, 118f, 122f, 122f, 131f)
+        cubicTo(118f, 135f, 113f, 136f, 109f, 134f)
+        cubicTo(107f, 139f, 103f, 141f, 100f, 141f)
+        cubicTo(97f, 141f, 93f, 139f, 91f, 134f)
+        cubicTo(87f, 136f, 82f, 135f, 78f, 131f)
+        close()
+    }
+    val neckShade = Path().apply {
+        moveTo(70f, 113f)
+        cubicTo(84f, 124f, 116f, 124f, 130f, 113f)
+        cubicTo(124f, 121f, 112f, 127f, 100f, 127f)
+        cubicTo(88f, 127f, 76f, 121f, 70f, 113f)
+        close()
+    }
+
+    /** Head with cheek fluff scallops; drawn over the body and ear bases. */
+    val head = Path().apply {
+        moveTo(58f, 96f)
+        cubicTo(50f, 78f, 54f, 54f, 72f, 43f)
+        cubicTo(85f, 35f, 115f, 35f, 128f, 43f)
+        cubicTo(146f, 54f, 150f, 78f, 142f, 96f)
+        cubicTo(138f, 105f, 135f, 108f, 131f, 110f)
+        cubicTo(134f, 116f, 130f, 122f, 123f, 124f)
+        cubicTo(118f, 130f, 110f, 134f, 100f, 134f)
+        cubicTo(90f, 134f, 82f, 130f, 77f, 124f)
+        cubicTo(70f, 122f, 66f, 116f, 69f, 110f)
+        cubicTo(65f, 108f, 62f, 105f, 58f, 96f)
+        close()
     }
 
     val ear = Path().apply {
-        moveTo(58f, 72f)
-        cubicTo(57.5f, 44f, 64f, 22f, 72f, 16f)
-        cubicTo(84f, 25f, 91.5f, 42f, 94f, 58f)
-        cubicTo(84f, 66f, 70f, 71f, 58f, 72f)
+        moveTo(62f, 76f)
+        cubicTo(56f, 50f, 62f, 26f, 73f, 17f)
+        cubicTo(87f, 27f, 96f, 46f, 98f, 64f)
+        cubicTo(86f, 72f, 72f, 76f, 62f, 76f)
         close()
     }
     val earInner = Path().apply {
-        moveTo(69f, 63f)
-        cubicTo(69f, 45f, 72f, 32f, 75f, 25f)
-        cubicTo(81.5f, 33f, 85f, 45f, 86f, 54f)
-        cubicTo(80.5f, 59.5f, 73.5f, 62.5f, 69f, 63f)
+        moveTo(71f, 66f)
+        cubicTo(70f, 48f, 73f, 33f, 77f, 24f)
+        cubicTo(84f, 33f, 89f, 46f, 91f, 57f)
+        cubicTo(84f, 63f, 77f, 66f, 71f, 66f)
         close()
     }
 
-    val ahoge = Path().apply {
-        moveTo(102f, 42f)
-        cubicTo(99f, 33f, 101f, 27f, 107f, 23f)
+    /** Little crest curl between the ears. */
+    val crest = Path().apply {
+        moveTo(96f, 40f)
+        cubicTo(93f, 31f, 96f, 25f, 104f, 22f)
     }
 
-    val body = Path().apply { addOval(Rect(63f, 111f, 137f, 173f)) }
-    val chest = Path().apply { addOval(Rect(79f, 136f, 121f, 166f)) }
-    val head = Path().apply { addOval(Rect(54f, 40f, 146f, 132f)) }
+    /** Rim light running along the top of the skull. */
+    val rim = Path().apply {
+        moveTo(70f, 52f)
+        cubicTo(84f, 40f, 116f, 40f, 130f, 52f)
+    }
+
+    /** Kitsune mark on the forehead. */
+    val diamondUp = Path().apply {
+        moveTo(100f, 49f)
+        lineTo(104.5f, 55f)
+        lineTo(100f, 61f)
+        lineTo(95.5f, 55f)
+        close()
+    }
+
+    /** Almond eye, open. */
+    val eyeOpen = Path().apply {
+        moveTo(64f, 86f)
+        cubicTo(64f, 75f, 73f, 69f, 81f, 73f)
+        cubicTo(89f, 77f, 88f, 86f, 80f, 90f)
+        cubicTo(73f, 93f, 66f, 91f, 64f, 86f)
+        close()
+    }
+    val lash = Path().apply {
+        moveTo(64.5f, 85.5f)
+        cubicTo(65f, 75f, 73f, 69.5f, 81f, 73.5f)
+    }
+
+    /** Content `^ ^` eye used by the happy expression. */
+    val eyeHappy = Path().apply {
+        moveTo(65f, 84f)
+        quadraticBezierTo(76f, 93f, 87f, 84f)
+    }
+
+    val muzzle = Path().apply { addOval(Rect(80f, 97f, 120f, 119f)) }
+    val nose = Path().apply {
+        moveTo(95.5f, 97f)
+        cubicTo(97f, 94.5f, 103f, 94.5f, 104.5f, 97f)
+        cubicTo(103.5f, 101f, 101.5f, 102.5f, 100f, 102.5f)
+        cubicTo(98.5f, 102.5f, 96.5f, 101f, 95.5f, 97f)
+        close()
+    }
+    val mouthIdle = Path().apply {
+        moveTo(93.5f, 105f)
+        quadraticBezierTo(100f, 109.5f, 106.5f, 105f)
+    }
+
+    /** Open smile used by the happy expression (filled + tongue). */
+    val mouthHappy = Path().apply {
+        moveTo(93f, 104f)
+        quadraticBezierTo(100f, 112f, 107f, 104f)
+        close()
+    }
+
+    val blush = Path().apply { addOval(Rect(58.5f, 99f, 71.5f, 108f)) }
 
     val scarf = Path().apply {
-        moveTo(67f, 119f)
-        cubicTo(84f, 132f, 116f, 132f, 133f, 119f)
-        cubicTo(133f, 128f, 132f, 133f, 130f, 137f)
-        cubicTo(112f, 149f, 88f, 149f, 70f, 137f)
-        cubicTo(68f, 133f, 67f, 128f, 67f, 119f)
+        moveTo(66f, 118f)
+        cubicTo(84f, 132f, 116f, 132f, 134f, 118f)
+        cubicTo(134f, 128f, 133f, 134f, 131f, 138f)
+        cubicTo(112f, 150f, 88f, 150f, 69f, 138f)
+        cubicTo(67f, 134f, 66f, 128f, 66f, 118f)
         close()
     }
 
-    val muzzle = Path().apply { addOval(Rect(81f, 92.5f, 119f, 115.5f)) }
-    val nose = Path().apply {
-        moveTo(95.5f, 96f)
-        cubicTo(97f, 93.5f, 103f, 93.5f, 104.5f, 96f)
-        cubicTo(103.5f, 100f, 101.5f, 101.5f, 100f, 101.5f)
-        cubicTo(98.5f, 101.5f, 96.5f, 100f, 95.5f, 96f)
-        close()
-    }
-    val mouth = Path().apply {
-        moveTo(94f, 104f)
-        quadraticBezierTo(100f, 108.5f, 106f, 104f)
-    }
-    val neckShadow = Path().apply {
-        moveTo(64f, 112f)
-        cubicTo(80f, 123f, 120f, 123f, 136f, 112f)
-        cubicTo(131f, 119f, 118f, 125f, 100f, 125f)
-        cubicTo(82f, 125f, 69f, 119f, 64f, 112f)
+    /** Chest gem, echoing the forehead diamond. */
+    val gem = Path().apply {
+        moveTo(100f, 135.5f)
+        lineTo(105f, 140.5f)
+        lineTo(100f, 145.5f)
+        lineTo(95f, 140.5f)
         close()
     }
 
-    val eye = Path().apply {
-        moveTo(68.5f, 88f)
-        cubicTo(70f, 78f, 78f, 73f, 85f, 78f)
-        cubicTo(88f, 81f, 87.5f, 86f, 84.5f, 89f)
-        cubicTo(78f, 93.5f, 71f, 92.5f, 68.5f, 88f)
-        close()
-    }
-    val eyeLid = Path().apply {
-        moveTo(68.5f, 88f)
-        cubicTo(70f, 78f, 78f, 73f, 85f, 78f)
-    }
-    val cheek = Path().apply { addOval(Rect(57.5f, 98.5f, 70.5f, 107.5f)) }
-    val paw = Path().apply { addOval(Rect(71.5f, 157f, 94.5f, 175f)) }
+    val paw = Path().apply { addOval(Rect(72f, 157f, 95f, 174f)) }
 }
-/** Live motion values driven by the idle animation loop. */
+
+/** Live motion values driven by the idle loop and tap reactions. */
 data class KitsuMotion(
     val blink: Float,
     val breath: Float,
     val tailSway: Float,
-    val ahogeSway: Float
+    val ahogeSway: Float,
+    val earTwitch: Float = 0f,
+    /** 0 -> idle face, 1 -> happy face (ears perk, eyes squeeze, mouth opens). */
+    val happy: Float = 0f,
+    /** Whole-body lean in degrees, used for the curious long-press pose. */
+    val tilt: Float = 0f,
+    /** Vertical lift in virtual units for the tap hop. */
+    val hop: Float = 0f
 )
 
 /** Palette for the scene and the fox. Character tones are brand-locked; the
@@ -132,9 +223,11 @@ class KitsuPalette(
     val furLight: Color,
     val amber: Color,
     val amberDeep: Color,
+    val earTip: Color,
     val eye: Color,
     val nose: Color,
     val blush: Color,
+    val tongue: Color,
     val emerald: Color,
     val emeraldDeep: Color,
     val hillFar: Color,
@@ -155,9 +248,11 @@ fun kitsuPalette(colorScheme: ColorScheme, isLight: Boolean): KitsuPalette = Kit
     furLight = Color(0xFFFFF7EA),
     amber = TertiaryAmber,
     amberDeep = Color(0xFFF0A254),
+    earTip = Color(0xFFD98A45),
     eye = Color(0xFF2E2A38),
     nose = Color(0xFF4A3830),
     blush = Color(0xFFEE9A6B),
+    tongue = Color(0xFFE58A8A),
     emerald = PrimaryEmerald,
     emeraldDeep = Color(0xFF2FA85F),
     hillFar = colorScheme.surfaceContainerHigh.copy(alpha = if (isLight) 0.9f else 0.5f),
@@ -173,8 +268,21 @@ fun kitsuPalette(colorScheme: ColorScheme, isLight: Boolean): KitsuPalette = Kit
 )
 private val GrassAlphas = floatArrayOf(0f, 0.5f, 0.68f, 0.85f, 1f)
 
-/** Soft second fur tone used for the neck shadow and inner tail shading. */
+/** Soft second fur tone used for the neck shadow, body shade and tail shading. */
 private val FurShade = Color(0xFFEAD3AE)
+
+/** Tail fan geometry per evolution stage: base angle (degrees) and a small
+ *  base offset so the tails read as individual ribbons instead of a slab. */
+private val TailAngles = mapOf(
+    1 to listOf(-8f),
+    2 to listOf(-16f, 6f),
+    3 to listOf(-24f, -8f, 8f)
+)
+private val TailOffsets = mapOf(
+    1 to listOf(0f),
+    2 to listOf(-3f, 2f),
+    3 to listOf(-4f, 0f, 4f)
+)
 
 /** Faint background tufts scattered under the crest so the field below the
  *  meadow reads as a continuation of the grass rather than empty ground. */
@@ -194,16 +302,38 @@ private fun groundY(x: Float, w: Float, h: Float): Float {
  * Draws the full scene: sky decor, rolling hills, the contribution meadow
  * and the fox standing on the field crest. No sky is painted; the scene
  * blends straight into the screen background.
+ *
+ * [sunUp] adds a small sun instead of the moon; [tails] is the evolution
+ * stage from the longest streak.
  */
 fun DrawScope.drawKitsuScene(
     paths: KitsuPaths,
     palette: KitsuPalette,
     motion: KitsuMotion,
     nightDecor: Boolean,
+    sunUp: Boolean,
+    tails: Int,
     levels: List<Int>
 ) {
     val w = size.width
     val h = size.height
+
+    // Celestial body: sun by day, moon otherwise.
+    val celestial = Offset(0.84f * w, 0.16f * h)
+    if (sunUp) {
+        drawCircle(palette.amber.copy(alpha = 0.25f), 15.dp.toPx(), celestial)
+        drawCircle(palette.amber, 9.dp.toPx(), celestial)
+    } else {
+        drawCircle(palette.furLight, 9.dp.toPx(), celestial)
+        drawCircle(
+            palette.line.copy(alpha = 0.18f), 2.2.dp.toPx(),
+            Offset(celestial.x - 3.dp.toPx(), celestial.y - 3.dp.toPx())
+        )
+        drawCircle(
+            palette.line.copy(alpha = 0.18f), 1.4.dp.toPx(),
+            Offset(celestial.x + 3.dp.toPx(), celestial.y + 3.dp.toPx())
+        )
+    }
 
     // Sky decor: stars at night, flat clouds by day.
     if (nightDecor) {
@@ -269,9 +399,29 @@ fun DrawScope.drawKitsuScene(
         translate(foxTx, foxTy)
         scale(foxScale, foxScale, pivot = Offset.Zero)
     }) {
-        drawKitsu(paths, palette, motion)
+        drawKitsu(paths, palette, motion, tails)
     }
 }
+
+/** A small filled heart used for the tap celebration burst. */
+fun DrawScope.drawCompanionHeart(center: Offset, radius: Float, color: Color) {
+    val heart = Path().apply {
+        moveTo(center.x, center.y + radius * 0.9f)
+        cubicTo(
+            center.x - radius * 1.25f, center.y - radius * 0.45f,
+            center.x - radius * 0.7f, center.y - radius * 1.3f,
+            center.x, center.y - radius * 0.55f
+        )
+        cubicTo(
+            center.x + radius * 0.7f, center.y - radius * 1.3f,
+            center.x + radius * 1.25f, center.y - radius * 0.45f,
+            center.x, center.y + radius * 0.9f
+        )
+        close()
+    }
+    drawPath(heart, color)
+}
+
 /** One dry dash per zero day, grass tufts (3 blades) otherwise; level 4 days
  *  grow a tiny flower. The strip mirrors the annual heatmap's activity tiers
  *  and roots on the field crest curve. */
@@ -358,57 +508,114 @@ private fun sparklePath(cx: Float, cy: Float, d: Float) = Path().apply {
 }
 // ---------------------------------------------------------------- fox body
 
-private fun DrawScope.drawKitsu(paths: KitsuPaths, palette: KitsuPalette, motion: KitsuMotion) {
-    drawPath(paths.shadow, Color.Black.copy(alpha = 0.15f))
-
-    // Tail sways around its base.
-    withTransform({ rotate(degrees = motion.tailSway, pivot = Offset(80f, 150f)) }) {
-        drawPath(paths.tail, palette.line, style = Stroke(39f, cap = StrokeCap.Round))
-        drawPath(paths.tail, palette.fur, style = Stroke(32f, cap = StrokeCap.Round))
-        drawPath(paths.tailShade, FurShade.copy(alpha = 0.7f), style = Stroke(9f, cap = StrokeCap.Round))
-        drawPath(paths.tailTip, palette.line, style = Stroke(39f, cap = StrokeCap.Round))
-        drawPath(paths.tailTip, palette.amber, style = Stroke(32f, cap = StrokeCap.Round))
+private fun DrawScope.drawKitsu(
+    paths: KitsuPaths,
+    palette: KitsuPalette,
+    motion: KitsuMotion,
+    tails: Int
+) {
+    // Kitsune tail fan. Each tail sways around its own base with a slightly
+    // different phase so the fan feels alive.
+    val stage = tails.coerceIn(1, 3)
+    val angles = TailAngles.getValue(stage)
+    val offsets = TailOffsets.getValue(stage)
+    angles.forEachIndexed { i, angle ->
+        val dx = offsets.getOrElse(i) { 0f }
+        val sway = motion.tailSway * (1f - i * 0.12f)
+        withTransform({ rotate(degrees = angle + sway, pivot = Offset(84f + dx, 152f)) }) {
+            drawPath(paths.tail, palette.line, style = Stroke(30f, cap = StrokeCap.Round))
+            drawPath(paths.tail, palette.fur, style = Stroke(25f, cap = StrokeCap.Round))
+            drawPath(paths.tailTip, palette.line, style = Stroke(30f, cap = StrokeCap.Round))
+            drawPath(paths.tailTip, palette.amber, style = Stroke(25f, cap = StrokeCap.Round))
+            drawPath(paths.tailShade, FurShade.copy(alpha = 0.75f), style = Stroke(6f, cap = StrokeCap.Round))
+        }
     }
 
-    // Breathing subtly stretches the whole sprite from the ground up.
-    withTransform({ scale(1f, 1f + motion.breath * 0.012f, pivot = Offset(100f, 185f)) }) {
+    withTransform({
+        translate(0f, -motion.hop)
+        rotate(degrees = motion.tilt, pivot = Offset(100f, 173f))
+        // Breathing subtly stretches the whole sprite from the ground up.
+        scale(1f, 1f + motion.breath * 0.012f, pivot = Offset(100f, 185f))
+    }) {
+        // Body, cel shade and chest ruff.
         inked(paths.body, palette.fur, palette.line)
+        drawPath(paths.bodyShade, FurShade.copy(alpha = 0.45f))
         drawPath(paths.chest, palette.furLight)
 
-        ear(paths, palette)
-        mirrored { ear(paths, palette) }
-
-        withTransform({ rotate(degrees = motion.ahogeSway, pivot = Offset(102f, 42f)) }) {
-            drawPath(paths.ahoge, palette.line, style = Stroke(9f, cap = StrokeCap.Round))
-            drawPath(paths.ahoge, palette.fur, style = Stroke(5.5f, cap = StrokeCap.Round))
-        }
-
-        inked(paths.head, palette.fur, palette.line)
-        drawPath(paths.neckShadow, FurShade.copy(alpha = 0.8f))
-
-        inked(paths.scarf, palette.emerald, palette.line)
-        drawCircle(palette.emeraldDeep, radius = 5.5f, center = Offset(100f, 139f))
-        drawCircle(palette.line, radius = 5.5f, center = Offset(100f, 139f), style = Stroke(2f))
-
-        drawPath(paths.muzzle, palette.furLight)
-        drawPath(paths.nose, palette.nose)
-        drawPath(paths.mouth, palette.nose, style = Stroke(2.2f, cap = StrokeCap.Round))
-
-        // Blink squashes both eyes vertically.
-        withTransform({ scale(1f, motion.blink, pivot = Offset(78f, 87f)) }) {
-            drawEye(paths, palette)
-        }
+        // Front paws with toe notches.
+        inked(paths.paw, palette.furLight, palette.line)
+        drawToes(palette)
         mirrored {
-            withTransform({ scale(1f, motion.blink, pivot = Offset(78f, 87f)) }) {
-                drawEye(paths, palette)
+            inked(paths.paw, palette.furLight, palette.line)
+            drawToes(palette)
+        }
+
+        // Scarf with its emerald gem.
+        drawPath(paths.neckShade, FurShade.copy(alpha = 0.8f))
+        inked(paths.scarf, palette.emerald, palette.line)
+        drawPath(paths.gem, palette.emeraldDeep)
+        drawPath(paths.gem, palette.line, style = Stroke(1.7f))
+        drawCircle(Color.White.copy(alpha = 0.5f), radius = 1.1f, center = Offset(98.2f, 138.6f))
+
+        // Ears perk outward when happy and twitch during idle.
+        val earRotation = -6f * motion.happy + motion.earTwitch
+        withTransform({ rotate(degrees = earRotation, pivot = Offset(62f, 76f)) }) {
+            ear(paths, palette)
+            mirrored { ear(paths, palette) }
+        }
+
+        // Crest curl between the ears.
+        withTransform({ rotate(degrees = motion.ahogeSway, pivot = Offset(102f, 42f)) }) {
+            drawPath(paths.crest, palette.line, style = Stroke(8f, cap = StrokeCap.Round))
+            drawPath(paths.crest, palette.fur, style = Stroke(5f, cap = StrokeCap.Round))
+        }
+
+        // Head with rim light and kitsune mark.
+        inked(paths.head, palette.fur, palette.line)
+        drawPath(paths.rim, palette.furLight.copy(alpha = 0.8f), style = Stroke(5f, cap = StrokeCap.Round))
+        drawPath(paths.diamondUp, palette.emerald)
+        drawPath(paths.diamondUp, palette.emeraldDeep, style = Stroke(1.6f))
+
+        // Eyes crossfade between the open almond pair (which blinks) and the
+        // happy arcs.
+        val openAlpha = 1f - motion.happy
+        if (openAlpha > 0.01f) {
+            withTransform({ scale(1f, motion.blink, pivot = Offset(76f, 83f)) }) {
+                drawEyeOpen(paths, palette, openAlpha)
+            }
+            mirrored {
+                withTransform({ scale(1f, motion.blink, pivot = Offset(76f, 83f)) }) {
+                    drawEyeOpen(paths, palette, openAlpha)
+                }
+            }
+        }
+        if (motion.happy > 0.01f) {
+            drawPath(
+                paths.eyeHappy, palette.eye.copy(alpha = motion.happy),
+                style = Stroke(3.2f, cap = StrokeCap.Round)
+            )
+            mirrored {
+                drawPath(
+                    paths.eyeHappy, palette.eye.copy(alpha = motion.happy),
+                    style = Stroke(3.2f, cap = StrokeCap.Round)
+                )
             }
         }
 
-        drawPath(paths.cheek, palette.blush.copy(alpha = 0.25f))
-        mirrored { drawPath(paths.cheek, palette.blush.copy(alpha = 0.25f)) }
+        // Muzzle, nose, mouth.
+        drawPath(paths.muzzle, palette.furLight)
+        drawPath(paths.muzzle, palette.line.copy(alpha = 0.3f), style = Stroke(1.6f))
+        drawPath(paths.nose, palette.nose)
+        if (motion.happy > 0.5f) {
+            drawPath(paths.mouthHappy, palette.nose)
+            drawCircle(palette.tongue, radius = 2.1f, center = Offset(100f, 106.8f))
+        } else {
+            drawPath(paths.mouthIdle, palette.nose, style = Stroke(2.2f, cap = StrokeCap.Round))
+        }
 
-        inked(paths.paw, palette.furLight, palette.line)
-        mirrored { inked(paths.paw, palette.furLight, palette.line) }
+        // Cheek blush.
+        drawPath(paths.blush, palette.blush.copy(alpha = 0.3f))
+        mirrored { drawPath(paths.blush, palette.blush.copy(alpha = 0.3f)) }
     }
 }
 
@@ -423,14 +630,28 @@ private fun DrawScope.mirrored(block: DrawScope.() -> Unit) {
     withTransform({ scale(-1f, 1f, pivot = Offset(100f, 0f)) }) { block() }
 }
 
-private fun DrawScope.ear(paths: KitsuPaths, palette: KitsuPalette) {
-    inked(paths.ear, palette.fur, palette.line)
-    inked(paths.earInner, palette.amberDeep, palette.line, width = 2f)
+private fun DrawScope.drawToes(palette: KitsuPalette) {
+    val toeColor = palette.line.copy(alpha = 0.55f)
+    drawLine(toeColor, Offset(80f, 160f), Offset(80f, 168f), strokeWidth = 1.6f, cap = StrokeCap.Round)
+    drawLine(toeColor, Offset(87f, 160f), Offset(87f, 168f), strokeWidth = 1.6f, cap = StrokeCap.Round)
 }
 
-private fun DrawScope.drawEye(paths: KitsuPaths, palette: KitsuPalette) {
-    drawPath(paths.eye, palette.eye)
-    drawPath(paths.eyeLid, palette.line, style = Stroke(2.6f, cap = StrokeCap.Round))
-    drawCircle(Color.White, radius = 3.4f, center = Offset(75.5f, 81f))
-    drawCircle(Color.White.copy(alpha = 0.8f), radius = 1.6f, center = Offset(81.5f, 87.5f))
+private fun DrawScope.ear(paths: KitsuPaths, palette: KitsuPalette) {
+    drawPath(paths.ear, palette.fur)
+    // Dark fur tip, clipped to the ear silhouette.
+    clipPath(paths.ear) {
+        drawCircle(palette.earTip, radius = 27f, center = Offset(78f, 16f))
+    }
+    drawPath(paths.ear, palette.line, style = Stroke(3f, join = StrokeJoin.Round))
+    drawPath(paths.earInner, palette.amberDeep)
+    drawPath(paths.earInner, palette.line, style = Stroke(2f, join = StrokeJoin.Round))
+}
+
+private fun DrawScope.drawEyeOpen(paths: KitsuPaths, palette: KitsuPalette, alpha: Float) {
+    drawPath(paths.eyeOpen, palette.eye.copy(alpha = alpha))
+    drawCircle(palette.emeraldDeep.copy(alpha = alpha), radius = 4.4f, center = Offset(76f, 83.5f))
+    drawCircle(palette.eye.copy(alpha = alpha), radius = 2.5f, center = Offset(76f, 83.8f))
+    drawCircle(Color.White.copy(alpha = alpha), radius = 2.1f, center = Offset(73.2f, 80.6f))
+    drawCircle(Color.White.copy(alpha = 0.75f * alpha), radius = 1f, center = Offset(80.2f, 87f))
+    drawPath(paths.lash, palette.line.copy(alpha = alpha), style = Stroke(2.6f, cap = StrokeCap.Round))
 }

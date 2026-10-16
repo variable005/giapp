@@ -42,6 +42,7 @@ import com.example.gitpulse.ui.viewmodel.GitPulseUiState
 @Composable
 fun DashboardScreen(
     uiState: GitPulseUiState,
+    syncTick: Int = 0,
     selectedYear: Int,
     availableYears: List<Int>,
     onYearSelected: (Int) -> Unit,
@@ -53,6 +54,14 @@ fun DashboardScreen(
     val haptic = LocalHapticFeedback.current
     val isRefreshing = uiState is GitPulseUiState.Loading
 
+    // Keep the last successful snapshot around so refreshes and year switches
+    // show the live content under the spinner instead of a skeleton; the
+    // companion fox stays mounted and can celebrate the fresh pull.
+    val lastSuccessData = remember { mutableStateOf<GitPulseAggregateData?>(null) }
+    LaunchedEffect(uiState) {
+        (uiState as? GitPulseUiState.Success)?.let { lastSuccessData.value = it.data }
+    }
+
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = {
@@ -63,7 +72,20 @@ fun DashboardScreen(
     ) {
         when (uiState) {
             is GitPulseUiState.Loading -> {
-                LoadingDashboardSkeleton()
+                val cached = lastSuccessData.value
+                if (cached != null) {
+                    DashboardContent(
+                        data = cached,
+                        syncTick = syncTick,
+                        selectedYear = selectedYear,
+                        availableYears = availableYears,
+                        onYearSelected = onYearSelected,
+                        onSearchClick = onSearchClick,
+                        onNavigateToInspector = onNavigateToInspector
+                    )
+                } else {
+                    LoadingDashboardSkeleton()
+                }
             }
             is GitPulseUiState.Error -> {
                 ErrorDashboardState(
@@ -75,6 +97,7 @@ fun DashboardScreen(
             is GitPulseUiState.Success -> {
                 DashboardContent(
                     data = uiState.data,
+                    syncTick = syncTick,
                     selectedYear = selectedYear,
                     availableYears = availableYears,
                     onYearSelected = onYearSelected,
@@ -89,6 +112,7 @@ fun DashboardScreen(
 @Composable
 private fun DashboardContent(
     data: GitPulseAggregateData,
+    syncTick: Int,
     selectedYear: Int,
     availableYears: List<Int>,
     onYearSelected: (Int) -> Unit,
@@ -113,7 +137,7 @@ private fun DashboardContent(
     ) {
         // 1. Kitsu companion hero: the fox lives on your contribution meadow.
         item {
-            CompanionHero(data = data)
+            CompanionHero(data = data, syncTick = syncTick)
         }
 
         // 2. Profile metric tiles
