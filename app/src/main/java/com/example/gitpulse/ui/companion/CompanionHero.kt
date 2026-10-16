@@ -260,6 +260,10 @@ fun CompanionHero(
     // present; the hand-drawn vector fox stays as the fallback.
     val companionArt = ImageBitmap.imageResource(R.drawable.kitsu_companion)
 
+    // Illustrated meadow the companion stands on; the drawn ground stays
+    // as a fallback whenever the art is absent.
+    val meadowArt = ImageBitmap.imageResource(R.drawable.kitsu_meadow)
+
     // Fluid rig: warps the art through a GPU mesh each frame. If setup ever
     // fails the scene quietly falls back to the static drawImage path.
     val companionWarp = remember(companionArt) {
@@ -283,6 +287,7 @@ fun CompanionHero(
                     tails = tails,
                     levels = levels,
                     companion = companionArt,
+                    meadow = meadowArt,
                     companionWarp = companionWarp,
                     reducedMotion = reducedMotion,
                     ambientPhase = ambientPhase

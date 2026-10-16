@@ -4,7 +4,9 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -317,6 +319,11 @@ private fun groundY(x: Float, w: Float, h: Float): Float {
  * on the crest (bottom edge on the ground line); when it is null the
  * hand-drawn vector fox is used unless [foxVisible] is off. The crest
  * keeps its contact shadow either way.
+ *
+ * [meadow] is the illustrated grassy mound the companion stands on: when
+ * present it replaces the drawn contribution meadow, its plateau meeting
+ * the companion's feet (dimmed softly after dark). Without it the scene
+ * falls back to the hand-drawn ground line and meadow.
  */
 fun DrawScope.drawKitsuScene(
     paths: KitsuPaths,
@@ -328,6 +335,7 @@ fun DrawScope.drawKitsuScene(
     levels: List<Int>,
     foxVisible: Boolean = true,
     companion: ImageBitmap? = null,
+    meadow: ImageBitmap? = null,
     companionWarp: CompanionWarp? = null,
     reducedMotion: Boolean = false,
     ambientPhase: Float = 0f
@@ -390,18 +398,48 @@ fun DrawScope.drawKitsuScene(
     }
     drawPath(nearHill, palette.hillNear)
 
-    // The crest line the meadow roots on: one gentle arc, no band edges.
-    val groundLine = Path().apply {
-        moveTo(0f, 0.76f * h)
-        quadraticBezierTo(0.5f * w, 0.72f * h, w, 0.76f * h)
-    }
-    drawPath(groundLine, palette.groundLine, style = Stroke(width = 2.dp.toPx()))
+    // Where the companion's feet meet the ground: the shared anchor for
+    // the meadow art, the fallback crest and the contact shadow.
+    val groundCenter = groundY(w / 2f, w, h)
 
-    drawMeadow(palette, levels, w, h)
-    drawScatteredTufts(palette, w, h)
+    if (meadow != null) {
+        // Illustrated grassy mound: fills the scene width (a hair of bleed
+        // on both sides) with its plateau meeting the companion's feet.
+        // The art's stand line sits at 170/428 of its source height; the
+        // height cap keeps the whole mound inside the scene on wide screens.
+        val meadowScale = minOf(
+            w * 1.04f / meadow.width,
+            118.dp.toPx() / meadow.height
+        )
+        val meadowW = meadow.width * meadowScale
+        val meadowH = meadow.height * meadowScale
+        val stand = meadow.height * (170f / 428f)
+        drawImage(
+            image = meadow,
+            dstOffset = IntOffset(
+                ((w - meadowW) / 2f).roundToInt(),
+                (groundCenter + 5.dp.toPx() - 6.dp.toPx() - stand * meadowScale).roundToInt()
+            ),
+            dstSize = IntSize(meadowW.roundToInt(), meadowH.roundToInt()),
+            colorFilter = if (nightDecor) {
+                ColorFilter.tint(Color(0xFFCCD6FA), BlendMode.Modulate)
+            } else {
+                null
+            }
+        )
+    } else {
+        // The crest line the meadow roots on: one gentle arc, no band edges.
+        val groundLine = Path().apply {
+            moveTo(0f, 0.76f * h)
+            quadraticBezierTo(0.5f * w, 0.72f * h, w, 0.76f * h)
+        }
+        drawPath(groundLine, palette.groundLine, style = Stroke(width = 2.dp.toPx()))
+
+        drawMeadow(palette, levels, w, h)
+        drawScatteredTufts(palette, w, h)
+    }
 
     // Soft contact shadow where the fox meets the crest.
-    val groundCenter = groundY(w / 2f, w, h)
     drawOval(
         color = Color.Black.copy(alpha = 0.15f),
         topLeft = Offset(w / 2f - 52.dp.toPx(), groundCenter),
