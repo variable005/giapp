@@ -341,13 +341,14 @@ fun CompanionHero(
                     .padding(end = 20.dp, top = 2.dp)
             )
 
-            // Tap reaction: a quip bubble above the fox's head.
+            // Tap reaction: a quip bubble under the fox's feet — caption
+            // style, so it stays clear of her head and ears.
             KitsuQuipBubble(
                 text = quip ?: "",
                 visible = quip != null,
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 50.dp, start = 24.dp, end = 24.dp)
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 2.dp, start = 24.dp, end = 24.dp)
             )
         }
 
@@ -454,9 +455,11 @@ private fun KitsuQuipBubble(text: String, visible: Boolean, modifier: Modifier =
             Text(
                 text = lastText,
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
