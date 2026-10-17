@@ -4,12 +4,7 @@ import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.keyframes
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -71,6 +66,7 @@ import java.util.Calendar
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.PI
 import kotlin.math.sin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -131,6 +127,9 @@ fun CompanionHero(
     var lastSyncTick by remember { mutableStateOf(syncTick) }
 
     val heartBurst = remember { Animatable(1f) }
+    // Tap hop: one arc up, with a stretch on the way and a squash on landing,
+    // so a tap has weight instead of only switching her face.
+    val hop = remember { Animatable(0f) }
 
     fun reactHappy() {
         reaction = KitsuReaction.HAPPY
@@ -141,6 +140,10 @@ fun CompanionHero(
             scope.launch {
                 heartBurst.snapTo(0f)
                 heartBurst.animateTo(1f, tween(950, easing = FastOutSlowInEasing))
+            }
+            scope.launch {
+                hop.snapTo(0f)
+                hop.animateTo(1f, tween(560, easing = FastOutSlowInEasing))
             }
         }
     }
@@ -180,56 +183,13 @@ fun CompanionHero(
         }
     }
 
-    // ----- idle life -----
-    val transition = rememberInfiniteTransition(label = "kitsu_idle")
-    val breath by transition.animateFloat(
-        0f, 1f,
-        infiniteRepeatable(tween(3400, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "breath"
-    )
-    val tailSway by transition.animateFloat(
-        -1f, 1f,
-        infiniteRepeatable(tween(2600, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "tail_sway"
-    )
-    val sway by transition.animateFloat(
-        -1f, 1f,
-        infiniteRepeatable(tween(4400, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "sway"
-    )
-    val ahogeSway by transition.animateFloat(
-        -1f, 1f,
-        infiniteRepeatable(tween(1900, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "ahoge_sway"
-    )
-    val blink by transition.animateFloat(
-        1f, 1f,
-        infiniteRepeatable(
-            keyframes {
-                durationMillis = 4600
-                1f at 0
-                1f at 4150
-                0.08f at 4280
-                1f at 4420
-            },
-            RepeatMode.Restart
-        ),
-        label = "blink"
-    )
-    val earTwitch by transition.animateFloat(
-        0f, 0f,
-        infiniteRepeatable(
-            keyframes {
-                durationMillis = 5400
-                0f at 0
-                0f at 4300
-                -7f at 4460
-                0f at 4620
-            },
-            RepeatMode.Restart
-        ),
-        label = "ear_twitch"
-    )
+    // ----- how alive she feels -----
+    // Mood sets tempo and depth; the idle loop supplies the beat; the phone
+    // supplies the follow-through. See CompanionMotion / DeviceMotion.
+    val moodProfile = remember(mood) { motionProfile(mood) }
+    val idle = rememberKitsuIdle(moodProfile, enabled = !reducedMotion)
+    val device = rememberDeviceMotion(enabled = !reducedMotion)
+
     val happyBlend by animateFloatAsState(
         targetValue = if (reaction == KitsuReaction.HAPPY) 1f else 0f,
         animationSpec = tween(240, easing = FastOutSlowInEasing),
@@ -241,20 +201,24 @@ fun CompanionHero(
         label = "kitsu_tilt"
     )
 
-    val motion = if (reducedMotion) {
-        KitsuMotion(blink = 1f, breath = 0f, tailSway = 0f, ahogeSway = 0f)
-    } else {
-        KitsuMotion(
-            blink = blink,
-            breath = breath,
-            tailSway = tailSway * (2.5f + happyBlend * 1.8f),
-            ahogeSway = ahogeSway * 5f,
-            earTwitch = earTwitch,
-            happy = happyBlend,
-            tilt = tiltBlend,
-            sway = sway
-        )
-    }
+    val hopArc = sin(PI * hop.value).toFloat()
+
+    val pose = KitsuPose(
+        happy = happyBlend,
+        tilt = tiltBlend,
+        // ~9dp of travel: enough to read as a hop, not so much that she
+        // detaches from the ground line she is drawn on.
+        hop = hopArc * 9f,
+        squash = sin(2.0 * PI * hop.value).toFloat() * 0.35f
+    )
+
+    val motion = kitsuMotion(
+        idle = idle,
+        profile = moodProfile,
+        device = device,
+        pose = pose,
+        reducedMotion = reducedMotion
+    )
 
     // Companion art shipped with the app; the hand-drawn vector fox stays
     // as the fallback.

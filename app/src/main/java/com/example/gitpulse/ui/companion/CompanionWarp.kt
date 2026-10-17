@@ -30,6 +30,10 @@ internal class CompanionWarpMath {
     private var breath = 0f
     private var hopPx = 0f
     private var risePx = 0f
+    private var shiftPx = 0f
+    private var headShiftPx = 0f
+    private var headLiftPx = 0f
+    private var squash = 0f
 
     // cached trig, refreshed once per frame in [update]
     private var cB = 1f; private var sB = 0f
@@ -46,11 +50,19 @@ internal class CompanionWarpMath {
         earLDeg: Float,
         earRDeg: Float,
         hopPx: Float,
-        risePx: Float
+        risePx: Float,
+        shiftPx: Float = 0f,
+        headShiftPx: Float = 0f,
+        headLiftPx: Float = 0f,
+        squash: Float = 0f
     ) {
         this.breath = breath
         this.hopPx = hopPx
         this.risePx = risePx
+        this.shiftPx = shiftPx
+        this.headShiftPx = headShiftPx
+        this.headLiftPx = headLiftPx
+        this.squash = squash
         cB = cosDeg(bodyAngleDeg); sB = sinDeg(bodyAngleDeg)
         cT = cosDeg(tailAngleDeg); sT = sinDeg(tailAngleDeg)
         cH = cosDeg(headAngleDeg); sH = sinDeg(headAngleDeg)
@@ -79,21 +91,26 @@ internal class CompanionWarpMath {
         var dx = 0f
         var dy = 0f
 
-        // Body: lean about the ground line, breath squash, hop and happy rise.
+        // Body: lean about the ground line, breath and landing squash, hop,
+        // happy rise and the lateral weight shift.
         dx += a * rotX(cB, sB, x, y, 420f, 1085f)
         dy += a * rotY(cB, sB, x, y, 420f, 1085f)
-        val s = 1f + breath * 0.010f
+        val s = 1f + breath * 0.010f + squash * 0.085f
         dx += a * (x - 420f) * (-0.5f * (s - 1f))
         dy += a * (y - 1085f) * (s - 1f)
         dy -= a * (hopPx + risePx)
+        dx += a * shiftPx
 
         // Tail: bends around its base (665, 845).
         dx += wTail * rotX(cT, sT, x, y, 665f, 845f)
         dy += wTail * rotY(cT, sT, x, y, 665f, 845f)
 
-        // Head: nods around the neck (315, 650).
+        // Head: nods around the neck (315, 650), and can also travel a little
+        // sideways and up, which is what reads as her looking around.
         dx += wHead * rotX(cH, sH, x, y, 315f, 650f)
         dy += wHead * rotY(cH, sH, x, y, 315f, 650f)
+        dx += wHead * headShiftPx
+        dy -= wHead * headLiftPx
 
         // Ears: flex at their bases.
         dx += wEarL * rotX(cEL, sEL, x, y, 245f, 305f)
@@ -198,13 +215,17 @@ class CompanionWarp(image: ImageBitmap, private val cells: Int = 32) {
         val scale = heightPx / hArt
         math.update(
             breath = motion.breath,
-            bodyAngleDeg = motion.tilt + motion.sway * 0.9f,
-            tailAngleDeg = motion.tailSway * 2f + motion.happy * 1.5f,
-            headAngleDeg = (0.5f - motion.breath) * 2f - motion.happy * 1.5f,
-            earLDeg = motion.earTwitch * 0.5f - motion.happy * 1.2f,
-            earRDeg = -motion.earTwitch * 0.4f + motion.happy * 1f,
+            bodyAngleDeg = motion.tilt + motion.lean + motion.sway * 0.9f,
+            tailAngleDeg = motion.tailSway * 2f + motion.tailWhip + motion.happy * 1.5f,
+            headAngleDeg = (0.5f - motion.breath) * 2f - motion.happy * 1.5f + motion.headTurn,
+            earLDeg = motion.earTwitch * 0.5f + motion.earLag - motion.happy * 1.2f,
+            earRDeg = -motion.earTwitch * 0.4f + motion.earLag * 0.85f + motion.happy * 1f,
             hopPx = motion.hop * hArt / 185f,
-            risePx = motion.happy * 3f * scope.density / scale
+            risePx = motion.happy * 3f * scope.density / scale,
+            shiftPx = motion.shift * hArt / 185f,
+            headShiftPx = motion.headShift * hArt / 185f,
+            headLiftPx = motion.headLift * hArt / 185f,
+            squash = motion.squash
         )
 
         val padW = wArt + 2 * PAD

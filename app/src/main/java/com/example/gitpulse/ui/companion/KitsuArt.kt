@@ -203,7 +203,7 @@ class KitsuPaths {
     val paw = Path().apply { addOval(Rect(72f, 157f, 95f, 174f)) }
 }
 
-/** Live motion values driven by the idle loop and tap reactions. */
+/** Live motion values driven by the idle loop, tap reactions and the phone. */
 data class KitsuMotion(
     val blink: Float,
     val breath: Float,
@@ -216,8 +216,23 @@ data class KitsuMotion(
     val tilt: Float = 0f,
     /** Vertical lift in virtual units for the tap hop. */
     val hop: Float = 0f,
-    /** Idle body sway in -1..1; drives the fluid companion warp. */
-    val sway: Float = 0f
+    /** Idle body sway; drives the fluid companion warp. */
+    val sway: Float = 0f,
+    /** Extra body lean in degrees from the phone's own tilt. */
+    val lean: Float = 0f,
+    /** Extra head yaw in degrees: idle glances plus gravity tracking. */
+    val headTurn: Float = 0f,
+    /** Head travel in virtual units, lateral and vertical. */
+    val headShift: Float = 0f,
+    val headLift: Float = 0f,
+    /** Extra ear degrees carrying the follow-through behind the head. */
+    val earLag: Float = 0f,
+    /** Whole-body lateral offset in virtual units, for weight transfer. */
+    val shift: Float = 0f,
+    /** Extra volume-preserving squash: positive stretches, negative flattens. */
+    val squash: Float = 0f,
+    /** Tail whip in degrees, trailing the body swing. */
+    val tailWhip: Float = 0f
 )
 
 /** Palette for the scene and the fox. Character tones are brand-locked; the
@@ -328,13 +343,14 @@ fun DrawScope.drawKitsuScene(
             val artWidth = artHeight * companion.width / companion.height
             val bob = motion.breath * 2.dp.toPx()
             val lift = motion.hop * artHeight / 185f + motion.happy * 3.dp.toPx()
+            val shift = motion.shift * artHeight / 185f
             withTransform({
-                rotate(motion.tilt, pivot = Offset(w / 2f, groundLineY))
+                rotate(motion.tilt + motion.lean, pivot = Offset(w / 2f, groundLineY))
             }) {
                 drawImage(
                     image = companion,
                     dstOffset = IntOffset(
-                        (w / 2f - artWidth / 2f).roundToInt(),
+                        (w / 2f - artWidth / 2f + shift).roundToInt(),
                         (groundLineY - artHeight - bob - lift).roundToInt()
                     ),
                     dstSize = IntSize(artWidth.roundToInt(), artHeight.roundToInt())
@@ -399,10 +415,14 @@ private fun DrawScope.drawKitsu(
     }
 
     withTransform({
-        translate(0f, -motion.hop)
-        rotate(degrees = motion.tilt, pivot = Offset(100f, 173f))
-        // Breathing subtly stretches the whole sprite from the ground up.
-        scale(1f, 1f + motion.breath * 0.012f, pivot = Offset(100f, 185f))
+        translate(motion.shift, -motion.hop)
+        rotate(degrees = motion.tilt + motion.lean, pivot = Offset(100f, 173f))
+        // Breathing and landings deform the whole sprite from the ground up.
+        scale(
+            1f - motion.squash * 0.03f,
+            1f + motion.breath * 0.012f + motion.squash * 0.045f,
+            pivot = Offset(100f, 185f)
+        )
     }) {
         // Body, cel shade and chest ruff.
         inked(paths.body, palette.fur, palette.line)
@@ -424,8 +444,8 @@ private fun DrawScope.drawKitsu(
         drawPath(paths.gem, palette.line, style = Stroke(1.7f))
         drawCircle(Color.White.copy(alpha = 0.5f), radius = 1.1f, center = Offset(98.2f, 138.6f))
 
-        // Ears perk outward when happy and twitch during idle.
-        val earRotation = -6f * motion.happy + motion.earTwitch
+        // Ears perk outward when happy, follow the head, and twitch in idle.
+        val earRotation = -6f * motion.happy + motion.earTwitch + motion.earLag
         withTransform({ rotate(degrees = earRotation, pivot = Offset(62f, 76f)) }) {
             ear(paths, palette)
             mirrored { ear(paths, palette) }
