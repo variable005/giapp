@@ -307,8 +307,8 @@ fun CompanionHero(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 52.dp)
-                    .size(width = 194.dp, height = 168.dp)
+                    .padding(top = 40.dp)
+                    .size(width = 240.dp, height = 208.dp)
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onTap = {

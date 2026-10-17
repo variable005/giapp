@@ -310,8 +310,9 @@ fun DrawScope.drawKitsuScene(
     val w = size.width
     val h = size.height
 
-    // Her anchor line, kept from the old field crest: three quarters down.
-    val groundCenter = 0.74f * h
+    // Her anchor line, kept from the old field crest: a touch below three
+    // quarters down so the larger companion stays clear of the greeting.
+    val groundCenter = 0.82f * h
 
     // Companion: the illustration art sits on her anchor line — bottom edge
     // a touch below it, centred. When the fluid rig is available the art is
@@ -319,7 +320,7 @@ fun DrawScope.drawKitsuScene(
     // the ears flex); the static path stays for reduced motion and as a
     // fallback.
     if (companion != null) {
-        val artHeight = 152.dp.toPx()
+        val artHeight = 188.dp.toPx()
         val groundLineY = groundCenter + 5.dp.toPx()
         val fluid = companionWarp != null && !reducedMotion &&
             companionWarp.draw(this, motion, w / 2f, groundLineY, artHeight)
@@ -341,7 +342,7 @@ fun DrawScope.drawKitsuScene(
             }
         }
     } else if (foxVisible) {
-        val foxScale = 145.dp.toPx() / 185f
+        val foxScale = 179.dp.toPx() / 185f
         val foxTx = w / 2f - 100f * foxScale
         val foxTy = groundCenter + 5.dp.toPx() - 185f * foxScale
         withTransform({
