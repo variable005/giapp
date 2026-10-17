@@ -66,6 +66,7 @@ dependencies {
   implementation(libs.coil.compose)
   implementation(libs.coil.svg)
   implementation(libs.sceneview)
+  implementation(libs.androidx.work.runtime.ktx)
   // Tooling
   debugImplementation(libs.androidx.compose.ui.tooling)
   // Instrumented tests

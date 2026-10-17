@@ -1,6 +1,11 @@
 package com.example.gitpulse.widget
 
 import android.content.Context
+import com.example.gitpulse.data.HeatmapDay
+import com.example.gitpulse.data.remote.GitPulseAggregateData
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * Flat snapshot of the last successful load, persisted so home screen widgets
@@ -30,6 +35,7 @@ object WidgetDataStore {
     private const val KEY_COMMITS = "total_commits"
     private const val KEY_REPOS = "repos"
     private const val KEY_GRID = "heat_grid"
+    private const val KEY_TOKEN = "auth_token"
 
     fun save(context: Context, snapshot: WidgetSnapshot) {
         context.applicationContext
@@ -57,4 +63,66 @@ object WidgetDataStore {
             heatGrid = prefs.getString(KEY_GRID, "").orEmpty()
         )
     }
+
+    /**
+     * Remembers the personal access token so the background worker can include
+     * private contributions. It lives in the same app-private file as the
+     * snapshot and is read only by the worker.
+     */
+    fun saveToken(context: Context, token: String?) {
+        context.applicationContext
+            .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putString(KEY_TOKEN, token)
+            .apply()
+    }
+
+    fun loadToken(context: Context): String? =
+        context.applicationContext
+            .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(KEY_TOKEN, null)
+}
+
+/** Builds the widget payload from a freshly loaded aggregate. */
+fun widgetSnapshotFrom(data: GitPulseAggregateData): WidgetSnapshot {
+    val profile = data.profile
+    return WidgetSnapshot(
+        username = profile.username,
+        activeStreakDays = profile.activeStreakDays,
+        longestStreakDays = profile.longestStreakDays,
+        totalAnnualCommits = profile.totalAnnualCommits,
+        reposCount = profile.reposCount,
+        heatGrid = buildHeatGrid(data.contributions)
+    )
+}
+
+/**
+ * Encodes eight weeks of contributions as one character per day, week-major
+ * (eight columns of seven), matching [KitsuWidgetRenderer]. Days outside the
+ * window are `x`; otherwise the character is the level `0`-`4`.
+ *
+ * The window is anchored to today because the year fetch also returns days that
+ * have not happened yet.
+ */
+fun buildHeatGrid(contributions: List<HeatmapDay>): String {
+    if (contributions.isEmpty()) return ""
+    val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+    val past = contributions.filter { it.dateString <= today }
+    if (past.isEmpty()) return ""
+
+    val latestWeek = past.maxOf { it.weekOfYear }
+    val bySlot = past.associateBy { it.weekOfYear to it.dayOfWeek }
+
+    val grid = StringBuilder(56)
+    for (week in (latestWeek - 7)..latestWeek) {
+        for (day in 0..6) {
+            if (week < 0) {
+                grid.append('x')
+                continue
+            }
+            val entry = bySlot[week to day]
+            grid.append(if (entry == null) 'x' else ('0' + entry.level.coerceIn(0, 4)))
+        }
+    }
+    return grid.toString()
 }

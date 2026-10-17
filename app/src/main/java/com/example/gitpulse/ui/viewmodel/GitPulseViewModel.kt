@@ -8,14 +8,11 @@ import com.example.gitpulse.data.remote.GitHubApiService
 import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.widget.KitsuWidgetRenderer
 import com.example.gitpulse.widget.WidgetDataStore
-import com.example.gitpulse.widget.WidgetSnapshot
+import com.example.gitpulse.widget.widgetSnapshotFrom
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 sealed interface GitPulseUiState {
     object Loading : GitPulseUiState
@@ -141,55 +138,15 @@ class GitPulseViewModel(
     }
 
     /**
-     * Publishes the freshly loaded data for home screen widgets and repaints
-     * them. Widgets never fetch on their own, so this is the only write path.
+     * Publishes freshly loaded data for home screen widgets and repaints them.
+     * This is the immediate path; [com.example.gitpulse.widget.WidgetRefreshWorker]
+     * keeps the snapshot warm in the background.
      */
     private fun publishWidgetSnapshot(data: GitPulseAggregateData) {
         val context = GitPulseApp.appContext
-        val profile = data.profile
-        WidgetDataStore.save(
-            context,
-            WidgetSnapshot(
-                username = profile.username,
-                activeStreakDays = profile.activeStreakDays,
-                longestStreakDays = profile.longestStreakDays,
-                totalAnnualCommits = profile.totalAnnualCommits,
-                reposCount = profile.reposCount,
-                heatGrid = buildHeatGrid(data.contributions)
-            )
-        )
+        WidgetDataStore.save(context, widgetSnapshotFrom(data))
+        WidgetDataStore.saveToken(context, _personalToken.value)
         KitsuWidgetRenderer.refreshAll(context)
-    }
-
-    /**
-     * Encodes eight weeks of contributions as one character per day, week-major
-     * (eight columns of seven), matching [KitsuWidgetRenderer]. Days that fall
-     * outside the window are `x`; otherwise the character is the level `0`-`4`.
-     *
-     * The window is anchored to today because the year fetch also returns days
-     * that have not happened yet.
-     */
-    private fun buildHeatGrid(contributions: List<HeatmapDay>): String {
-        if (contributions.isEmpty()) return ""
-        val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-        val past = contributions.filter { it.dateString <= today }
-        if (past.isEmpty()) return ""
-
-        val latestWeek = past.maxOf { it.weekOfYear }
-        val bySlot = past.associateBy { it.weekOfYear to it.dayOfWeek }
-
-        val grid = StringBuilder(56)
-        for (week in (latestWeek - 7)..latestWeek) {
-            for (day in 0..6) {
-                if (week < 0) {
-                    grid.append('x')
-                    continue
-                }
-                val entry = bySlot[week to day]
-                grid.append(if (entry == null) 'x' else ('0' + entry.level.coerceIn(0, 4)))
-            }
-        }
-        return grid.toString()
     }
 
     fun selectYear(year: Int) {

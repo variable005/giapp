@@ -7,6 +7,7 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.SvgDecoder
 import coil.util.DebugLogger
+import com.example.gitpulse.widget.WidgetRefreshScheduler
 
 /**
  * App-wide Coil loader.
@@ -22,6 +23,7 @@ class GitPulseApp : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
         appContext = applicationContext
+        WidgetRefreshScheduler.ensurePeriodic(this)
     }
 
     override fun newImageLoader(): ImageLoader =
