@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.gitpulse.data.GitActivityItem
 import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.theme.*
@@ -32,6 +33,15 @@ import com.example.gitpulse.ui.animation.MotionTokens
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import com.example.gitpulse.ui.viewmodel.GitPulseUiState
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+private val MonthAbbrev = mapOf(
+    "01" to "Jan", "02" to "Feb", "03" to "Mar", "04" to "Apr",
+    "05" to "May", "06" to "Jun", "07" to "Jul", "08" to "Aug",
+    "09" to "Sep", "10" to "Oct", "11" to "Nov", "12" to "Dec"
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,7 +86,21 @@ private fun DayInspectorContent(
     var includePrivate by remember { mutableStateOf(true) }
     var maskSensitive by remember { mutableStateOf(false) }
 
-    val recentDays = data.contributions.takeLast(28)
+    // GitHub's year calendar can include future days (the fetch asks for the
+    // whole Jan-Dec range), so a plain takeLast(28) lands on an empty December.
+    // Anchor the rolling window to today, then take the most recent 28 days.
+    val today = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()) }
+    val recentDays = data.contributions
+        .filter { it.dateString <= today }
+        .sortedBy { it.dateString }
+        .takeLast(28)
+
+    val selectedDate = recentDays.getOrNull(selectedDay - 1)?.dateString
+    val selectedDateLabel = selectedDate
+        ?.takeIf { it.length >= 10 }
+        ?.let { "${MonthAbbrev[it.substring(5, 7)].orEmpty()} ${it.substring(8, 10).trimStart('0')}" }
+        .orEmpty()
+        .ifEmpty { "Day $selectedDay" }
 
     LazyColumn(
         modifier = modifier
@@ -135,37 +159,78 @@ private fun DayInspectorContent(
                         }
                     }
 
-                    // Weekdays Row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        listOf("Su", "Mo", "Tu", "We", "Th", "Fr", "Sa").forEach { day ->
-                            Text(
-                                text = day,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                    // Month header: one label where a new month starts.
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        for (d in 0..6) {
+                            val month = recentDays.getOrNull(d)?.dateString
+                                ?.takeIf { it.length >= 7 }?.substring(5, 7)
+                            val prevMonth = if (d > 0) {
+                                recentDays.getOrNull(d - 1)?.dateString
+                                    ?.takeIf { it.length >= 7 }?.substring(5, 7)
+                            } else null
+                            val label = if (month != null && (d == 0 || month != prevMonth)) {
+                                MonthAbbrev[month].orEmpty()
+                            } else ""
+                            Box(
+                                modifier = Modifier.weight(1f),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                if (label.isNotEmpty()) {
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        overflow = TextOverflow.Visible
+                                    )
+                                }
+                            }
                         }
                     }
 
-                    // 4 Weeks x 7 Days Grid with Animated Spring Selection
+                    // Weekdays Row
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        listOf("Su", "Mo", "Tu", "We", "Th", "Fr", "Sa").forEach { day ->
+                            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = day,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+
+                    // 4 Weeks x 7 Days grid. Each cell is filled by its
+                    // contribution level, reusing the dashboard heatmap ramp.
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         for (w in 0..3) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceAround
-                            ) {
+                            Row(modifier = Modifier.fillMaxWidth()) {
                                 for (d in 0..6) {
                                     val index = w * 7 + d
                                     val dayItem = recentDays.getOrNull(index)
                                     val dayNum = index + 1
                                     val isHighlighted = dayNum == selectedDay
-                                    val count = dayItem?.count ?: 0
-                                    val dotColor = when {
-                                        count == 0 -> Color.Transparent
-                                        count < 3 -> SecondaryContainerEmerald
-                                        else -> MaterialTheme.colorScheme.primary
+                                    val level = dayItem?.level ?: 0
+                                    val dayLabel = dayItem?.dateString
+                                        ?.takeIf { it.length >= 10 }
+                                        ?.substring(8, 10)
+                                        ?.trimStart('0')
+                                        .orEmpty()
+                                        .ifEmpty { "$dayNum" }
+
+                                    val cellColor = when (level) {
+                                        4 -> PrimaryEmerald
+                                        3 -> PrimaryEmerald.copy(alpha = 0.82f)
+                                        2 -> PrimaryEmerald.copy(alpha = 0.58f)
+                                        1 -> PrimaryEmerald.copy(alpha = 0.32f)
+                                        else -> MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f)
+                                    }
+                                    val contentColor = if (level >= 3) {
+                                        OnPrimaryEmerald
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface
                                     }
 
                                     val scaleAnim by animateFloatAsState(
@@ -174,32 +239,29 @@ private fun DayInspectorContent(
                                         label = "cell_scale"
                                     )
 
-                                    Surface(
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .scale(scaleAnim)
-                                            .clip(RoundedCornerShape(10.dp))
-                                            .clickable { selectedDay = dayNum },
-                                        shape = RoundedCornerShape(10.dp),
-                                        color = if (isHighlighted) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surfaceContainerLow,
-                                        border = if (isHighlighted) BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary) else null
-                                    ) {
-                                        Column(
-                                            modifier = Modifier.fillMaxSize(),
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            verticalArrangement = Arrangement.Center
+                                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                                        Surface(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .scale(scaleAnim)
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .clickable { selectedDay = dayNum },
+                                            shape = RoundedCornerShape(10.dp),
+                                            color = cellColor,
+                                            border = if (isHighlighted) {
+                                                BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface)
+                                            } else null
                                         ) {
-                                            Text(
-                                                text = "$dayNum",
-                                                style = MaterialTheme.typography.labelMedium,
-                                                color = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                            )
-                                            Spacer(modifier = Modifier.height(2.dp))
                                             Box(
-                                                modifier = Modifier
-                                                    .size(6.dp)
-                                                    .background(dotColor, CircleShape)
-                                            )
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = dayLabel,
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    color = contentColor
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -223,9 +285,10 @@ private fun DayInspectorContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(text = "Less", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Box(modifier = Modifier.size(10.dp).background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(2.dp)))
-                            Box(modifier = Modifier.size(10.dp).background(SecondaryContainerEmerald, RoundedCornerShape(2.dp)))
-                            Box(modifier = Modifier.size(10.dp).background(PrimaryContainerEmerald, RoundedCornerShape(2.dp)))
+                            Box(modifier = Modifier.size(10.dp).background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f), RoundedCornerShape(2.dp)))
+                            Box(modifier = Modifier.size(10.dp).background(PrimaryEmerald.copy(alpha = 0.32f), RoundedCornerShape(2.dp)))
+                            Box(modifier = Modifier.size(10.dp).background(PrimaryEmerald.copy(alpha = 0.58f), RoundedCornerShape(2.dp)))
+                            Box(modifier = Modifier.size(10.dp).background(PrimaryEmerald.copy(alpha = 0.82f), RoundedCornerShape(2.dp)))
                             Box(modifier = Modifier.size(10.dp).background(PrimaryEmerald, RoundedCornerShape(2.dp)))
                             Text(text = "More", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
@@ -273,7 +336,7 @@ private fun DayInspectorContent(
 
                         Column {
                             Text(
-                                text = "Day $selectedDay Overview",
+                                text = "$selectedDateLabel Overview",
                                 style = MaterialTheme.typography.titleLarge,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 maxLines = 1,
