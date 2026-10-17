@@ -411,8 +411,8 @@ fun CompanionHero(
                 progress = { progress },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(CircleShape),
+                    .height(16.dp)
+                    .clip(RoundedCornerShape(8.dp)),
                 color = colorScheme.primary,
                 trackColor = colorScheme.surfaceContainerHighest,
                 strokeCap = StrokeCap.Round
