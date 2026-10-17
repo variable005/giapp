@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,11 +24,11 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.gitpulse.data.GitActivityItem
 import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.theme.*
 import com.example.gitpulse.ui.animation.AnimatedNumberCounter
 import com.example.gitpulse.ui.animation.MotionTokens
+import com.example.gitpulse.ui.components.ActivityStreamList
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import com.example.gitpulse.ui.viewmodel.GitPulseUiState
@@ -384,8 +383,12 @@ private fun DayInspectorContent(
             )
         }
 
-        items(data.recentActivities) { act ->
-            InspectorActivityItemCard(act, maskSensitive)
+        item {
+            ActivityStreamList(
+                items = data.recentActivities,
+                maskSensitive = maskSensitive,
+                collapsedCount = 5
+            )
         }
 
         // 4. Data Visibility & Privacy Settings Card
@@ -443,101 +446,6 @@ private fun DayInspectorContent(
                             )
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun InspectorActivityItemCard(item: GitActivityItem, maskSensitive: Boolean) {
-    val displayRepoName = if (maskSensitive) "confidential / masked-repo" else item.repoName
-
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = when (item.type) {
-                                com.example.gitpulse.data.ActivityType.PULL_REQUEST -> Icons.AutoMirrored.Filled.CallMerge
-                                com.example.gitpulse.data.ActivityType.REVIEW -> Icons.Default.RateReview
-                                else -> Icons.Default.Commit
-                            },
-                            contentDescription = null,
-                            tint = when (item.type) {
-                                com.example.gitpulse.data.ActivityType.PULL_REQUEST -> SecondaryEmerald
-                                com.example.gitpulse.data.ActivityType.REVIEW -> TertiaryAmber
-                                else -> MaterialTheme.colorScheme.primary
-                            },
-                            modifier = Modifier.size(14.dp)
-                        )
-                    }
-                    Text(
-                        text = displayRepoName,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-                Text(
-                    text = item.timeAgo,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Text(
-                text = item.message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (item.commitHash != null) {
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh
-                    ) {
-                        Text(
-                            text = item.commitHash,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
-                }
-                if (item.statusText != null) {
-                    Text(
-                        text = item.statusText,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
