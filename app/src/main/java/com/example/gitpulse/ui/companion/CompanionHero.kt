@@ -46,20 +46,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.example.gitpulse.R
 import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.ui.animation.MotionTokens
 import java.util.Calendar
@@ -68,6 +65,7 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.PI
 import kotlin.math.sin
+import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -75,17 +73,20 @@ import kotlinx.coroutines.launch
 private enum class KitsuReaction { NONE, HAPPY, CURIOUS }
 
 /**
- * Kitsu companion hero (v3).
+ * Kitsu companion hero (v4, frame flipbook).
  *
- * The fox floats on the app background by herself and is interactive:
- *  - tap the fox: heart burst and a quip in a speech bubble
- *  - long-press: the fox tilts its head and shows its stat card
- *  - new data: the fox celebrates the sync by itself
- *  - idle: breathing, tail sway, blinking and the occasional ear twitch
- *  - reduced-motion settings keep everything calm and static
+ * The fox lives on the app background as a frame-animated flipbook built
+ * from the art set (see KitsuFrames.kt, assets built by
+ * tools/build_kitsu_frames.py): a soft idle loop she breathes in, with
+ * reactions layered over it:
+ *  - tap the fox: she pounces at the screen, with a heart burst and a quip
+ *  - long-press: she holds a curious head tilt and shows her stat card
+ *  - new data: she celebrates the sync by herself with a full spin
+ *  - idle: every so often she spins for the fun of it
+ *  - reduced-motion settings park her on the calm pose
  *
- * Tails grow with the longest streak (1 -> 2 at 30 days, 3 at 100 days), so
- * the fox visibly evolves with the user and never regresses.
+ * The stat card still grows the tail count with the longest streak
+ * (2 at 30 days, 3 at 100), so her progress is tracked as before.
  */
 @Composable
 fun CompanionHero(
@@ -101,6 +102,9 @@ fun CompanionHero(
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val reducedMotion = rememberReducedMotion()
+
+    // The flipbook: idle loop, reactions and the frames the canvas draws.
+    val framePlayer = rememberKitsuFramePlayer(reducedMotion)
 
     val hour = remember { Calendar.getInstance().get(Calendar.HOUR_OF_DAY) }
     // Anchor to today: GitHub's year calendar runs to Dec 31, so a plain
@@ -131,12 +135,13 @@ fun CompanionHero(
     // so a tap has weight instead of only switching her face.
     val hop = remember { Animatable(0f) }
 
-    fun reactHappy() {
+    fun reactHappy(flourish: KitsuFrameSet) {
         reaction = KitsuReaction.HAPPY
         statsVisible = false
         happyStamp += 1
         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         if (!reducedMotion) {
+            framePlayer.playOnce(flourish)
             scope.launch {
                 heartBurst.snapTo(0f)
                 heartBurst.animateTo(1f, tween(950, easing = FastOutSlowInEasing))
@@ -148,12 +153,23 @@ fun CompanionHero(
         }
     }
 
-    // Fresh data landed: the fox celebrates the sync (skips the first load).
+    // Fresh data landed: the fox celebrates the sync with a spin (skips the
+    // first load).
     LaunchedEffect(syncTick) {
         if (syncTick != lastSyncTick) {
             lastSyncTick = syncTick
             quip = "Fresh pull! The meadow's up to date."
-            reactHappy()
+            reactHappy(KitsuFrameSet.SPIN)
+        }
+    }
+
+    // Every so often she spins of her own accord, more often when the week
+    // is going well. Mood changes re-roll the rhythm.
+    LaunchedEffect(mood, reducedMotion) {
+        if (reducedMotion) return@LaunchedEffect
+        while (true) {
+            delay(autoSpinDelayMs(mood))
+            framePlayer.playOnce(KitsuFrameSet.SPIN)
         }
     }
 
@@ -172,6 +188,7 @@ fun CompanionHero(
             statsVisible = false
         } else if (reaction == KitsuReaction.CURIOUS) {
             reaction = KitsuReaction.NONE
+            framePlayer.resume()
         }
     }
 
@@ -220,16 +237,6 @@ fun CompanionHero(
         reducedMotion = reducedMotion
     )
 
-    // Companion art shipped with the app; the hand-drawn vector fox stays
-    // as the fallback.
-    val companionArt = ImageBitmap.imageResource(R.drawable.kitsu_companion)
-
-    // Fluid rig: warps the art through a GPU mesh each frame. If setup ever
-    // fails the scene quietly falls back to the static drawImage path.
-    val companionWarp = remember(companionArt) {
-        runCatching { CompanionWarp(companionArt) }.getOrNull()
-    }
-
     Column(modifier = modifier.fillMaxWidth()) {
         // Full-bleed scene: no card, the world sits directly on the screen.
         Box(
@@ -243,9 +250,10 @@ fun CompanionHero(
                     palette = palette,
                     motion = motion,
                     tails = tails,
-                    companion = companionArt,
-                    companionWarp = companionWarp,
-                    reducedMotion = reducedMotion
+                    frames = framePlayer.paint,
+                    // Read here, in the draw pass, so crossfades never
+                    // recompose the screen.
+                    frameBlend = framePlayer.blend.value
                 )
 
                 // Heart burst on tap: a handful of hearts drifting upward.
@@ -287,13 +295,14 @@ fun CompanionHero(
                         detectTapGestures(
                             onTap = {
                                 quip = quips.random()
-                                reactHappy()
+                                reactHappy(KitsuFrameSet.POUNCE)
                             },
                             onLongPress = {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 quip = null
                                 statsVisible = true
                                 reaction = KitsuReaction.CURIOUS
+                                framePlayer.hold(KitsuFrameSet.CURIOUS)
                             }
                         )
                     }
@@ -565,6 +574,16 @@ private fun moodAccent(mood: CompanionMood, colorScheme: ColorScheme): Color = w
     CompanionMood.THRIVING -> colorScheme.primary
     CompanionMood.STEADY -> colorScheme.secondary
     CompanionMood.RESTING -> colorScheme.onSurfaceVariant
+}
+
+/**
+ * How long the fox waits before spinning of her own accord. A thriving week
+ * has her showing off often; a quiet week has her mostly resting.
+ */
+internal fun autoSpinDelayMs(mood: CompanionMood): Long = when (mood) {
+    CompanionMood.THRIVING -> Random.nextLong(16_000, 26_000)
+    CompanionMood.STEADY -> Random.nextLong(22_000, 36_000)
+    CompanionMood.RESTING -> Random.nextLong(32_000, 50_000)
 }
 
 /** Honors the system's "remove animations" accessibility setting: with the

@@ -145,6 +145,12 @@ internal class CompanionWarpMath {
  * Setup builds one padded copy of the art (transparent motion margin) and a
  * small silhouette-alpha grid that feeds the influence fields. All of it is
  * cheap one-time work; drawing is a handful of float writes per frame.
+ *
+ * Retired from the hero: the companion is now animated by the hand-drawn
+ * frame sets in [KitsuFrames] (see [drawKitsuScene]), so nothing in the app
+ * instantiates this rig anymore. It is kept around as the generic mesh-warp
+ * implementation, and [CompanionWarpMath] remains covered by
+ * CompanionWarpMathTest.
  */
 class CompanionWarp(image: ImageBitmap, private val cells: Int = 32) {
 

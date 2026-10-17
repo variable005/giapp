@@ -4,7 +4,6 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -305,57 +304,67 @@ private val TailOffsets = mapOf(
  * Draws the companion by herself. Nothing else is painted — no sky, no
  * ground — so she sits directly on the app background, full bleed.
  *
- * [tails] is the evolution stage from the longest streak. [companion] is
- * the illustration art (bottom edge on her anchor line, centred); when it
- * is null the hand-drawn vector fox is used unless [foxVisible] is off.
- * When the fluid rig is available the art is drawn through a deformation
- * mesh (the tail bends, the body breathes, the ears flex); the static path
- * stays for reduced motion and as a fallback.
+ * [tails] is the evolution stage from the longest streak (used by the vector
+ * fallback). [frames] is the flipbook from KitsuFrames.kt: the current frame,
+ * the outgoing frame it crossfades over, and [frameBlend] running 0 -> 1
+ * between them (read in the draw pass, so the fade costs no recomposition).
+ * Frames are scaled by their body height — never the image box — and their
+ * feet anchor is centred on her ground line, so a raised tail or a baked
+ * leap never changes how big she reads.
+ *
+ * When [frames] is null the hand-drawn vector fox is used unless
+ * [foxVisible] is off.
  */
-fun DrawScope.drawKitsuScene(
+internal fun DrawScope.drawKitsuScene(
     paths: KitsuPaths,
     palette: KitsuPalette,
     motion: KitsuMotion,
     tails: Int,
     foxVisible: Boolean = true,
-    companion: ImageBitmap? = null,
-    companionWarp: CompanionWarp? = null,
-    reducedMotion: Boolean = false
+    frames: KitsuFramePaint? = null,
+    frameBlend: Float = 1f
 ) {
     val w = size.width
     val h = size.height
 
     // Her anchor line, kept from the old field crest: a touch below three
-    // quarters down so the larger companion stays clear of the greeting.
+    // quarters down so the companion stays clear of the greeting.
     val groundCenter = 0.82f * h
 
-    // Companion: the illustration art sits on her anchor line — bottom edge
-    // a touch below it, centred. When the fluid rig is available the art is
-    // drawn through a deformation mesh (the tail bends, the body breathes,
-    // the ears flex); the static path stays for reduced motion and as a
-    // fallback.
-    if (companion != null) {
-        val artHeight = 188.dp.toPx()
+    // Flipbook companion: she hops and leans through the same motion model
+    // as the vector fox, so taps and the phone carry her the same way.
+    if (frames != null) {
+        val bodyHeight = 188.dp.toPx()
         val groundLineY = groundCenter + 5.dp.toPx()
-        val fluid = companionWarp != null && !reducedMotion &&
-            companionWarp.draw(this, motion, w / 2f, groundLineY, artHeight)
-        if (!fluid) {
-            val artWidth = artHeight * companion.width / companion.height
-            val bob = motion.breath * 2.dp.toPx()
-            val lift = motion.hop * artHeight / 185f + motion.happy * 3.dp.toPx()
-            val shift = motion.shift * artHeight / 185f
-            withTransform({
-                rotate(motion.tilt + motion.lean, pivot = Offset(w / 2f, groundLineY))
-            }) {
-                drawImage(
-                    image = companion,
-                    dstOffset = IntOffset(
-                        (w / 2f - artWidth / 2f + shift).roundToInt(),
-                        (groundLineY - artHeight - bob - lift).roundToInt()
-                    ),
-                    dstSize = IntSize(artWidth.roundToInt(), artHeight.roundToInt())
+        val bob = motion.breath * 2.dp.toPx()
+        val lift = motion.hop * bodyHeight / 185f + motion.happy * 3.dp.toPx()
+        val shift = motion.shift * bodyHeight / 185f
+        withTransform({
+            rotate(motion.tilt + motion.lean, pivot = Offset(w / 2f, groundLineY))
+        }) {
+            val blend = frameBlend.coerceIn(0f, 1f)
+            frames.previous?.let { previous ->
+                drawCompanionFrame(
+                    art = previous,
+                    sceneWidth = w,
+                    groundY = groundLineY,
+                    bodyHeight = bodyHeight,
+                    bob = bob,
+                    lift = lift,
+                    shift = shift,
+                    alpha = 1f - blend
                 )
             }
+            drawCompanionFrame(
+                art = frames.current,
+                sceneWidth = w,
+                groundY = groundLineY,
+                bodyHeight = bodyHeight,
+                bob = bob,
+                lift = lift,
+                shift = shift,
+                alpha = blend
+            )
         }
     } else if (foxVisible) {
         val foxScale = 179.dp.toPx() / 185f
@@ -368,6 +377,31 @@ fun DrawScope.drawKitsuScene(
             drawKitsu(paths, palette, motion, tails)
         }
     }
+}
+
+/** Draws one flipbook frame bottom-anchored on the ground line. */
+private fun DrawScope.drawCompanionFrame(
+    art: KitsuFrameArt,
+    sceneWidth: Float,
+    groundY: Float,
+    bodyHeight: Float,
+    bob: Float,
+    lift: Float,
+    shift: Float,
+    alpha: Float
+) {
+    if (alpha <= 0.01f) return
+    val image = art.image
+    val imageHeight = bodyHeight / art.frame.bodyFrac
+    val imageWidth = imageHeight * image.width / image.height
+    val x = sceneWidth / 2f - art.frame.anchorX * imageWidth + shift
+    val y = groundY - imageHeight - bob - lift
+    drawImage(
+        image = image,
+        dstOffset = IntOffset(x.roundToInt(), y.roundToInt()),
+        dstSize = IntSize(imageWidth.roundToInt(), imageHeight.roundToInt()),
+        alpha = alpha
+    )
 }
 
 /** A small filled heart used for the tap celebration burst. */
