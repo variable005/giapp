@@ -36,6 +36,9 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import com.example.gitpulse.data.HeatmapDay
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlinx.coroutines.launch
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -934,13 +937,32 @@ private fun LoadingAnalyticsSkeleton(modifier: Modifier = Modifier) {
 }
 
 
-/** Mini GitHub-style contribution grid — the visual signature of the share card. */
+/** Mini GitHub-style contribution grid — the visual signature of the share card.
+ *
+ *  GitHub's year calendar includes days that have not happened yet (the fetch
+ *  asks for the whole Jan-Dec range), so the window is anchored to today before
+ *  the last eight weeks are picked; otherwise the grid lands on empty future
+ *  cells. Columns are keyed off the real week/day indices so the rows stay
+ *  aligned to weekdays. */
 @Composable
 private fun ContributionSparkline(
     contributions: List<HeatmapDay>,
     modifier: Modifier = Modifier
 ) {
-    val weeks = remember(contributions) { contributions.takeLast(56).chunked(7) }
+    val today = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()) }
+    val weeks = remember(contributions, today) {
+        val past = contributions.filter { it.dateString <= today }
+        if (past.isEmpty()) {
+            emptyList()
+        } else {
+            val latestWeek = past.maxOf { it.weekOfYear }
+            val firstWeek = maxOf(0, latestWeek - 7)
+            val bySlot = past.associateBy { it.weekOfYear to it.dayOfWeek }
+            (firstWeek..latestWeek).map { w ->
+                (0..6).map { d -> bySlot[w to d] }
+            }
+        }
+    }
     if (weeks.isEmpty()) return
 
     Row(
@@ -958,7 +980,7 @@ private fun ContributionSparkline(
                         modifier = Modifier
                             .size(10.dp)
                             .background(
-                                contributionLevelColor(day.level),
+                                contributionLevelColor(day?.level ?: 0),
                                 RoundedCornerShape(3.dp)
                             )
                     )

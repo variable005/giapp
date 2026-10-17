@@ -68,6 +68,9 @@ import com.example.gitpulse.R
 import com.example.gitpulse.data.remote.GitPulseAggregateData
 import com.example.gitpulse.ui.animation.MotionTokens
 import java.util.Calendar
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.sin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -104,8 +107,15 @@ fun CompanionHero(
     val reducedMotion = rememberReducedMotion()
 
     val hour = remember { Calendar.getInstance().get(Calendar.HOUR_OF_DAY) }
-    val recentDays = remember(data.contributions) {
-        data.contributions.sortedBy { it.dateString }.takeLast(28)
+    // Anchor to today: GitHub's year calendar runs to Dec 31, so a plain
+    // takeLast() would read empty future days and the fox would always report
+    // a quiet week.
+    val today = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()) }
+    val recentDays = remember(data.contributions, today) {
+        data.contributions
+            .filter { it.dateString <= today }
+            .sortedBy { it.dateString }
+            .takeLast(28)
     }
     val activeThisWeek = remember(recentDays) { recentDays.takeLast(7).count { it.count > 0 } }
     val mood = companionMood(activeThisWeek)
