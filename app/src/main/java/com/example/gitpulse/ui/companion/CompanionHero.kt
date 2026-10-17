@@ -6,10 +6,12 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -347,19 +349,18 @@ fun CompanionHero(
                     .align(Alignment.TopCenter)
                     .padding(top = 50.dp, start = 24.dp, end = 24.dp)
             )
-
-            // Long-press reaction: the fox's own stat card.
-            KitsuStatsOverlay(
-                visible = statsVisible,
-                mood = mood,
-                tails = tails,
-                longestStreak = profile.longestStreakDays,
-                totalCommits = profile.totalAnnualCommits,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 46.dp)
-            )
         }
+
+        // Long-press reaction: the fox's own stat card, unfolded beneath the
+        // meadow so it never covers her while she holds the curious tilt.
+        KitsuStatsOverlay(
+            visible = statsVisible,
+            mood = mood,
+            tails = tails,
+            longestStreak = profile.longestStreakDays,
+            totalCommits = profile.totalAnnualCommits,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
 
         // Milestone line sits on the screen itself, below the meadow.
         Column(
@@ -461,7 +462,7 @@ private fun KitsuQuipBubble(text: String, visible: Boolean, modifier: Modifier =
     }
 }
 
-/** Slide-in wrapper for the fox's stat card. */
+/** Unfold wrapper for the fox's stat card, shown beneath the scene. */
 @Composable
 private fun KitsuStatsOverlay(
     visible: Boolean,
@@ -475,16 +476,24 @@ private fun KitsuStatsOverlay(
         visible = visible,
         modifier = modifier,
         enter = fadeIn(animationSpec = tween(180)) +
-            scaleIn(initialScale = 0.9f, animationSpec = MotionTokens.springFast()),
+            expandVertically(
+                expandFrom = Alignment.Top,
+                animationSpec = MotionTokens.springFast()
+            ),
         exit = fadeOut(animationSpec = tween(140)) +
-            scaleOut(targetScale = 0.92f, animationSpec = tween(140))
+            shrinkVertically(
+                shrinkTowards = Alignment.Top,
+                animationSpec = tween(160)
+            )
     ) {
-        KitsuStatsCard(
-            mood = mood,
-            tails = tails,
-            longestStreak = longestStreak,
-            totalCommits = totalCommits
-        )
+        Box(modifier = Modifier.padding(top = 10.dp)) {
+            KitsuStatsCard(
+                mood = mood,
+                tails = tails,
+                longestStreak = longestStreak,
+                totalCommits = totalCommits
+            )
+        }
     }
 }
 
