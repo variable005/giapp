@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark (system night) widget palette -->
+    <color name="widget_bg">#1D2024</color>
+    <color name="widget_text_primary">#E2E2E6</color>
+    <color name="widget_text_secondary">#C4C7C5</color>
+    <color name="widget_accent">#4ADE80</color>
+    <color name="widget_heat_empty">#33353A</color>
+</resources>

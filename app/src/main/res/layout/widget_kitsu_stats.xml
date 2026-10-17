@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Medium (4x2) widget: Kitsu on the left, three stats stacked on the right.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <ImageView
+        android:id="@+id/widget_mascot"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:contentDescription="@string/widget_mascot_description"
+        android:scaleType="fitCenter"
+        android:src="@drawable/kitsu_companion" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="10dp"
+        android:layout_weight="1.45"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/widget_username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:text="@string/widget_empty_value"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="11sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="4dp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:text="@string/widget_streak_label"
+                android:textColor="@color/widget_text_secondary"
+                android:textSize="11sp"
+                android:minWidth="62dp" />
+
+            <TextView
+                android:id="@+id/widget_streak_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:text="@string/widget_empty_value"
+                android:textColor="@color/widget_accent"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:text="@string/widget_commits_label"
+                android:textColor="@color/widget_text_secondary"
+                android:textSize="11sp"
+                android:minWidth="62dp" />
+
+            <TextView
+                android:id="@+id/widget_commits_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:text="@string/widget_empty_value"
+                android:textColor="@color/widget_text_primary"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:text="@string/widget_repos_label"
+                android:textColor="@color/widget_text_secondary"
+                android:textSize="11sp"
+                android:minWidth="62dp" />
+
+            <TextView
+                android:id="@+id/widget_repos_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:text="@string/widget_empty_value"
+                android:textColor="@color/widget_text_primary"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

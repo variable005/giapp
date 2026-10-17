@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Light (system day) widget palette -->
+    <color name="widget_bg">#F3F3F7</color>
+    <color name="widget_text_primary">#191C1E</color>
+    <color name="widget_text_secondary">#43474E</color>
+    <color name="widget_accent">#006D38</color>
+    <color name="widget_heat_empty">#E1E2E6</color>
+</resources>

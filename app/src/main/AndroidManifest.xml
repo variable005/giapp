@@ -31,6 +31,43 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- Home screen widgets: three mascot layouts of increasing size. -->
+        <receiver
+            android:name=".widget.KitsuStreakWidget"
+            android:exported="false"
+            android:label="@string/widget_streak_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/kitsu_widget_streak_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.KitsuStatsWidget"
+            android:exported="false"
+            android:label="@string/widget_stats_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/kitsu_widget_stats_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.KitsuHeatmapWidget"
+            android:exported="false"
+            android:label="@string/widget_heatmap_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/kitsu_widget_heatmap_info" />
+        </receiver>
     </application>
 
 </manifest>

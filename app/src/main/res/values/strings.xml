@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">GitPulse</string>
+
+    <!-- Home screen widgets -->
+    <string name="widget_streak_name">Kitsu Streak</string>
+    <string name="widget_streak_description">Kitsu and your current contribution streak.</string>
+    <string name="widget_stats_name">Kitsu Stats</string>
+    <string name="widget_stats_description">Kitsu alongside your streak, commits and repositories.</string>
+    <string name="widget_heatmap_name">Kitsu Heatmap</string>
+    <string name="widget_heatmap_description">Kitsu with your last eight weeks of contributions.</string>
+
+    <string name="widget_mascot_description">Kitsu, the GitPulse companion fox</string>
+    <string name="widget_streak_label">day streak</string>
+    <string name="widget_longest_label">longest</string>
+    <string name="widget_commits_label">commits this year</string>
+    <string name="widget_repos_label">repos</string>
+    <string name="widget_heatmap_caption">Last 8 weeks</string>
+    <string name="widget_empty_value">—</string>
+    <string name="widget_open_app">Open GitPulse</string>
 </resources>
